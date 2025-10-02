@@ -116,24 +116,6 @@ const Product = () => {
                             <span className="category-badge">{item.kategori}</span>
                             <p className="product-price">Rp {item.harga.toLocaleString('id-ID')}</p>
                             <p>Stok: {item.stok} unit</p>
-                            
-                            {/* Quantity Control */}
-                            <div className="quantity-control">
-                                <button onClick={() => handleDecrement(item.id)}>-</button>
-                                <input
-                                    type="number"
-                                    value={quantities[item.id] || 1}
-                                    onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                                />
-                                <button onClick={() => handleIncrement(item.id)}>+</button>
-                            </div>
-                            
-                            <button
-                                onClick={() => handleAddToCart(item)}
-                                className="add-to-cart-btn"
-                            >
-                                Add to cart
-                            </button>
                         </div>
                     ))
                 ) : (
