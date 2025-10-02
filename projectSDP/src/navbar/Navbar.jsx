@@ -1,60 +1,63 @@
 import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
-  // 1. Tambahkan state untuk melacak status login pengguna
-  //    Nilai awalnya `false` karena pengguna belum login.
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
-  // 2. Buat fungsi untuk mengubah state saat tombol ditekan
-  const handleLogin = () => {
-    // Fungsi ini akan dipanggil oleh tombol Register atau Login
-    setIsLoggedIn(true); 
-  };
+    // Jangan tampilkan navbar di halaman login atau register
+    if (location.pathname === '/login' || location.pathname === '/register') {
+        return null;
+    }
 
-  const handleLogout = () => {
-    // Fungsi ini akan dipanggil oleh tombol Logout di dalam profile
-    setIsLoggedIn(false);
-  };
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        navigate('/'); // redirect ke home setelah logout
+    };
 
-  return (
-    <nav className="navbar">
-        <div className="navbar-container">
-            {/* Logo */}
-            <div className="navbar-logo">
-                <img src="../src/assets/logo.jpeg" alt="BJM Logo" />
+    return (
+        <nav className="navbar">
+            <div className="navbar-container">
+                {/* Logo */}
+                <div className="navbar-logo">
+                    <Link to="/">
+                        <img src="../src/assets/logo.jpeg" alt="BJM Logo" />
+                    </Link>
+                </div>
+
+                {/* Navigation Menu */}
+                <div className="navbar-menu">
+                    <ul>
+                        <li><Link to="/">Home</Link></li>
+                        <li><Link to="/product">Product</Link></li>
+                        <li><Link to="/about">About Us</Link></li>
+                        <li><Link to="/cart">Shopping Cart</Link></li>
+                    </ul>
+                </div>
+
+                {/* Auth Section */}
+                <div className="navbar-auth">
+                    {isLoggedIn ? (
+                        <div className="navbar-profile">
+                            <span className="profile-name">Richard</span>
+                            <button onClick={handleLogout} className="btn-logout">Logout</button>
+                        </div>
+                    ) : (
+                        <>
+                            <Link to="/register">
+                                <button className="btn-register">Register</button>
+                            </Link>
+                            <Link to="/login">
+                                <button className="btn-login">Login</button>
+                            </Link>
+                        </>
+                    )}
+                </div>
             </div>
-            
-            {/* Navigation Menu */}
-            <div className="navbar-menu">
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#product">Product</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#cart">Shopping Cart</a></li>
-                </ul>
-            </div>
-            
-            {/* Auth Section - Tampilannya akan berubah berdasarkan state */}
-            <div className="navbar-auth">
-                {isLoggedIn ? (
-                    // 4. Jika isLoggedIn adalah `true`, tampilkan ini
-                    <div className="navbar-profile">
-                        <span className="profile-name">Richard</span> 
-                        {/* Ganti dengan nama user asli nantinya */}
-                        <button onClick={handleLogout} className="btn-logout">Logout</button>
-                    </div>
-                ) : (
-                    // 5. Jika isLoggedIn adalah `false`, tampilkan ini
-                    <>
-                        <button onClick={handleLogin} className="btn-register">Register</button>
-                        <button onClick={handleLogin} className="btn-login">Login</button>
-                    </>
-                )}
-            </div>
-        </div>
-    </nav>
-  )
-}
+        </nav>
+    );
+};
 
 export default Navbar;
