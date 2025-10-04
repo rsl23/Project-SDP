@@ -3,7 +3,7 @@ import { Clock, Package, Truck, Phone } from 'lucide-react';
 
 // 1. Semua gambar diimpor di sini
 import fotoToko from '../assets/foto_toko.png';
-import whatsappIcon from '../assets/whatsapp.jpg';
+import whatsappIcon from '../assets/whatsapp.png';
 import tokopediaIcon from '../assets/tokopedia.jpeg';
 import shopeeIcon from '../assets/shopee.png';
 import instagramIcon from '../assets/instagram.svg';
