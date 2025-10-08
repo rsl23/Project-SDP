@@ -8,8 +8,7 @@ function LoginForm() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        // Bisa tambahkan validasi login di sini
-        navigate("/"); // redirect ke halaman produk
+        navigate("/");
     };
 
     return (
@@ -30,8 +29,6 @@ function LoginForm() {
 export default function LoginPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] p-6">
-
-            {/* Teks di atas card */}
             <div className="mb-8 text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-white">
                     Selamat Datang
