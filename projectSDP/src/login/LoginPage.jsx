@@ -2,31 +2,29 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
-// Import fungsi-fungsi otentikasi dari Firebase
-import { 
-  signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 
-// Komponen InputField tetap sama
 function InputField({ label, type = "text", placeholder, value, onChange, name }) {
-    return (
-        <div>
-            <label className="text-sm text-slate-700 font-semibold">{label}</label>
-            <input
-                name={name}
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-900"
-            />
-        </div>
-    );
+  return (
+    <div>
+      <label className="text-sm text-slate-700 font-semibold">{label}</label>
+      <input
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-900"
+      />
+    </div>
+  );
 }
 
 function LoginForm() {
@@ -34,13 +32,10 @@ function LoginForm() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Handler untuk perubahan input form
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // --- LOGIN DENGAN EMAIL DAN PASSWORD ---
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     if (!form.email || !form.password) {
@@ -50,9 +45,7 @@ function LoginForm() {
     setLoading(true);
     setError("");
     try {
-      // Panggil fungsi login dari Firebase
       await signInWithEmailAndPassword(auth, form.email, form.password);
-      // Jika berhasil, navigasi ke halaman utama
       navigate("/");
     } catch (err) {
       console.error("Error login dengan email:", err);
@@ -62,7 +55,6 @@ function LoginForm() {
     }
   };
 
-  // --- LOGIN DENGAN GOOGLE ---
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
@@ -75,7 +67,6 @@ function LoginForm() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      // Jika pengguna baru atau datanya belum ada di Firestore, simpan
       if (isNewUser || !userDoc.exists()) {
         await setDoc(userDocRef, {
           name: user.displayName,
@@ -86,7 +77,6 @@ function LoginForm() {
           createdAt: serverTimestamp(),
         });
       }
-      // Jika berhasil, navigasi ke halaman utama
       navigate("/");
     } catch (err) {
       console.error("Error login dengan Google:", err);
@@ -109,15 +99,15 @@ function LoginForm() {
       </button>
 
       <div className="flex items-center my-4">
-        <hr className="w-full border-gray-300"/><span className="px-2 text-gray-500 text-sm">ATAU</span><hr className="w-full border-gray-300"/>
+        <hr className="w-full border-gray-300" /><span className="px-2 text-gray-500 text-sm">ATAU</span><hr className="w-full border-gray-300" />
       </div>
-      
+
       <form onSubmit={handleEmailLogin}>
         <div className="space-y-4">
           <InputField label="Email" type="email" name="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
           <InputField label="Password" type="password" name="password" placeholder="••••••••" value={form.password} onChange={handleChange} />
         </div>
-        
+
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         <button
@@ -128,7 +118,7 @@ function LoginForm() {
           {loading ? 'Memproses...' : 'Login'}
         </button>
       </form>
-      
+
       <p className="text-center text-sm text-gray-600 mt-4">
         Belum punya akun? <Link to="/register" className="text-indigo-600 font-semibold hover:underline">Daftar di sini</Link>
       </p>

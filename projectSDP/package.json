@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "firebase": "^12.3.0",
+    "firebase-admin": "^13.5.0",
     "flowbite": "^3.1.2",
     "flowbite-react": "^0.12.9",
     "framer-motion": "^12.23.22",
