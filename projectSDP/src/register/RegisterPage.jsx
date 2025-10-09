@@ -12,10 +12,13 @@ import {
   fetchSignInMethodsForEmail,
   updateProfile,
   sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo
 } from "firebase/auth";
 
 // Import Firestore functions
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 function InputField({
   label,
@@ -78,6 +81,39 @@ function RegisterForm() {
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
+  
+  // Fungsi untuk menangani login/register dengan Google
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    setLoading(true);
+    setError("");
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const { isNewUser } = getAdditionalUserInfo(result);
+
+      // Cek apakah data user sudah ada di firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (isNewUser || !userDoc.exists()) {
+        await setDoc(userDocRef, {
+          name: user.displayName,
+          email: user.email,
+          firebase_uid: user.uid,
+          auth_provider: "google",
+          email_verified: user.emailVerified,
+          createdAt: serverTimestamp(),
+        });
+      }
+      navigate("/");
+    } catch (error) {
+      console.error("Error saat login dengan Google:", error);
+      setError("Gagal mendaftar dengan Google. Silakan coba lagi.");
+    } finally {
+        setLoading(false);
+    }
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -97,7 +133,6 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      // Cek email sudah terdaftar atau belum
       const signInMethods = await fetchSignInMethodsForEmail(auth, email);
       if (signInMethods.length > 0) {
         setError("Email ini sudah terdaftar.");
@@ -105,7 +140,6 @@ function RegisterForm() {
         return;
       }
 
-      // Buat user di Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -113,57 +147,20 @@ function RegisterForm() {
       );
       const user = userCredential.user;
 
-      // Update display name (optional tapi penting)
-      try {
-        await updateProfile(user, { displayName: name });
-      } catch (profileErr) {
-        console.error("Gagal update profile:", profileErr);
-      }
+      await updateProfile(user, { displayName: name });
+      
+      // Simpan data user ke Firestore dengan UID sebagai document ID
+      await setDoc(doc(db, "users", user.uid), {
+        name,
+        email,
+        firebase_uid: user.uid,
+        auth_provider: "email/password",
+        email_verified: user.emailVerified,
+        createdAt: serverTimestamp(),
+      });
 
-      // Simpan data user ke Firestore dengan document ID random
-      try {
-        console.log("Mencoba simpan ke Firestore...");
-        console.log("Data yang akan disimpan:", {
-          name,
-          email,
-          firebase_uid: user.uid,
-          auth_provider: "email/password",
-          email_verified: user.emailVerified,
-        });
-        console.log("Database instance:", db ? "Ada" : "Tidak ada");
+      await sendEmailVerification(user);
 
-        const docRef = await addDoc(collection(db, "users"), {
-          name,
-          email,
-          firebase_uid: user.uid,
-          auth_provider: "email/password",
-          email_verified: user.emailVerified,
-          createdAt: serverTimestamp(),
-        });
-
-        console.log("Data user berhasil disimpan ke Firestore!");
-        console.log("Document ID:", docRef.id);
-      } catch (firestoreErr) {
-        console.error("Gagal simpan ke Firestore:");
-        console.error("Error code:", firestoreErr.code);
-        console.error("Error message:", firestoreErr.message);
-        console.error("Full error:", firestoreErr);
-        // Tetap lanjut karena user sudah terbuat
-      }
-
-      // Kirim email verifikasi (optional - tidak critical)
-      try {
-        const emailPromise = sendEmailVerification(user);
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("timeout")), 8000)
-        );
-        await Promise.race([emailPromise, timeoutPromise]);
-      } catch (emailErr) {
-        console.warn("Gagal kirim email verifikasi:", emailErr);
-        // Tidak masalah, user tetap bisa register
-      }
-
-      // Registrasi berhasil!
       setSuccess(true);
     } catch (err) {
       console.error("Error saat registrasi:", err);
@@ -182,50 +179,69 @@ function RegisterForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <InputField
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          label="Nama Lengkap"
-          placeholder="Contoh: John Doe"
-        />
-        <InputField
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-        />
-        <InputField
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          label="Password"
-          type="password"
-          placeholder="••••••••"
-        />
-        <InputField
-          name="confirmPassword"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          label="Konfirmasi Password"
-          type="password"
-          placeholder="••••••••"
-        />
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
+      <div className="space-y-4">
         <button
-          type="submit"
+          type="button"
+          onClick={handleGoogleSignIn}
           disabled={loading}
-          className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
-            loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
-          }`}
+          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${loading ? 'opacity-70 cursor-wait' : 'hover:bg-gray-50'}`}
         >
-          {loading ? "Mendaftar..." : "Register"}
+          <svg className="w-5 h-5 mr-3" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M47.52 24.54C47.52 22.86 47.34 21.24 47.04 19.68H24V28.8H37.44C36.84 31.86 35.22 34.38 32.82 36.06V42.6H41.52C45.42 38.82 47.52 32.28 47.52 24.54Z" fill="#4285F4"></path><path d="M24 48C30.48 48 35.94 45.72 39.96 42.6L32.82 36.06C30.66 37.5 27.6 38.46 24 38.46C17.28 38.46 11.46 34.14 9.24 28.02H0.48V34.8C4.5 42.78 13.56 48 24 48Z" fill="#34A853"></path><path d="M9.24 28.02C8.76 26.58 8.52 25.02 8.52 23.4C8.52 21.78 8.76 20.22 9.24 18.78V12H0.48C-1.68 16.14 -1.68 20.94 0.48 24.18C2.52 27.42 5.46 30.06 9.24 28.02Z" fill="#FBBC05"></path><path d="M24 8.34C27.9 8.34 31.02 9.54 33.42 11.7L40.08 5.04C35.88 1.14 30.42 0 24 0C13.56 0 4.5 5.22 0.48 13.2L9.24 19.8C11.46 13.68 17.28 8.34 24 8.34Z" fill="#EA4335"></path></svg>
+          Daftar dengan Google
         </button>
+        <div className="flex items-center my-4">
+            <hr className="w-full border-gray-300"/>
+            <span className="px-2 text-gray-500 text-sm">ATAU</span>
+            <hr className="w-full border-gray-300"/>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+            <div className="space-y-4">
+            <InputField
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                label="Nama Lengkap"
+                placeholder="Contoh: John Doe"
+            />
+            <InputField
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+            />
+            <InputField
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+            />
+            <InputField
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                label="Konfirmasi Password"
+                type="password"
+                placeholder="••••••••"
+            />
+            </div>
+
+            {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+
+            <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
+                loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
+            }`}
+            >
+            {loading ? "Mendaftar..." : "Register dengan Email"}
+            </button>
+        </form>
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Sudah punya akun?{" "}
@@ -236,7 +252,8 @@ function RegisterForm() {
             Login di sini
           </Link>
         </p>
-      </form>
+      </div>
+
       {success && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm">
@@ -255,8 +272,8 @@ function RegisterForm() {
                   email: "",
                   password: "",
                   confirmPassword: "",
-                }); // reset form
-                navigate("/login"); // redirect ke login page
+                }); 
+                navigate("/login"); 
               }}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
             >

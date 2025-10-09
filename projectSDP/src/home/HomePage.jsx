@@ -30,6 +30,11 @@ export default function HomePage() {
                         BJM Parts menyediakan berbagai suku cadang dan aksesori otomotif berkualitas tinggi.
                         Kami berkomitmen memberikan pengalaman belanja terbaik dengan produk asli dan layanan terpercaya.
                     </p>
+                    <Link to="/aboutus">
+                        <button className="px-8 py-3 mt-3 bg-gradient-to-r from-pink-500 to-indigo-600 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform">
+                            Jelajahi Produk
+                        </button>
+                    </Link>
                 </div>
             </section>
 
