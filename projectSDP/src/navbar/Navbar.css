@@ -292,3 +292,27 @@
         display: inline;
     }
 }
+
+/* Letakkan ini di dalam file Navbar.css */
+
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover; /* Memastikan gambar tidak gepeng */
+    border: 2px solid #cc0066;
+}
+
+.profile-avatar-fallback {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cc0066 0%, #0000cc 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: 2px solid #cc0066;
+}
