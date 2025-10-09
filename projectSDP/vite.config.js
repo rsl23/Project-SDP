@@ -1,8 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import flowbiteReact from "flowbite-react/plugin/vite";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), flowbiteReact()],
-})
+// Jadikan plugin flowbite-react opsional agar tidak error saat dependency belum ter-install
+export default defineConfig(async () => {
+  let flowbitePlugin = null;
+  try {
+    const mod = await import("flowbite-react/plugin/vite");
+    // Beberapa versi mungkin export default berupa fungsi plugin
+    flowbitePlugin = typeof mod.default === "function" ? mod.default() : null;
+  } catch (e) {
+    console.warn(
+      "[vite.config] flowbite-react belum terpasang, lewati plugin (pesan ini aman diabaikan)."
+    );
+  }
+
+  return {
+    plugins: [react(), ...(flowbitePlugin ? [flowbitePlugin] : [])],
+  };
+});

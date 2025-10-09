@@ -1,27 +1,116 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/InputField";
+import { auth } from "../firebase/config";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate("/");
+    setError("");
+
+    const { email, password } = form;
+
+    // Validasi input
+    if (!email || !password) {
+      setError("Email dan password wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Login dengan Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Cek apakah email sudah diverifikasi (opsional)
+      if (!user.emailVerified) {
+        console.warn("Email belum diverifikasi, tapi tetap bisa login");
+        // Uncomment baris berikut jika ingin memaksa verifikasi email:
+        // setError("Silakan verifikasi email terlebih dahulu.");
+        // await auth.signOut();
+        // setLoading(false);
+        // return;
+      }
+
+      console.log("Login berhasil!", user);
+
+      // Redirect ke home page
+      navigate("/");
+    } catch (err) {
+      console.error("Error saat login:", err);
+      const code = err?.code || "";
+      let message = "Terjadi kesalahan. Silakan coba lagi.";
+
+      if (code === "auth/invalid-email") {
+        message = "Format email tidak valid.";
+      } else if (code === "auth/user-not-found") {
+        message = "Email tidak terdaftar.";
+      } else if (code === "auth/wrong-password") {
+        message = "Password salah.";
+      } else if (code === "auth/invalid-credential") {
+        message = "Email atau password salah.";
+      } else if (code === "auth/too-many-requests") {
+        message = "Terlalu banyak percobaan. Coba lagi nanti.";
+      }
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form className="space-y-4" onSubmit={handleLogin}>
-      <InputField label="Email" type="email" placeholder="you@example.com" />
-      <InputField label="Password" type="password" placeholder="••••••••" />
+      <InputField
+        label="Email"
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        placeholder="you@example.com"
+      />
+      <InputField
+        label="Password"
+        type="password"
+        name="password"
+        value={form.password}
+        onChange={handleChange}
+        placeholder="••••••••"
+      />
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>
+      )}
 
       <button
         type="submit"
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6"
+        disabled={loading}
+        className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
+          loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
+        }`}
       >
-        Login
+        {loading ? "Masuk..." : "Login"}
       </button>
+
       <p className="text-center text-sm text-gray-600 mt-4">
         Belum punya akun?{" "}
         <Link
