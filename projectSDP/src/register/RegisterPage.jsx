@@ -14,11 +14,17 @@ import {
   sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
-  getAdditionalUserInfo
+  getAdditionalUserInfo,
 } from "firebase/auth";
 
 // Import Firestore functions
-import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
 function InputField({
   label,
@@ -81,7 +87,7 @@ function RegisterForm() {
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
-  
+
   // Fungsi untuk menangani login/register dengan Google
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
@@ -95,7 +101,7 @@ function RegisterForm() {
       // Cek apakah data user sudah ada di firestore
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (isNewUser || !userDoc.exists()) {
         await setDoc(userDocRef, {
           name: user.displayName,
@@ -111,7 +117,7 @@ function RegisterForm() {
       console.error("Error saat login dengan Google:", error);
       setError("Gagal mendaftar dengan Google. Silakan coba lagi.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -148,7 +154,7 @@ function RegisterForm() {
       const user = userCredential.user;
 
       await updateProfile(user, { displayName: name });
-      
+
       // Simpan data user ke Firestore dengan UID sebagai document ID
       await setDoc(doc(db, "users", user.uid), {
         name,
@@ -184,63 +190,87 @@ function RegisterForm() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${loading ? 'opacity-70 cursor-wait' : 'hover:bg-gray-50'}`}
+          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${
+            loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
+          }`}
         >
-          <svg className="w-5 h-5 mr-3" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M47.52 24.54C47.52 22.86 47.34 21.24 47.04 19.68H24V28.8H37.44C36.84 31.86 35.22 34.38 32.82 36.06V42.6H41.52C45.42 38.82 47.52 32.28 47.52 24.54Z" fill="#4285F4"></path><path d="M24 48C30.48 48 35.94 45.72 39.96 42.6L32.82 36.06C30.66 37.5 27.6 38.46 24 38.46C17.28 38.46 11.46 34.14 9.24 28.02H0.48V34.8C4.5 42.78 13.56 48 24 48Z" fill="#34A853"></path><path d="M9.24 28.02C8.76 26.58 8.52 25.02 8.52 23.4C8.52 21.78 8.76 20.22 9.24 18.78V12H0.48C-1.68 16.14 -1.68 20.94 0.48 24.18C2.52 27.42 5.46 30.06 9.24 28.02Z" fill="#FBBC05"></path><path d="M24 8.34C27.9 8.34 31.02 9.54 33.42 11.7L40.08 5.04C35.88 1.14 30.42 0 24 0C13.56 0 4.5 5.22 0.48 13.2L9.24 19.8C11.46 13.68 17.28 8.34 24 8.34Z" fill="#EA4335"></path></svg>
+          <svg
+            className="w-5 h-5 mr-3"
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M47.52 24.54C47.52 22.86 47.34 21.24 47.04 19.68H24V28.8H37.44C36.84 31.86 35.22 34.38 32.82 36.06V42.6H41.52C45.42 38.82 47.52 32.28 47.52 24.54Z"
+              fill="#4285F4"
+            ></path>
+            <path
+              d="M24 48C30.48 48 35.94 45.72 39.96 42.6L32.82 36.06C30.66 37.5 27.6 38.46 24 38.46C17.28 38.46 11.46 34.14 9.24 28.02H0.48V34.8C4.5 42.78 13.56 48 24 48Z"
+              fill="#34A853"
+            ></path>
+            <path
+              d="M9.24 28.02C8.76 26.58 8.52 25.02 8.52 23.4C8.52 21.78 8.76 20.22 9.24 18.78V12H0.48C-1.68 16.14 -1.68 20.94 0.48 24.18C2.52 27.42 5.46 30.06 9.24 28.02Z"
+              fill="#FBBC05"
+            ></path>
+            <path
+              d="M24 8.34C27.9 8.34 31.02 9.54 33.42 11.7L40.08 5.04C35.88 1.14 30.42 0 24 0C13.56 0 4.5 5.22 0.48 13.2L9.24 19.8C11.46 13.68 17.28 8.34 24 8.34Z"
+              fill="#EA4335"
+            ></path>
+          </svg>
           Daftar dengan Google
         </button>
         <div className="flex items-center my-4">
-            <hr className="w-full border-gray-300"/>
-            <span className="px-2 text-gray-500 text-sm">ATAU</span>
-            <hr className="w-full border-gray-300"/>
+          <hr className="w-full border-gray-300" />
+          <span className="px-2 text-gray-500 text-sm">ATAU</span>
+          <hr className="w-full border-gray-300" />
         </div>
 
         <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
+          <div className="space-y-4">
             <InputField
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                label="Nama Lengkap"
-                placeholder="Contoh: John Doe"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              label="Nama Lengkap"
+              placeholder="Contoh: John Doe"
             />
             <InputField
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
             />
             <InputField
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                label="Password"
-                type="password"
-                placeholder="••••••••"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              label="Password"
+              type="password"
+              placeholder="••••••••"
             />
             <InputField
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                label="Konfirmasi Password"
-                type="password"
-                placeholder="••••••••"
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              label="Konfirmasi Password"
+              type="password"
+              placeholder="••••••••"
             />
-            </div>
+          </div>
 
-            {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+          {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
-            <button
+          <button
             type="submit"
             disabled={loading}
             className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
-                loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
+              loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
             }`}
-            >
+          >
             {loading ? "Mendaftar..." : "Register dengan Email"}
-            </button>
+          </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-4">
@@ -272,8 +302,8 @@ function RegisterForm() {
                   email: "",
                   password: "",
                   confirmPassword: "",
-                }); 
-                navigate("/login"); 
+                });
+                navigate("/login");
               }}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
             >
@@ -290,9 +320,31 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] p-6">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white">
-          Selamat Datang di BJM Parts
-        </h1>
+        <div className="flex justify-center items-center">
+          <div className="">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white">
+              Selamat Datang di BJM Parts
+            </h1>
+          </div>
+          <div className="mt-4 ml-4">
+            <Link to="/">
+              <button
+                style={{ width: "40px", height: "40px", fontSize: "24px" }}
+                className="text-white hover:text-gray-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="48px"
+                  viewBox="0 -960 960 960"
+                  width="48px"
+                  fill="#ffffffff"
+                >
+                  <path d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z" />
+                </svg>
+              </button>
+            </Link>
+          </div>
+        </div>
         <p className="text-lg text-gray-200 mt-2">
           Daftar sekarang untuk mendapatkan pengalaman belanja terbaik!
         </p>

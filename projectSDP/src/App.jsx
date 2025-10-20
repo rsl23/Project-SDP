@@ -7,9 +7,19 @@ import HomePage from "./home/HomePage";
 import ProductPage from "./product/Product";
 import LoginPage from "./login/LoginPage";
 import RegisterPage from "./register/RegisterPage";
-import './App.css';
 import AboutUs from "./aboutUs/AboutUs";
 import Footer from "./footer/Footer";
+
+// Admin Components
+import AdminRoute from "./admin/AdminRoute";
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import AdminProducts from "./admin/pages/AdminProducts";
+import AdminUsers from "./admin/pages/AdminUsers";
+import AdminOrders from "./admin/pages/AdminOrders";
+import AdminSettings from "./admin/pages/AdminSettings";
+
+import "./App.css";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -33,26 +43,49 @@ function App() {
   // Tampilkan loading screen sederhana selagi status otentikasi diperiksa
   if (loading) {
     return (
-        <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
-            <p className="text-white text-2xl">Memuat...</p>
-        </div>
+      <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
+        <p className="text-white text-2xl">Memuat...</p>
+      </div>
     );
   }
 
   return (
     <Router>
-      <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white">
-        {/* Kirim state 'user' sebagai prop ke Navbar */}
-        <Navbar user={user} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/product" element={<ProductPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/aboutus" element={<AboutUs/>}/>
-        </Routes>
-        <Footer/>
-      </div>
+      <Routes>
+        {/* Admin Routes - Terpisah dari user biasa */}
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+
+        {/* User Routes - Dengan Navbar dan Footer */}
+        <Route
+          path="/*"
+          element={
+            <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white">
+              <Navbar user={user} />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/product" element={<ProductPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/aboutus" element={<AboutUs />} />
+              </Routes>
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

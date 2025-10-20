@@ -21,7 +21,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 // Initialize Firebase Services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const analytics = getAnalytics(app);
+
+// Analytics hanya untuk browser (tidak untuk Node.js)
+export const analytics =
+  typeof window !== "undefined" ? getAnalytics(app) : null;
 
 // Export app jika diperlukan
 export default app;
