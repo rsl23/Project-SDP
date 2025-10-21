@@ -3,6 +3,8 @@ const API_URL = "http://localhost:5000/api/products";
 export async function getProducts() {
   try {
     const response = await fetch(API_URL);
+    console.log("Ambil Produk");
+
     if (!response.ok) throw new Error("Gagal mengambil produk");
     return await response.json();
   } catch (error) {
