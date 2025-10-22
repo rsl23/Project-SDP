@@ -2,13 +2,42 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import "./Navbar.css";
 
 const Navbar = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // ✅ Check and sync email verification (background check)
+  useEffect(() => {
+    const syncEmailVerification = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        // Refresh user data from Firebase Auth
+        await user.reload();
+
+        // Sync to Firestore if verified
+        if (user.emailVerified) {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          // Only update if not yet verified in Firestore
+          if (userDoc.exists() && !userDoc.data().email_verified) {
+            await updateDoc(userDocRef, { email_verified: true });
+            console.log("✅ Email verification synced in background");
+          }
+        }
+      } catch (error) {
+        console.error("Error syncing email verification:", error);
+      }
+    };
+
+    syncEmailVerification();
+  }, [user]);
 
   // Check if user is admin
   useEffect(() => {

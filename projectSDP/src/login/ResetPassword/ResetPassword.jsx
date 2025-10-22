@@ -11,11 +11,13 @@ const ResetPassword = ({ setReset }) => {
     e.preventDefault();
     try {
       await sendPasswordResetEmail(auth, email); // Logic to handle password reset, e.g., sending reset email
-      setMessage("Password reset link has been sent to your email.");
+      setMessage(
+        "Password reset link telah dikirim ke email Anda. Jika tidak ada di inbox, silakan cek folder spam."
+      );
       setError("");
       //   setReset(false);
     } catch (err) {
-      setError("Failed to send reset link. Please try again.");
+      setError("Gagal mengirim link reset. Silakan coba lagi.");
       setMessage("");
     }
   };
@@ -31,6 +33,10 @@ const ResetPassword = ({ setReset }) => {
       <h3 className="text-xl font-bold mb-4 text-start text-black">
         Reset Password
       </h3>
+      <h6 className="text-sm mb-4 text-start text-gray-500">
+        Pastikan email yang dimasukkan adalah email yang sudah terdaftar di
+        website ini sebelumnya.
+      </h6>
 
       <form onSubmit={handleResetPassword}>
         <input

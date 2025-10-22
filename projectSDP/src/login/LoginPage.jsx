@@ -8,9 +8,34 @@ import {
   signInWithPopup,
   getAdditionalUserInfo,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 import ResetPassword from "./ResetPassword/ResetPassword";
+
+// Fungsi untuk cek dan sync email verification
+async function checkAndSyncEmailVerification() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  // Refresh data user dari Firebase Auth
+  await user.reload();
+
+  // Kalau sudah verifikasi, update Firestore
+  if (user.emailVerified) {
+    await updateDoc(doc(db, "users", user.uid), {
+      email_verified: true,
+    });
+    console.log("Firestore updated: email_verified = true");
+  } else {
+    console.log("User belum verifikasi email");
+  }
+}
 
 function InputField({
   label,
@@ -61,6 +86,9 @@ function LoginForm() {
       );
       const user = userCredential.user;
 
+      // Cek dan sync email verification setelah login
+      await checkAndSyncEmailVerification();
+
       // Check if user is admin
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists() && userDoc.data().role === "admin") {
@@ -100,6 +128,9 @@ function LoginForm() {
           createdAt: serverTimestamp(),
         });
       }
+
+      // Cek dan sync email verification setelah Google sign-in
+      await checkAndSyncEmailVerification();
 
       // Check if user is admin after Google sign-in
       const updatedUserDoc = await getDoc(userDocRef);

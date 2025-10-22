@@ -15,6 +15,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
+  signOut,
 } from "firebase/auth";
 
 // Import Firestore functions
@@ -88,7 +89,7 @@ function RegisterForm() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  // Fungsi untuk menangani login/register dengan Google
+  // Fungsi untuk menangani register dengan Google
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
@@ -103,6 +104,7 @@ function RegisterForm() {
       const userDoc = await getDoc(userDocRef);
 
       if (isNewUser || !userDoc.exists()) {
+        // User baru - simpan ke Firestore
         await setDoc(userDocRef, {
           name: user.displayName,
           email: user.email,
@@ -111,10 +113,22 @@ function RegisterForm() {
           email_verified: user.emailVerified,
           createdAt: serverTimestamp(),
         });
+
+        // Logout setelah register supaya tidak auto-login
+        await signOut(auth);
+
+        // Tampilkan success message
+        setSuccess(true);
+      } else {
+        // User sudah pernah register - logout dan redirect ke login
+        await signOut(auth);
+        setError("Akun ini sudah terdaftar. Silakan login.");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       }
-      navigate("/");
     } catch (error) {
-      console.error("Error saat login dengan Google:", error);
+      console.error("Error saat registrasi dengan Google:", error);
       setError("Gagal mendaftar dengan Google. Silakan coba lagi.");
     } finally {
       setLoading(false);
@@ -166,6 +180,9 @@ function RegisterForm() {
       });
 
       await sendEmailVerification(user);
+
+      // Logout user setelah register agar tidak auto-login
+      await signOut(auth);
 
       setSuccess(true);
     } catch (err) {
@@ -287,12 +304,29 @@ function RegisterForm() {
       {success && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm">
+            <div className="mb-4">
+              <svg
+                className="w-16 h-16 mx-auto text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
             <h2 className="text-2xl font-bold text-green-600 mb-2">
-              Registrasi Berhasil!
+              Registrasi Berhasil! ✅
             </h2>
             <p className="text-gray-700 mb-6">
-              Akun kamu berhasil dibuat. Silakan cek email untuk verifikasi
-              sebelum login.
+              Akun Anda berhasil dibuat.{" "}
+              {form.email && (
+                <span>Silakan cek email untuk verifikasi sebelum login.</span>
+              )}
             </p>
             <button
               onClick={() => {
@@ -307,7 +341,7 @@ function RegisterForm() {
               }}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
             >
-              OK
+              Lanjut ke Login
             </button>
           </div>
         </div>
