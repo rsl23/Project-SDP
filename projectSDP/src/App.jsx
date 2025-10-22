@@ -9,6 +9,7 @@ import LoginPage from "./login/LoginPage";
 import RegisterPage from "./register/RegisterPage";
 import AboutUs from "./aboutUs/AboutUs";
 import Footer from "./footer/Footer";
+import ProductDetail from "./product/ProductDetail";
 
 // Admin Components
 import AdminRoute from "./admin/AdminRoute";
@@ -80,6 +81,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/aboutus" element={<AboutUs />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
               </Routes>
               <Footer />
             </div>

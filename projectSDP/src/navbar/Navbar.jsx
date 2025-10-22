@@ -10,22 +10,16 @@ const Navbar = ({ user }) => {
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // ✅ Check and sync email verification (background check)
   useEffect(() => {
     const syncEmailVerification = async () => {
       const user = auth.currentUser;
       if (!user) return;
 
       try {
-        // Refresh user data from Firebase Auth
         await user.reload();
-
-        // Sync to Firestore if verified
         if (user.emailVerified) {
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
-
-          // Only update if not yet verified in Firestore
           if (userDoc.exists() && !userDoc.data().email_verified) {
             await updateDoc(userDocRef, { email_verified: true });
             console.log("✅ Email verification synced in background");
@@ -38,8 +32,6 @@ const Navbar = ({ user }) => {
 
     syncEmailVerification();
   }, [user]);
-
-  // Check if user is admin
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user) {
@@ -101,9 +93,6 @@ const Navbar = ({ user }) => {
             <li>
               <Link to="/aboutus">About Us</Link>
             </li>
-            <li>
-              <Link to="/cart">Shopping Cart</Link>
-            </li>
             {isAdmin && (
               <li>
                 <Link to="/admin" className="admin-link">
@@ -122,7 +111,6 @@ const Navbar = ({ user }) => {
                   src={user.photoURL}
                   alt="Profile"
                   className="profile-avatar"
-                  // --- TAMBAHKAN BARIS INI ---
                   referrerPolicy="no-referrer"
                 />
               ) : (
@@ -136,18 +124,18 @@ const Navbar = ({ user }) => {
               </button>
             </div>
           ) : (
-            <>
-              <Link to="/register">
+            <div className="">
+              <Link Link to="/register">
                 <button className="btn-register">Register</button>
               </Link>
               <Link to="/login">
                 <button className="btn-login">Login</button>
               </Link>
-            </>
+            </div>
           )}
         </div>
-      </div>
-    </nav>
+      </div >
+    </nav >
   );
 };
 

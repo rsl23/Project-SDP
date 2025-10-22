@@ -10,13 +10,13 @@
 }
 
 .navbar-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 0;
   padding: 0 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 30px;
+  gap: 0px;
+  width: 100vw;
 }
 
 /* Logo Section */
@@ -99,11 +99,9 @@
 
 /* Admin Link - Special Styling */
 .navbar-menu a.admin-link {
-  background: linear-gradient(
-    135deg,
-    rgba(204, 0, 102, 0.2),
-    rgba(138, 43, 226, 0.2)
-  );
+  background: linear-gradient(135deg,
+      rgba(204, 0, 102, 0.2),
+      rgba(138, 43, 226, 0.2));
   border: 2px solid #cc0066;
   color: #ff0077;
   font-weight: 700;
@@ -120,7 +118,8 @@
 }
 
 .navbar-menu a.admin-link::before {
-  display: none; /* Remove underline effect for admin link */
+  display: none;
+  /* Remove underline effect for admin link */
 }
 
 /* Auth Buttons Section */
@@ -303,7 +302,8 @@
 
   .navbar-profile span {
     font-size: 0.8rem;
-    display: none; /* Hide username text on very small screens */
+    display: none;
+    /* Hide username text on very small screens */
   }
 
   .btn-logout {
@@ -325,7 +325,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  object-fit: cover; /* Memastikan gambar tidak gepeng */
+  object-fit: cover;
+  /* Memastikan gambar tidak gepeng */
   border: 2px solid #cc0066;
 }
 
