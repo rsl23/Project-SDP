@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
+import ResetPassword from "./ResetPassword/ResetPassword";
 
 function InputField({
   label,
@@ -36,6 +37,7 @@ function InputField({
 
 function LoginForm() {
   const navigate = useNavigate();
+  const [showResetModal, setShowResetModal] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -181,10 +183,15 @@ function LoginForm() {
           disabled={loading}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition disabled:opacity-70 disabled:cursor-wait"
         >
-          {loading ? "Memproses..." : "Login"}
+          {loading ? "Memproses..." : "Masuk"}
         </button>
       </form>
-
+      <p
+        className="text-blue-600 text-sm text-center mt-4 cursor-pointer hover:underline"
+        onClick={() => setShowResetModal(true)}
+      >
+        Lupa Password?
+      </p>
       <p className="text-center text-sm text-gray-600 mt-4">
         Belum punya akun?{" "}
         <Link
@@ -194,6 +201,14 @@ function LoginForm() {
           Daftar di sini
         </Link>
       </p>
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-20">
+          <ResetPassword
+            setReset={setShowResetModal}
+            onClose={() => setShowResetModal(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
