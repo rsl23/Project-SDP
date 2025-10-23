@@ -44,7 +44,7 @@ function App() {
   // Tampilkan loading screen sederhana selagi status otentikasi diperiksa
   if (loading) {
     return (
-      <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
+      <div className="w-screen min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
         <p className="text-white text-2xl">Memuat...</p>
       </div>
     );
@@ -73,7 +73,7 @@ function App() {
         <Route
           path="/*"
           element={
-            <div className="w-screen h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white">
+            <div className="w-screen min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white">
               <Navbar user={user} />
               <Routes>
                 <Route path="/" element={<HomePage />} />

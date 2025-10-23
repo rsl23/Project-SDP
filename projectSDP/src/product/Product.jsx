@@ -10,7 +10,7 @@ const Product = () => {
     const [selectedCategory, setSelectedCategory] = useState("Semua");
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const navigate = useNavigate(); // Inisialisasi navigate
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -48,8 +48,7 @@ const Product = () => {
     }, [products, searchTerm, selectedCategory]);
 
     return (
-        <div className="product-page px-6 py-8 max-w-[1400px] mx-auto">
-            {/* Header & Filter */}
+        <div className="product-page px-6 py-8 max-w-[1400px] mx-auto min-h-screen">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 relative z-10">
                 <input
                     type="text"
@@ -59,7 +58,6 @@ const Product = () => {
                     className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-1/2 text-sm text-gray-900 bg-white"
                 />
 
-                {/* Custom Dropdown */}
                 <div className="relative w-full sm:w-auto" ref={dropdownRef}>
                     <button
                         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -85,8 +83,8 @@ const Product = () => {
 
                     <ul
                         className={`absolute left-0 mt-2 w-full sm:w-auto bg-white text-gray-900 rounded shadow-lg overflow-hidden transition-all duration-300 origin-top z-50 ${dropdownOpen
-                                ? "scale-100 opacity-100 pointer-events-auto"
-                                : "scale-95 opacity-0 pointer-events-none"
+                            ? "scale-100 opacity-100 pointer-events-auto"
+                            : "scale-95 opacity-0 pointer-events-none"
                             }`}
                     >
                         <li
@@ -113,8 +111,6 @@ const Product = () => {
                     </ul>
                 </div>
             </div>
-
-            {/* Grid Product */}
             {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {filteredProducts.map((p) => (
@@ -126,8 +122,7 @@ const Product = () => {
                             <div className="relative w-full">
                                 <img
                                     src={
-                                        p.gambar ||
-                                        "https://img.freepik.com/free-vector/aesthetic-dreamy-background-purple-cloudy-sky-vector-glitter-design_53876-156334.jpg?semt=ais_hybrid&w=740&q=80"
+                                        p.img_url
                                     }
                                     alt={p.nama}
                                     className="w-full h-28 object-cover rounded-lg mb-2"

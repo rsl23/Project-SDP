@@ -42,12 +42,10 @@ const ProductDetail = () => {
             </button>
 
             <div className="flex flex-col md:flex-row gap-10 max-w-6xl mx-auto bg-white/10 backdrop-blur-lg rounded-xl p-6 md:p-10 shadow-xl">
-                {/* Image */}
                 <div className="md:w-1/2 flex justify-center items-center">
                     <img
                         src={
-                            product.gambar ||
-                            "https://img.freepik.com/free-vector/aesthetic-dreamy-background-purple-cloudy-sky-vector-glitter-design_53876-156334.jpg?semt=ais_hybrid&w=740&q=80"
+                            product.img_url
                         }
                         alt={product.nama}
                         className="w-full h-96 object-cover rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300"

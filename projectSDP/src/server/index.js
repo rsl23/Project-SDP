@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { db } from "./firebase.js";
+import { img } from "framer-motion/client";
 
 const app = express();
 app.use(cors());
@@ -9,10 +10,17 @@ app.use(express.json());
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").get();
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const products = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        nama: data.nama,
+        kategori: data.kategori,
+        harga: data.harga,
+        stok: data.stok,
+        img_url: data.img_url || "",
+      };
+    });
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -22,7 +30,7 @@ app.get("/api/products", async (req, res) => {
 
 app.post("/api/products", async (req, res) => {
   try {
-    const { nama, kategori, harga, stok } = req.body;
+    const { nama, kategori, harga, stok, img_url } = req.body;
     if (!nama || !kategori || !harga || !stok) {
       return res.status(400).json({ error: "Data tidak lengkap" });
     }
@@ -32,6 +40,7 @@ app.post("/api/products", async (req, res) => {
       kategori,
       harga,
       stok,
+      img_url: img_url || "",
     });
 
     console.log("✅ Produk berhasil ditambahkan:", newDoc.id);
@@ -42,7 +51,6 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-// UPDATE Product by ID
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -54,7 +62,6 @@ app.put("/api/products/:id", async (req, res) => {
       return res.status(400).json({ error: "Data tidak lengkap" });
     }
 
-    // Check if product exists
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
 
@@ -63,7 +70,6 @@ app.put("/api/products/:id", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
-    // Update product
     await productRef.update({
       nama,
       kategori,
@@ -88,25 +94,17 @@ app.put("/api/products/:id", async (req, res) => {
   }
 });
 
-// DELETE Product by ID
 app.delete("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
     console.log(`🗑️ Deleting product ${id}`);
-
-    // Check if product exists
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
-
     if (!doc.exists) {
       console.log(`Product ${id} not found`);
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
-
-    // Delete product
     await productRef.delete();
-
     console.log(`Product ${id} deleted successfully`);
     res.status(200).json({
       id,

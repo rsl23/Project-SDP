@@ -19,7 +19,41 @@ const AdminProducts = () => {
     kategori: "",
     harga: "",
     stok: "",
+    img_url: "",
+    img_name: "",
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setFormData((prev) => ({
+      ...prev,
+      img_name: file.name,
+      img_url: URL.createObjectURL(file),
+    }));
+  };
+
+  const uploadToCloudinary = async (file) => {
+    if (!file) return null;
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "sdp_img");
+
+    try {
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dnyh66ror/image/upload",
+        { method: "POST", body: data }
+      );
+      const result = await res.json();
+      return result.secure_url || null;
+    } catch (err) {
+      console.error("❌ Error upload:", err);
+      return null;
+    }
+  };
+
 
   const kategoriOptions = [
     "Spion",
@@ -53,8 +87,22 @@ const AdminProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    let imageUrl = formData.img_url;
+
+    // Hanya upload jika ada file baru
+    if (selectedFile) {
+      const uploadedUrl = await uploadToCloudinary(selectedFile);
+      if (!uploadedUrl) {
+        alert("Upload gagal!");
+        return;
+      }
+      imageUrl = uploadedUrl;
+    }
+
+
     const productData = {
       ...formData,
+      img_url: imageUrl,
       harga: parseInt(formData.harga),
       stok: parseInt(formData.stok),
     };
@@ -224,7 +272,59 @@ const AdminProducts = () => {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="relative flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-indigo-400 transition bg-gray-50 h-40">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+
+                  <div className="flex flex-col items-center text-gray-500 pointer-events-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-10 w-10 mb-2 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 15a4 4 0 004 4h10a4 4 0 004-4m-8-9v10m0 0l-3-3m3 3l3-3"
+                      />
+                    </svg>
+                    <p className="text-sm font-medium">Klik untuk upload gambar</p>
+                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
+                  </div>
+                </div>
+
+                {formData.img_url && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="bg-indigo-100 p-2 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-indigo-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M7 21h10a2 2 0 002-2V7l-5-5H7a2 2 0 00-2 2v15a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-800 truncate max-w-[200px]">
+                      {formData.img_name}
+                    </p>
+                  </div>
+                )}
+
+                <label className="block text-sm font-medium text-gray-700 mt-4 mb-1">
                   Nama Produk
                 </label>
                 <input
@@ -236,6 +336,8 @@ const AdminProducts = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
                 />
               </div>
+
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Kategori
