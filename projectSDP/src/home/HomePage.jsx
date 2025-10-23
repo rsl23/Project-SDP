@@ -16,10 +16,10 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
-                    className="relative z-10 bg-black/40 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-3xl"
+                    className="relative z-10 bg-black/40 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-4xl"
                 >
                     <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight bg-gradient-to-r from-pink-400 via-indigo-400 to-blue-500 bg-clip-text text-transparent">
-                        Selamat Datang di BJM Parts
+                        Selamat Datang di Berkat Jaya Motor SBY
                     </h1>
                     <p className="text-lg md:text-2xl mb-8 text-gray-200">
                         Temukan semua kebutuhan otomotif Anda di satu tempat
@@ -48,7 +48,7 @@ export default function HomePage() {
                     className="max-w-5xl mx-auto text-center"
                 >
                     <h2 className="text-4xl md:text-5xl font-bold mb-6 text-pink-400">
-                        Tentang BJM Parts
+                        Tentang Berkat Jaya Motor SBY
                     </h2>
                     <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed">
                         BJM Parts menyediakan berbagai suku cadang dan aksesori otomotif berkualitas tinggi.
