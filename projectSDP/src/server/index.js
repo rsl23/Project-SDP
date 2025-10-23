@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { db } from "./firebase.js";
-import { img } from "framer-motion/client";
+import { img, u } from "framer-motion/client";
 
 const app = express();
 app.use(cors());
@@ -19,6 +19,7 @@ app.get("/api/products", async (req, res) => {
         harga: data.harga,
         stok: data.stok,
         img_url: data.img_url || "",
+        active: data.active ?? true,
       };
     });
     res.status(200).json(products);
@@ -41,6 +42,7 @@ app.post("/api/products", async (req, res) => {
       harga,
       stok,
       img_url: img_url || "",
+      active: true,
     });
 
     console.log("✅ Produk berhasil ditambahkan:", newDoc.id);
@@ -54,45 +56,28 @@ app.post("/api/products", async (req, res) => {
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama, kategori, harga, stok } = req.body;
-
-    console.log(`Updating product ${id}:`, { nama, kategori, harga, stok });
-
-    if (!nama || !kategori || harga === undefined || stok === undefined) {
-      return res.status(400).json({ error: "Data tidak lengkap" });
-    }
+    const updateData = req.body;
 
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
 
     if (!doc.exists) {
-      console.log(`Product ${id} not found`);
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
-    await productRef.update({
-      nama,
-      kategori,
-      harga,
-      stok,
-    });
+    await productRef.update(updateData);
 
-    console.log(`Product ${id} updated successfully`);
     res.status(200).json({
       id,
-      nama,
-      kategori,
-      harga,
-      stok,
+      ...updateData,
       message: "Produk berhasil diupdate",
     });
   } catch (error) {
     console.error("Error update produk:", error);
-    res
-      .status(500)
-      .json({ error: "Gagal update produk", details: error.message });
+    res.status(500).json({ error: "Gagal update produk", details: error.message });
   }
 });
+
 
 app.delete("/api/products/:id", async (req, res) => {
   try {

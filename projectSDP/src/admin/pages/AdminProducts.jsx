@@ -35,6 +35,18 @@ const AdminProducts = () => {
     }));
   };
 
+  const handleToggleActive = async (product) => {
+    try {
+      const updatedProduct = { active: !product.active };
+      await updateProduct(product.id, updatedProduct);
+      fetchProducts();
+    } catch (error) {
+      console.error("Gagal mengubah status produk:", error);
+      alert("Gagal mengubah status produk!");
+    }
+  };
+
+
   const uploadToCloudinary = async (file) => {
     if (!file) return null;
     const data = new FormData();
@@ -217,6 +229,9 @@ const AdminProducts = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stok
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                   </th>
@@ -240,6 +255,17 @@ const AdminProducts = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {product.stok}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleToggleActive(product)}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${product.active
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                          }`}
+                      >
+                        {product.active ? "Active" : "Tidak Active"}
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { getProducts } from "../apiService/productApi";
-import { useNavigate } from "react-router-dom"; // Tambahkan useNavigate
+import { useNavigate } from "react-router-dom";
 
 const kategori = ["Spion", "Shock", "Master Rem", "Lampu", "Filter Udara"];
 
@@ -36,6 +36,7 @@ const Product = () => {
 
     const filteredProducts = useMemo(() => {
         let result = products;
+        result = result.filter((p) => p.active);
         if (selectedCategory !== "Semua") {
             result = result.filter((p) => p.kategori === selectedCategory);
         }
