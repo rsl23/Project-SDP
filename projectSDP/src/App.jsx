@@ -21,6 +21,7 @@ import AdminOrders from "./admin/pages/AdminOrders";
 import AdminSettings from "./admin/pages/AdminSettings";
 
 import "./App.css";
+import CartPage from "./cart/CartPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -82,6 +83,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/aboutus" element={<AboutUs />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<CartPage />} />
               </Routes>
               <Footer />
             </div>

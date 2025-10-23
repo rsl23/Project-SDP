@@ -93,6 +93,9 @@ const Navbar = ({ user }) => {
             <li>
               <Link to="/aboutus">About Us</Link>
             </li>
+            <li>
+              <Link to="/cart">Cart</Link>
+            </li>
             {isAdmin && (
               <li>
                 <Link to="/admin" className="admin-link">

@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProducts } from "../apiService/productApi";
+import { addToCart } from "../apiService/cartApi";
+
 
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
+
+    const handleAddToCart = async () => {
+        try {
+            await addToCart(product.id, 1);
+        } catch (error) {
+            console.error("Gagal menambah ke keranjang:", error);
+        }
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -73,7 +83,7 @@ const ProductDetail = () => {
                         </p>
                     </div>
 
-                    <button className="mt-6 w-full md:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-medium rounded-lg shadow-lg hover:from-pink-600 hover:to-indigo-700 transition-all">
+                    <button onClick={handleAddToCart} className="mt-6 w-full md:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-medium rounded-lg shadow-lg hover:from-pink-600 hover:to-indigo-700 transition-all">
                         Tambah ke Keranjang
                     </button>
                 </div>
