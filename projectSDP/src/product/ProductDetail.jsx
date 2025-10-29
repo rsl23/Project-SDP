@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProducts } from "../apiService/productApi";
 import { addToCart } from "../apiService/cartApi";
+import tokopediaLogo from "../assets/tokopedia.jpeg";
+import shopeeLogo from "../assets/shopee.png"; // atau .jpeg, sesuai file Anda
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -83,6 +85,43 @@ const ProductDetail = () => {
           >
             Tambah ke Keranjang
           </button>
+          <div className="flex gap-4 mt-6 w-full">
+            <a
+              href={product.link_tokopedia || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex flex-1 justify-center items-center gap-2 px-6 py-3 bg-green-500 text-white font-medium rounded-lg shadow-lg hover:bg-green-600 transition-all ${
+                !product.link_tokopedia &&
+                "opacity-50 cursor-not-allowed pointer-events-none"
+              }`}
+              onClick={(e) => !product.link_tokopedia && e.preventDefault()} // ← Extra safety
+            >
+              <img
+                src={tokopediaLogo}
+                alt="Tokopedia"
+                className="w-6 h-6 object-contain"
+              />
+              Pesan di Tokopedia
+            </a>
+
+            <a
+              href={product.link_shopee || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex flex-1 justify-center items-center gap-2 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg shadow-lg hover:bg-orange-700 transition-all ${
+                !product.link_shopee &&
+                "opacity-50 cursor-not-allowed pointer-events-none"
+              }`}
+              onClick={(e) => !product.link_shopee && e.preventDefault()} // ← Extra safety
+            >
+              <img
+                src={shopeeLogo}
+                alt="Shopee"
+                className="w-6 h-6 object-contain"
+              />
+              Pesan di Shopee
+            </a>
+          </div>
         </div>
       </div>
     </div>

@@ -22,6 +22,8 @@ const AdminProducts = () => {
     img_url: "",
     img_name: "",
     deskripsi: "",
+    link_tokopedia: "",
+    link_shopee: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -167,7 +169,11 @@ const AdminProducts = () => {
       kategori: product.kategori,
       harga: product.harga.toString(),
       stok: product.stok.toString(),
+      img_url: product.img_url || "",
+      img_name: product.img_name || "",
       deskripsi: product.deskripsi || "",
+      link_tokopedia: product.link_tokopedia || "",
+      link_shopee: product.link_shopee || "",
     });
     setShowModal(true);
     setLoading(false);
@@ -194,6 +200,8 @@ const AdminProducts = () => {
       deskripsi: "",
       img_url: "",
       img_name: "",
+      link_tokopedia: "",
+      link_shopee: "",
     });
     setEditMode(false);
     setCurrentProduct(null);
@@ -461,6 +469,35 @@ const AdminProducts = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link Tokopedia (Opsional)
+                </label>
+                <input
+                  type="url"
+                  name="link_tokopedia"
+                  value={formData.link_tokopedia}
+                  onChange={handleInputChange}
+                  placeholder="https://tokopedia.link/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link Shopee (Opsional)
+                </label>
+                <input
+                  type="url"
+                  name="link_shopee"
+                  value={formData.link_shopee}
+                  onChange={handleInputChange}
+                  placeholder="https://shopee.co.id/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                />
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"

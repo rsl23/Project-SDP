@@ -21,6 +21,8 @@ app.get("/api/products", async (req, res) => {
         stok: data.stok,
         img_url: data.img_url || "",
         deskripsi: data.deskripsi || "",
+        link_tokopedia: data.link_tokopedia || "",
+        link_shopee: data.link_shopee || "",
         active: data.active ?? true,
       };
     });
@@ -36,10 +38,19 @@ app.post("/api/products", async (req, res) => {
     console.log("🔵 POST /api/products dipanggil!");
     console.log("📨 req.body:", JSON.stringify(req.body, null, 2));
 
-    const { nama, kategori, harga, stok, img_url, deskripsi, img_name } =
-      req.body;
+    const {
+      nama,
+      kategori,
+      harga,
+      stok,
+      img_url,
+      deskripsi,
+      img_name,
+      link_tokopedia,
+      link_shopee,
+    } = req.body;
 
-    console.log("� Deskripsi value:", deskripsi);
+    console.log("📝 Deskripsi value:", deskripsi);
     console.log("📝 Deskripsi type:", typeof deskripsi);
     console.log("📝 Deskripsi length:", deskripsi?.length);
 
@@ -55,6 +66,8 @@ app.post("/api/products", async (req, res) => {
       img_url: img_url || "",
       img_name: img_name || "",
       deskripsi: deskripsi || "",
+      link_tokopedia: link_tokopedia || "",
+      link_shopee: link_shopee || "",
       active: true,
     };
 
