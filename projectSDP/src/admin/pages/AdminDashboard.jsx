@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Package, Users, ShoppingCart, TrendingUp } from "lucide-react";
 import { db } from "../../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -88,11 +89,20 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600 mt-1">
-          Selamat datang di Admin Panel BJM Parts
-        </p>
+      <div className="flex justify-between items-center">
+        <div className="">
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Selamat datang di Admin Panel BJM Parts
+          </p>
+        </div>
+        <div className="">
+          <Link to="/">
+            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+              Ke Halaman Home
+            </button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -126,18 +136,27 @@ const AdminDashboard = () => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition text-center">
-            <Package className="mx-auto mb-2 text-indigo-600" size={32} />
-            <span className="text-gray-700 font-medium">Tambah Produk</span>
-          </button>
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-center">
-            <Users className="mx-auto mb-2 text-green-600" size={32} />
-            <span className="text-gray-700 font-medium">Kelola Users</span>
-          </button>
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition text-center">
-            <ShoppingCart className="mx-auto mb-2 text-purple-600" size={32} />
-            <span className="text-gray-700 font-medium">Lihat Orders</span>
-          </button>
+          <Link to="/admin/products" className="block">
+            <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition text-center">
+              <Package className="mx-auto mb-2 text-indigo-600" size={32} />
+              <span className="text-gray-700 font-medium">Tambah Produk</span>
+            </button>
+          </Link>
+          <Link to="/admin/users" className="block">
+            <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-center">
+              <Users className="mx-auto mb-2 text-green-600" size={32} />
+              <span className="text-gray-700 font-medium">Kelola Users</span>
+            </button>
+          </Link>
+          <Link to="/admin/orders" className="block">
+            <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition text-center">
+              <ShoppingCart
+                className="mx-auto mb-2 text-purple-600"
+                size={32}
+              />
+              <span className="text-gray-700 font-medium">Lihat Orders</span>
+            </button>
+          </Link>
         </div>
       </div>
 

@@ -21,6 +21,7 @@ const AdminProducts = () => {
     stok: "",
     img_url: "",
     img_name: "",
+    deskripsi: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -46,7 +47,6 @@ const AdminProducts = () => {
     }
   };
 
-
   const uploadToCloudinary = async (file) => {
     if (!file) return null;
     const data = new FormData();
@@ -66,13 +66,32 @@ const AdminProducts = () => {
     }
   };
 
-
   const kategoriOptions = [
-    "Spion",
-    "Shock",
-    "Master Rem",
-    "Lampu",
     "Filter Udara",
+    "Aksesoris CNC Aluminium",
+    "Aksesoris Velg",
+    "Lain-lain",
+    "Aksesoris Plastik",
+    "Spion Motor",
+    "Alarm Motor Mobil",
+    "Klakson",
+    "Shockbreaker",
+    "Knalpot",
+    "Aksesoris NMAX Old New",
+    "Tempat Plat Motor",
+    "Product Shock",
+    "Gas Spontan Motor",
+    "Aksesoris Lampu",
+    "Lampu Tembak Sorot",
+    "Saklar",
+    "Handgrip Motor",
+    "Aksesoris Stang Motor",
+    "Breket Plat Motor",
+    "Disc Piringan Cakram",
+    "Produk RCB",
+    "Kagawa",
+    "Scoyco",
+    "Rochell",
   ];
 
   useEffect(() => {
@@ -100,7 +119,7 @@ const AdminProducts = () => {
     e.preventDefault();
 
     let imageUrl = formData.img_url;
-
+    setLoading(true);
     // Hanya upload jika ada file baru
     if (selectedFile) {
       const uploadedUrl = await uploadToCloudinary(selectedFile);
@@ -111,13 +130,15 @@ const AdminProducts = () => {
       imageUrl = uploadedUrl;
     }
 
-
     const productData = {
       ...formData,
       img_url: imageUrl,
       harga: parseInt(formData.harga),
       stok: parseInt(formData.stok),
     };
+
+    console.log("📦 Data yang dikirim ke backend:", productData);
+    console.log("📝 Deskripsi value:", formData.deskripsi);
 
     try {
       if (editMode && currentProduct) {
@@ -132,10 +153,13 @@ const AdminProducts = () => {
     } catch (error) {
       console.error("Error saving product:", error);
       alert("Gagal menyimpan produk!");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = (product) => {
+    setLoading(true);
     setEditMode(true);
     setCurrentProduct(product);
     setFormData({
@@ -143,8 +167,10 @@ const AdminProducts = () => {
       kategori: product.kategori,
       harga: product.harga.toString(),
       stok: product.stok.toString(),
+      deskripsi: product.deskripsi || "",
     });
     setShowModal(true);
+    setLoading(false);
   };
 
   const handleDelete = async (id) => {
@@ -160,7 +186,15 @@ const AdminProducts = () => {
   };
 
   const resetForm = () => {
-    setFormData({ nama: "", kategori: "", harga: "", stok: "" });
+    setFormData({
+      nama: "",
+      kategori: "",
+      harga: "",
+      stok: "",
+      deskripsi: "",
+      img_url: "",
+      img_name: "",
+    });
     setEditMode(false);
     setCurrentProduct(null);
   };
@@ -259,10 +293,11 @@ const AdminProducts = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
                         onClick={() => handleToggleActive(product)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${product.active
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                          }`}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                          product.active
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                        }`}
                       >
                         {product.active ? "Active" : "Tidak Active"}
                       </button>
@@ -291,8 +326,8 @@ const AdminProducts = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md overflow-y-auto max-h-full">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {editMode ? "Edit Produk" : "Tambah Produk Baru"}
             </h2>
@@ -321,7 +356,9 @@ const AdminProducts = () => {
                         d="M3 15a4 4 0 004 4h10a4 4 0 004-4m-8-9v10m0 0l-3-3m3 3l3-3"
                       />
                     </svg>
-                    <p className="text-sm font-medium">Klik untuk upload gambar</p>
+                    <p className="text-sm font-medium">
+                      Klik untuk upload gambar
+                    </p>
                     <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
                   </div>
                 </div>
@@ -361,8 +398,21 @@ const AdminProducts = () => {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
                 />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deskripsi Produk
+                </label>
+                <textarea
+                  name="deskripsi"
+                  value={formData.deskripsi}
+                  onChange={handleInputChange}
+                  rows={4}
+                  placeholder="Masukkan deskripsi produk (opsional)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 resize-y"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.deskripsi.length} karakter
+                </p>
               </div>
-
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -424,6 +474,7 @@ const AdminProducts = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={loading}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                 >
                   {editMode ? "Update" : "Tambah"}

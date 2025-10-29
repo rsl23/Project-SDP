@@ -20,6 +20,7 @@ app.get("/api/products", async (req, res) => {
         harga: data.harga,
         stok: data.stok,
         img_url: data.img_url || "",
+        deskripsi: data.deskripsi || "",
         active: data.active ?? true,
       };
     });
@@ -32,22 +33,40 @@ app.get("/api/products", async (req, res) => {
 
 app.post("/api/products", async (req, res) => {
   try {
-    const { nama, kategori, harga, stok, img_url } = req.body;
+    console.log("🔵 POST /api/products dipanggil!");
+    console.log("📨 req.body:", JSON.stringify(req.body, null, 2));
+
+    const { nama, kategori, harga, stok, img_url, deskripsi, img_name } =
+      req.body;
+
+    console.log("� Deskripsi value:", deskripsi);
+    console.log("📝 Deskripsi type:", typeof deskripsi);
+    console.log("📝 Deskripsi length:", deskripsi?.length);
+
     if (!nama || !kategori || !harga || !stok) {
       return res.status(400).json({ error: "Data tidak lengkap" });
     }
 
-    const newDoc = await db.collection("products").add({
+    const dataToSave = {
       nama,
       kategori,
       harga,
       stok,
       img_url: img_url || "",
+      img_name: img_name || "",
+      deskripsi: deskripsi || "",
       active: true,
-    });
+    };
 
-    console.log("✅ Produk berhasil ditambahkan:", newDoc.id);
-    res.status(201).json({ id: newDoc.id, nama, kategori, harga, stok });
+    console.log("💾 Data yang akan disimpan ke Firestore:");
+    console.log(JSON.stringify(dataToSave, null, 2));
+
+    const newDoc = await db.collection("products").add(dataToSave);
+
+    console.log("✅ Produk berhasil ditambahkan dengan ID:", newDoc.id);
+    res
+      .status(201)
+      .json({ id: newDoc.id, nama, kategori, harga, stok, deskripsi, img_url });
   } catch (error) {
     console.error("❌ Error menambah produk:", error);
     res.status(500).json({ error: "Gagal menambah produk" });
@@ -75,10 +94,11 @@ app.put("/api/products/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("Error update produk:", error);
-    res.status(500).json({ error: "Gagal update produk", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal update produk", details: error.message });
   }
 });
-
 
 app.delete("/api/products/:id", async (req, res) => {
   try {
@@ -112,7 +132,10 @@ app.get("/api/cart", async (req, res) => {
     for (const doc of snapshot.docs) {
       const data = doc.data();
       // ambil data produk terkait
-      const produkDoc = await db.collection("products").doc(data.produk_id).get();
+      const produkDoc = await db
+        .collection("products")
+        .doc(data.produk_id)
+        .get();
       const produkData = produkDoc.exists ? produkDoc.data() : null;
 
       cartItems.push({
@@ -122,10 +145,10 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-            nama: produkData.nama,
-            harga: produkData.harga,
-            img_url: produkData.img_url,
-          }
+              nama: produkData.nama,
+              harga: produkData.harga,
+              img_url: produkData.img_url,
+            }
           : null,
       });
     }
@@ -142,7 +165,9 @@ app.post("/api/cart", async (req, res) => {
   try {
     const { produk_id, jumlah } = req.body;
     if (!produk_id || !jumlah) {
-      return res.status(400).json({ error: "produk_id dan jumlah wajib diisi" });
+      return res
+        .status(400)
+        .json({ error: "produk_id dan jumlah wajib diisi" });
     }
 
     const produkRef = db.collection("products").doc(produk_id);
@@ -171,7 +196,9 @@ app.post("/api/cart", async (req, res) => {
     });
   } catch (error) {
     console.error("Error tambah cart:", error);
-    res.status(500).json({ error: "Gagal menambah ke cart", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal menambah ke cart", details: error.message });
   }
 });
 
@@ -189,17 +216,21 @@ app.put("/api/cart/:id", async (req, res) => {
     const cartRef = db.collection("cart").doc(id);
     const doc = await cartRef.get();
 
-    if (!doc.exists) return res.status(404).json({ error: "Item cart tidak ditemukan" });
+    if (!doc.exists)
+      return res.status(404).json({ error: "Item cart tidak ditemukan" });
 
     await cartRef.update({ jumlah });
 
-    res.status(200).json({ id, jumlah, message: "Jumlah item berhasil diperbarui" });
+    res
+      .status(200)
+      .json({ id, jumlah, message: "Jumlah item berhasil diperbarui" });
   } catch (error) {
     console.error("Error update cart:", error);
-    res.status(500).json({ error: "Gagal update cart", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal update cart", details: error.message });
   }
 });
-
 
 // DELETE item from cart
 app.delete("/api/cart/:id", async (req, res) => {
@@ -216,7 +247,9 @@ app.delete("/api/cart/:id", async (req, res) => {
     res.status(200).json({ id, message: "Item cart berhasil dihapus" });
   } catch (error) {
     console.error("Error delete cart:", error);
-    res.status(500).json({ error: "Gagal menghapus cart", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal menghapus cart", details: error.message });
   }
 });
 
@@ -237,18 +270,25 @@ app.post("/api/orders", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.status(201).json({ message: "Order berhasil dibuat", orderId: newOrder.id });
+    res
+      .status(201)
+      .json({ message: "Order berhasil dibuat", orderId: newOrder.id });
   } catch (err) {
     console.error("Error create order:", err);
-    res.status(500).json({ error: "Gagal membuat order", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Gagal membuat order", details: err.message });
   }
 });
 
 // GET /api/orders -> semua order (untuk admin)
 app.get("/api/orders", async (req, res) => {
   try {
-    const snapshot = await db.collection("orders").orderBy("createdAt", "desc").get();
-    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await db
+      .collection("orders")
+      .orderBy("createdAt", "desc")
+      .get();
+    const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     res.json(orders);
   } catch (err) {
     console.error(err);
