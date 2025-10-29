@@ -99,9 +99,11 @@
 
 /* Admin Link - Special Styling */
 .navbar-menu a.admin-link {
-  background: linear-gradient(135deg,
-      rgba(204, 0, 102, 0.2),
-      rgba(138, 43, 226, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(204, 0, 102, 0.2),
+    rgba(138, 43, 226, 0.2)
+  );
   border: 2px solid #cc0066;
   color: #ff0077;
   font-weight: 700;
@@ -128,6 +130,51 @@
   gap: 12px;
   align-items: center;
   flex-shrink: 0;
+}
+
+/* Burger Menu Button (Hidden on Desktop) */
+.burger-menu {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.burger-menu:hover {
+  background: rgba(204, 0, 102, 0.2);
+  transform: scale(1.1);
+}
+
+.burger-menu:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Menu Backdrop */
+.mobile-menu-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Mobile Auth Section (Hidden on Desktop) */
+.navbar-auth-mobile {
+  display: none;
 }
 
 .navbar-auth button {
@@ -216,6 +263,125 @@
 }
 
 /* Responsive Design */
+@media (max-width: 768px) {
+  /* Show Burger Menu */
+  .burger-menu {
+    display: block;
+    order: 3;
+    margin-left: auto;
+  }
+
+  /* Hide Desktop Auth */
+  .navbar-auth {
+    display: none;
+  }
+
+  /* Mobile Menu Styling */
+  .navbar-menu {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #0000cc 0%, #000033 100%);
+    flex-direction: column;
+    padding: 20px 0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    border-top: 2px solid #cc0066;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .navbar-menu.active {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .navbar-menu ul {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .navbar-menu li {
+    width: 100%;
+    border-bottom: 1px solid rgba(204, 0, 102, 0.2);
+  }
+
+  .navbar-menu a {
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 0;
+    font-size: 1rem;
+  }
+
+  .navbar-menu a:hover {
+    background: rgba(204, 0, 102, 0.2);
+    transform: translateX(10px);
+  }
+
+  /* Show Mobile Auth Section */
+  .navbar-auth-mobile {
+    display: block;
+    width: 100%;
+    padding: 20px;
+    border-top: 2px solid rgba(204, 0, 102, 0.3);
+    margin-top: 10px;
+  }
+
+  .navbar-profile-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(204, 0, 102, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(204, 0, 102, 0.3);
+  }
+
+  .navbar-profile-mobile .profile-name {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .mobile-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .mobile-auth-buttons button {
+    width: 100%;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Adjust Container */
+  .navbar-container {
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+
+  .navbar-logo {
+    order: 1;
+  }
+}
+
 @media (max-width: 1024px) {
   .navbar-menu ul {
     gap: 25px;
@@ -231,46 +397,7 @@
   }
 }
 
-@media (max-width: 768px) {
-  .navbar-container {
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-
-  .navbar-logo {
-    order: 1;
-  }
-
-  .navbar-auth {
-    order: 2;
-  }
-
-  .navbar-menu {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .navbar-menu ul {
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .navbar-menu a {
-    font-size: 0.85rem;
-    padding: 6px 10px;
-  }
-
-  .navbar-profile {
-    gap: 10px;
-    padding: 6px 12px;
-  }
-
-  .navbar-profile span {
-    font-size: 0.85rem;
-  }
-}
+/* Removed old tablet/mobile styles - replaced with new responsive code above */
 
 @media (max-width: 480px) {
   .navbar {
@@ -281,45 +408,26 @@
     height: 40px;
   }
 
-  .navbar-menu ul {
-    gap: 10px;
+  .burger-menu {
+    padding: 6px;
+  }
+
+  .navbar-menu {
+    top: 70px;
   }
 
   .navbar-menu a {
-    font-size: 0.8rem;
-    padding: 6px 8px;
+    font-size: 0.95rem;
+    padding: 12px 15px;
   }
 
-  .navbar-auth button {
-    padding: 8px 15px;
-    font-size: 0.85rem;
-  }
-
-  .navbar-profile {
-    gap: 8px;
-    padding: 5px 10px;
-  }
-
-  .navbar-profile span {
-    font-size: 0.8rem;
-    display: none;
-    /* Hide username text on very small screens */
-  }
-
-  .btn-logout {
-    padding: 6px 15px;
-    font-size: 0.8rem;
+  .mobile-auth-buttons button {
+    font-size: 0.95rem;
+    padding: 10px 20px;
   }
 }
 
-/* Optional: Show first letter of username on mobile */
-@media (max-width: 480px) {
-  .navbar-profile span::first-letter {
-    display: inline;
-  }
-}
-
-/* Letakkan ini di dalam file Navbar.css */
+/* Remove duplicate profile styling - keep only one */
 
 .profile-avatar {
   width: 36px;
