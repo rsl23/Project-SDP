@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { db } from "./firebase.js";
 import { img, u } from "framer-motion/client";
+import admin from "firebase-admin";
 
 const app = express();
 app.use(cors());
@@ -216,6 +217,60 @@ app.delete("/api/cart/:id", async (req, res) => {
   } catch (error) {
     console.error("Error delete cart:", error);
     res.status(500).json({ error: "Gagal menghapus cart", details: error.message });
+  }
+});
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const { userId, items, total } = req.body;
+
+    if (!userId || !items || items.length === 0) {
+      return res.status(400).json({ error: "userId dan items wajib diisi" });
+    }
+
+    // Buat order baru di Firestore
+    const newOrder = await db.collection("orders").add({
+      userId,
+      items, // array { produk_id, jumlah, produk: {nama, harga, img_url} }
+      total,
+      status: "pending", // default: pending
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.status(201).json({ message: "Order berhasil dibuat", orderId: newOrder.id });
+  } catch (err) {
+    console.error("Error create order:", err);
+    res.status(500).json({ error: "Gagal membuat order", details: err.message });
+  }
+});
+
+// GET /api/orders -> semua order (untuk admin)
+app.get("/api/orders", async (req, res) => {
+  try {
+    const snapshot = await db.collection("orders").orderBy("createdAt", "desc").get();
+    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Gagal mengambil order" });
+  }
+});
+
+// PATCH /api/orders/:orderId -> update status
+app.patch("/api/orders/:orderId", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { orderId } = req.params;
+
+    if (!["pending", "accepted", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Status tidak valid" });
+    }
+
+    await db.collection("orders").doc(orderId).update({ status });
+    res.json({ message: "Status order diperbarui" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Gagal update status order" });
   }
 });
 

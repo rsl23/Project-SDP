@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getCart, deleteCartItem, updateCartItem } from "../apiService/cartApi";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
 
 const CartPage = () => {
     const [cart, setCart] = useState([]);
@@ -26,33 +27,79 @@ const CartPage = () => {
 
     const handleDelete = async (id) => {
         try {
-            setCart((prev) => prev.filter((item) => item.id !== id));
+            setCart(prev => prev.filter(item => item.id !== id));
             await deleteCartItem(id);
         } catch (err) {
             console.error("Gagal menghapus item:", err);
+            fetchCart();
         }
     };
 
-    const handleQuantityChange = async (item, delta) => {
-        const newJumlah = item.jumlah + delta;
-        const stok = item.produk?.stok || 0;
-
-        if (newJumlah < 1 || newJumlah > stok) return;
-
-        // Optimistic UI
-        setCart(prev => prev.map(p => p.id === item.id ? { ...p, jumlah: newJumlah } : p));
+    const handleQuantityChange = async (id, delta) => {
+        setCart(prev =>
+            prev.map(item => {
+                if (item.id !== id) return item;
+                const newJumlah = item.jumlah + delta;
+                const stok = item.produk?.stok || 0;
+                if (newJumlah < 1 || newJumlah > stok) return item;
+                return { ...item, jumlah: newJumlah };
+            })
+        );
 
         try {
-            await updateCartItem(item.id, newJumlah);
+            const itemToUpdate = cart.find(item => item.id === id);
+            if (!itemToUpdate) return;
+            await updateCartItem(id, itemToUpdate.jumlah + delta);
         } catch (err) {
             console.error(err);
-            // rollback UI
-            setCart(prev => prev.map(p => p.id === item.id ? { ...p, jumlah: item.jumlah } : p));
+            setCart(prev =>
+                prev.map(item => (item.id === id ? { ...item, jumlah: item.jumlah } : item))
+            );
+        }
+    };
+
+    const handleCheckout = async () => {
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                alert("Silakan login terlebih dahulu!");
+                return;
+            }
+
+            const userId = user.uid;
+
+            const orderItems = cart.map(item => ({
+                produk_id: item.produk?.id,
+                jumlah: item.jumlah,
+                produk: {
+                    nama: item.produk?.nama,
+                    harga: item.produk?.harga,
+                    img_url: item.produk?.img_url,
+                },
+            }));
+
+            const total = calculateTotal();
+
+            const res = await fetch("http://localhost:5000/api/orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, items: orderItems, total }),
+            });
+
+            if (!res.ok) throw new Error("Checkout gagal");
+
+            alert("Checkout berhasil! Order masuk ke sistem.");
+            setCart([]);
+        } catch (err) {
+            console.error(err);
+            alert("Gagal checkout: " + err.message);
         }
     };
 
     const calculateTotal = () =>
-        cart.reduce((acc, item) => acc + (item.produk?.harga || 0) * item.jumlah, 0);
+        cart.reduce((acc, item) => acc + ((item.produk?.harga || 0) * item.jumlah), 0);
 
     if (loading) {
         return (
@@ -64,9 +111,8 @@ const CartPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white px-6 py-10 transition-all">
-            {/* Header */}
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-4xl font-bold tracking-wide">🛒 Keranjang Belanja</h1>
+                <h1 className="text-4xl font-bold tracking-wide">CART</h1>
                 <button
                     onClick={() => navigate(-1)}
                     className="px-5 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-lg"
@@ -77,7 +123,7 @@ const CartPage = () => {
 
             {cart.length === 0 ? (
                 <div className="text-center text-gray-300 text-lg mt-20">
-                    Keranjang kamu kosong 😢
+                    Keranjang kamu kosong
                     <br />
                     <button
                         onClick={() => navigate("/product")}
@@ -88,7 +134,6 @@ const CartPage = () => {
                 </div>
             ) : (
                 <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                    {/* Daftar Produk */}
                     <div className="md:col-span-2 space-y-4">
                         {cart.map((item) => (
                             <div
@@ -109,10 +154,9 @@ const CartPage = () => {
                                             Rp {item.produk?.harga?.toLocaleString("id-ID")}
                                         </p>
 
-                                        {/* Kontrol Jumlah */}
                                         <div className="mt-3 flex items-center gap-2">
                                             <button
-                                                onClick={() => handleQuantityChange(item, -1)}
+                                                onClick={() => handleQuantityChange(item.id, -1)}
                                                 className="bg-white/20 hover:bg-white/30 text-white rounded-lg px-2 py-1 transition"
                                             >
                                                 <Minus size={16} />
@@ -121,7 +165,7 @@ const CartPage = () => {
                                                 {item.jumlah}
                                             </span>
                                             <button
-                                                onClick={() => handleQuantityChange(item, 1)}
+                                                onClick={() => handleQuantityChange(item.id, 1)}
                                                 className="bg-white/20 hover:bg-white/30 text-white rounded-lg px-2 py-1 transition"
                                             >
                                                 <Plus size={16} />
@@ -132,7 +176,7 @@ const CartPage = () => {
 
                                 <div className="text-right">
                                     <p className="text-lg font-semibold text-indigo-400">
-                                        Rp {(item.produk?.harga || 0 * item.jumlah).toLocaleString("id-ID")}
+                                        Rp {((item.produk?.harga || 0) * item.jumlah).toLocaleString("id-ID")}
                                     </p>
                                     <button
                                         onClick={() => handleDelete(item.id)}
@@ -145,7 +189,6 @@ const CartPage = () => {
                         ))}
                     </div>
 
-                    {/* Ringkasan Pembayaran */}
                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-lg h-fit">
                         <h2 className="text-2xl font-semibold mb-4 border-b border-white/20 pb-3">
                             Ringkasan Belanja
@@ -153,7 +196,7 @@ const CartPage = () => {
 
                         <div className="flex justify-between text-gray-300 mb-2">
                             <span>Jumlah Item:</span>
-                            <span>{cart.length}</span>
+                            <span>{cart.reduce((acc, item) => acc + item.jumlah, 0)}</span>
                         </div>
                         <div className="flex justify-between text-gray-300 mb-4">
                             <span>Subtotal:</span>
@@ -170,10 +213,10 @@ const CartPage = () => {
                         </div>
 
                         <button
-                            onClick={() => console.log("Checkout clicked")}
+                            onClick={() => handleCheckout()}
                             className="w-full py-3 bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 rounded-lg font-semibold transition-all shadow-lg"
                         >
-                            Lanjut ke Pembayaran
+                            Checkout
                         </button>
                     </div>
                 </div>
