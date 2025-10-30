@@ -74,8 +74,8 @@ const AdminOrders = () => {
               key={status}
               onClick={() => setSelectedStatus(status)}
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${selectedStatus === status
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
                 }`}
             >
               {getStatusIcon(status)}
@@ -126,7 +126,6 @@ const AdminOrders = () => {
                           <span className="text-sm">{order.items?.length || 0} Items</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
-                          <DollarSign className="w-4 h-4" />
                           <span className="text-sm font-semibold">Rp {order.total?.toLocaleString("id-ID")}</span>
                         </div>
                       </div>
@@ -154,8 +153,8 @@ const AdminOrders = () => {
                       ) : (
                         // Untuk status accepted atau rejected, tampilkan indikator saja
                         <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${order.status === "accepted"
-                            ? "bg-green-100 text-green-700 border-green-200"
-                            : "bg-red-100 text-red-700 border-red-200"
+                          ? "bg-green-100 text-green-700 border-green-200"
+                          : "bg-red-100 text-red-700 border-red-200"
                           }`}>
                           {getStatusIcon(order.status)}
                           {order.status === "accepted" ? "Pesanan Telah Diterima" : "Pesanan Telah Ditolak"}
