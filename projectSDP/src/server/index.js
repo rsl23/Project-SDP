@@ -11,35 +11,27 @@ app.use(express.json());
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").get();
-
     const products = [];
     for (const doc of snapshot.docs) {
       const data = doc.data();
-
-      // Ambil stock dari tabel stock
       const stockSnap = await db
         .collection("stock")
         .where("produk_id", "==", doc.id)
         .get();
-
       let totalMasuk = 0;
       let totalKeluar = 0;
-
       stockSnap.forEach((s) => {
         const st = s.data();
         if (st.tipe === "masuk") totalMasuk += st.jumlah;
         else if (st.tipe === "keluar") totalKeluar += st.jumlah;
       });
-
       const stokAkhir = totalMasuk - totalKeluar;
-
       products.push({
         id: doc.id,
         ...data,
         stok: stokAkhir,
       });
     }
-
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -264,7 +256,6 @@ app.get("/api/cart", async (req, res) => {
 
     for (const doc of snapshot.docs) {
       const data = doc.data();
-      // ambil data produk terkait
       const produkDoc = await db
         .collection("products")
         .doc(data.produk_id)
@@ -293,7 +284,6 @@ app.get("/api/cart", async (req, res) => {
   }
 });
 
-// POST add item to cart
 app.post("/api/cart", async (req, res) => {
   try {
     const { produk_id, jumlah } = req.body;
@@ -335,8 +325,6 @@ app.post("/api/cart", async (req, res) => {
   }
 });
 
-// PUT update jumlah cart
-// PUT update jumlah cart
 app.put("/api/cart/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -365,7 +353,6 @@ app.put("/api/cart/:id", async (req, res) => {
   }
 });
 
-// DELETE item from cart
 app.delete("/api/cart/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -393,16 +380,13 @@ app.post("/api/orders", async (req, res) => {
     if (!userId || !items || items.length === 0) {
       return res.status(400).json({ error: "userId dan items wajib diisi" });
     }
-
-    // Buat order baru di Firestore
     const newOrder = await db.collection("orders").add({
       userId,
-      items, // array { produk_id, jumlah, produk: {nama, harga, img_url} }
+      items,
       total,
-      status: "pending", // default: pending
+      status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-
     res
       .status(201)
       .json({ message: "Order berhasil dibuat", orderId: newOrder.id });
@@ -414,7 +398,6 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-// GET /api/orders -> semua order (untuk admin)
 app.get("/api/orders", async (req, res) => {
   try {
     const snapshot = await db
@@ -429,7 +412,6 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// PATCH /api/orders/:orderId -> update status
 app.patch("/api/orders/:orderId", async (req, res) => {
   try {
     const { status } = req.body;

@@ -85,17 +85,11 @@ function LoginForm() {
         form.password
       );
       const user = userCredential.user;
-
-      // Cek dan sync email verification setelah login
       await checkAndSyncEmailVerification();
-
-      // Check if user is admin
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists() && userDoc.data().role === "admin") {
-        // Redirect to admin panel
         navigate("/admin");
       } else {
-        // Redirect to home page
         navigate("/");
       }
     } catch (err) {
@@ -128,11 +122,7 @@ function LoginForm() {
           createdAt: serverTimestamp(),
         });
       }
-
-      // Cek dan sync email verification setelah Google sign-in
       await checkAndSyncEmailVerification();
-
-      // Check if user is admin after Google sign-in
       const updatedUserDoc = await getDoc(userDocRef);
       if (updatedUserDoc.exists() && updatedUserDoc.data().role === "admin") {
         navigate("/admin");
