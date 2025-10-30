@@ -122,31 +122,39 @@ const AdminProducts = () => {
 
     let imageUrl = formData.img_url;
     setLoading(true);
-    // Hanya upload jika ada file baru
     if (selectedFile) {
       const uploadedUrl = await uploadToCloudinary(selectedFile);
       if (!uploadedUrl) {
         alert("Upload gagal!");
+        setLoading(false);
         return;
       }
       imageUrl = uploadedUrl;
     }
 
     const productData = {
-      ...formData,
-      img_url: imageUrl,
+      nama: formData.nama,
+      kategori: formData.kategori,
       harga: parseInt(formData.harga),
-      stok: parseInt(formData.stok),
+      img_url: imageUrl,
+      img_name: formData.img_name,
+      deskripsi: formData.deskripsi,
+      link_tokopedia: formData.link_tokopedia,
+      link_shopee: formData.link_shopee,
     };
 
-    console.log("📦 Data yang dikirim ke backend:", productData);
-    console.log("📝 Deskripsi value:", formData.deskripsi);
+    const stokData = parseInt(formData.stok);
 
     try {
       if (editMode && currentProduct) {
         await updateProduct(currentProduct.id, productData);
+        await fetch(`http://localhost:5000/api/products/${currentProduct.id}/stock`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stok: stokData }),
+        });
       } else {
-        await addProduct(productData);
+        await addProduct({ ...productData, stok: stokData });
       }
 
       fetchProducts();
@@ -168,7 +176,7 @@ const AdminProducts = () => {
       nama: product.nama,
       kategori: product.kategori,
       harga: product.harga.toString(),
-      stok: product.stok.toString(),
+      stok: product.stok ? product.stok.toString() : "0",
       img_url: product.img_url || "",
       img_name: product.img_name || "",
       deskripsi: product.deskripsi || "",
@@ -301,11 +309,10 @@ const AdminProducts = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
                         onClick={() => handleToggleActive(product)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
-                          product.active
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${product.active
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                          }`}
                       >
                         {product.active ? "Active" : "Tidak Active"}
                       </button>

@@ -11,21 +11,35 @@ app.use(express.json());
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").get();
-    const products = snapshot.docs.map((doc) => {
+
+    const products = [];
+    for (const doc of snapshot.docs) {
       const data = doc.data();
-      return {
+
+      // Ambil stock dari tabel stock
+      const stockSnap = await db
+        .collection("stock")
+        .where("produk_id", "==", doc.id)
+        .get();
+
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+
+      stockSnap.forEach((s) => {
+        const st = s.data();
+        if (st.tipe === "masuk") totalMasuk += st.jumlah;
+        else if (st.tipe === "keluar") totalKeluar += st.jumlah;
+      });
+
+      const stokAkhir = totalMasuk - totalKeluar;
+
+      products.push({
         id: doc.id,
-        nama: data.nama,
-        kategori: data.kategori,
-        harga: data.harga,
-        stok: data.stok,
-        img_url: data.img_url || "",
-        deskripsi: data.deskripsi || "",
-        link_tokopedia: data.link_tokopedia || "",
-        link_shopee: data.link_shopee || "",
-        active: data.active ?? true,
-      };
-    });
+        ...data,
+        stok: stokAkhir,
+      });
+    }
+
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -33,59 +47,62 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
+// POST add product + stok awal
 app.post("/api/products", async (req, res) => {
   try {
-    console.log("🔵 POST /api/products dipanggil!");
-    console.log("📨 req.body:", JSON.stringify(req.body, null, 2));
-
     const {
       nama,
       kategori,
       harga,
-      stok,
       img_url,
       deskripsi,
-      img_name,
       link_tokopedia,
       link_shopee,
+      stok,
     } = req.body;
 
-    console.log("📝 Deskripsi value:", deskripsi);
-    console.log("📝 Deskripsi type:", typeof deskripsi);
-    console.log("📝 Deskripsi length:", deskripsi?.length);
-
-    if (!nama || !kategori || !harga || !stok) {
-      return res.status(400).json({ error: "Data tidak lengkap" });
+    if (!nama || !kategori || !harga) {
+      return res.status(400).json({ error: "Data produk tidak lengkap" });
     }
 
-    const dataToSave = {
+    const newProduct = {
       nama,
       kategori,
       harga,
-      stok,
       img_url: img_url || "",
-      img_name: img_name || "",
       deskripsi: deskripsi || "",
       link_tokopedia: link_tokopedia || "",
       link_shopee: link_shopee || "",
       active: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    console.log("💾 Data yang akan disimpan ke Firestore:");
-    console.log(JSON.stringify(dataToSave, null, 2));
+    const productRef = await db.collection("products").add(newProduct);
 
-    const newDoc = await db.collection("products").add(dataToSave);
+    // Simpan stok awal
+    if (stok && Number(stok) > 0) {
+      await db.collection("stock").add({
+        produk_id: productRef.id,
+        tipe: "masuk",
+        jumlah: Number(stok),
+        keterangan: "Stok awal produk",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
 
-    console.log("✅ Produk berhasil ditambahkan dengan ID:", newDoc.id);
-    res
-      .status(201)
-      .json({ id: newDoc.id, nama, kategori, harga, stok, deskripsi, img_url });
+    res.status(201).json({
+      message: "Produk berhasil ditambahkan beserta stok awal",
+      id: productRef.id,
+      ...newProduct,
+      stok: Number(stok) || 0,
+    });
   } catch (error) {
-    console.error("❌ Error menambah produk:", error);
+    console.error("❌ Error tambah produk:", error);
     res.status(500).json({ error: "Gagal menambah produk" });
   }
 });
 
+// PUT update product (data saja)
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -113,27 +130,130 @@ app.put("/api/products/:id", async (req, res) => {
   }
 });
 
+app.put("/api/products/:id/stock", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stok } = req.body;
+
+    if (!Number.isInteger(stok) || stok < 0)
+      return res.status(400).json({ error: "Stok tidak valid" });
+
+    const stockSnap = await db
+      .collection("stock")
+      .where("produk_id", "==", id)
+      .where("keterangan", "==", "Stok awal produk")
+      .get();
+
+    stockSnap.forEach((doc) => doc.ref.delete());
+    if (stok > 0) {
+      await db.collection("stock").add({
+        produk_id: id,
+        tipe: "masuk",
+        jumlah: stok,
+        keterangan: "Stok awal produk",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    res.status(200).json({ message: "Stok berhasil diperbarui", stok });
+  } catch (error) {
+    console.error("Error update stok:", error);
+    res.status(500).json({ error: "Gagal update stok", details: error.message });
+  }
+});
+
+
 app.delete("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`🗑️ Deleting product ${id}`);
+
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
+
     if (!doc.exists) {
-      console.log(`Product ${id} not found`);
+      console.log(`❌ Product ${id} not found`);
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
+
+    const stockSnap = await db
+      .collection("stock")
+      .where("produk_id", "==", id)
+      .get();
+
+    if (!stockSnap.empty) {
+      const batch = db.batch();
+      stockSnap.forEach((stockDoc) => batch.delete(stockDoc.ref));
+      await batch.commit();
+      console.log(`🧹 ${stockSnap.size} stok entry deleted for product ${id}`);
+    } else {
+      console.log(`ℹ️ No stock found for product ${id}`);
+    }
+
     await productRef.delete();
-    console.log(`Product ${id} deleted successfully`);
+
+    console.log(`✅ Product ${id} and related stock deleted successfully`);
     res.status(200).json({
       id,
-      message: "Produk berhasil dihapus",
+      message: "Produk dan stok terkait berhasil dihapus",
     });
   } catch (error) {
-    console.error("Error delete produk:", error);
-    res
-      .status(500)
-      .json({ error: "Gagal menghapus produk", details: error.message });
+    console.error("❌ Error delete produk:", error);
+    res.status(500).json({
+      error: "Gagal menghapus produk dan stok terkait",
+      details: error.message,
+    });
+  }
+});
+
+
+app.post("/api/stock", async (req, res) => {
+  try {
+    const { produk_id, tipe, jumlah, keterangan } = req.body;
+
+    if (!produk_id || !["masuk", "keluar"].includes(tipe) || !jumlah) {
+      return res.status(400).json({ error: "Data stok tidak lengkap / tidak valid" });
+    }
+
+    const produkRef = db.collection("products").doc(produk_id);
+    const produkDoc = await produkRef.get();
+    if (!produkDoc.exists) {
+      return res.status(404).json({ error: "Produk tidak ditemukan" });
+    }
+
+    const stokData = {
+      produk_id,
+      tipe,
+      jumlah: Number(jumlah),
+      keterangan: keterangan || "",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await db.collection("stock").add(stokData);
+
+    res.status(201).json({ message: "Riwayat stok berhasil disimpan", stokData });
+  } catch (error) {
+    console.error("❌ Error tambah stok:", error);
+    res.status(500).json({ error: "Gagal menambah stok" });
+  }
+});
+
+app.get("/api/stock", async (req, res) => {
+  try {
+    const { produk_id } = req.query;
+    let query = db.collection("stock").orderBy("createdAt", "desc");
+    if (produk_id) query = query.where("produk_id", "==", produk_id);
+
+    const snapshot = await query.get();
+    const stocks = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(stocks);
+  } catch (error) {
+    console.error("❌ Error ambil stok:", error);
+    res.status(500).json({ error: "Gagal mengambil data stok" });
   }
 });
 
@@ -158,10 +278,10 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-              nama: produkData.nama,
-              harga: produkData.harga,
-              img_url: produkData.img_url,
-            }
+            nama: produkData.nama,
+            harga: produkData.harga,
+            img_url: produkData.img_url,
+          }
           : null,
       });
     }
