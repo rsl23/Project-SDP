@@ -141,8 +141,8 @@ const ProductDetail = () => {
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
                 className={`w-full md:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-medium rounded-lg shadow-lg transition-all ${product.stok === 0
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:from-pink-600 hover:to-indigo-700"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:from-pink-600 hover:to-indigo-700"
                   }`}
               >
                 {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
@@ -154,8 +154,8 @@ const ProductDetail = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex flex-1 justify-center items-center gap-2 px-6 py-3 bg-green-500 text-white font-medium rounded-lg shadow-lg transition-all ${!product.link_tokopedia || product.stok === 0
-                      ? "opacity-50 cursor-not-allowed pointer-events-none"
-                      : "hover:bg-green-600"
+                    ? "opacity-50 cursor-not-allowed pointer-events-none"
+                    : "hover:bg-green-600"
                     }`}
                   onClick={(e) => (!product.link_tokopedia || product.stok === 0) && e.preventDefault()}
                 >
@@ -172,8 +172,8 @@ const ProductDetail = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex flex-1 justify-center items-center gap-2 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg shadow-lg transition-all ${!product.link_shopee || product.stok === 0
-                      ? "opacity-50 cursor-not-allowed pointer-events-none"
-                      : "hover:bg-orange-700"
+                    ? "opacity-50 cursor-not-allowed pointer-events-none"
+                    : "hover:bg-orange-700"
                     }`}
                   onClick={(e) => (!product.link_shopee || product.stok === 0) && e.preventDefault()}
                 >

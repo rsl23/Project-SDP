@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase/config";
 import Navbar from "./navbar/Navbar";
@@ -10,8 +11,8 @@ import RegisterPage from "./register/RegisterPage";
 import AboutUs from "./aboutUs/AboutUs";
 import Footer from "./footer/Footer";
 import ProductDetail from "./product/ProductDetail";
+import CartPage from "./cart/CartPage";
 
-// Admin Components
 import AdminRoute from "./admin/AdminRoute";
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -21,7 +22,16 @@ import AdminOrders from "./admin/pages/AdminOrders";
 import AdminSettings from "./admin/pages/AdminSettings";
 
 import "./App.css";
-import CartPage from "./cart/CartPage";
+
+const ProtectedRoute = ({ children, user }) => {
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -38,7 +48,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
+      <div className="w-screen min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
         <p className="text-white text-2xl">Memuat...</p>
       </div>
     );
@@ -46,41 +56,64 @@ function App() {
 
   return (
     <Router>
-      <div className="w-full min-h-screen overflow-hidden"> {/* Tambahkan overflow-hidden */}
-        <Routes>
-          {/* Admin Routes */}
-          <Route
-            path="/admin/*"
-            element={
-              <AdminRoute>
-                <AdminLayout />
-              </AdminRoute>
-            }
-          />
+      <Routes>
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute user={user}>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
 
-          {/* User Routes */}
-          <Route
-            path="/*"
-            element={
-              <div className="w-full min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white overflow-x-hidden"> {/* Tambahkan overflow-x-hidden */}
-                <Navbar user={user} />
-                <main className="w-full"> {/* Container untuk konten utama */}
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/product" element={<ProductPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/aboutus" element={<AboutUs />} />
-                    <Route path="/product/:id" element={<ProductDetail />} />
-                    <Route path="/cart" element={<CartPage />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </div>
-            }
-          />
-        </Routes>
-      </div>
+        <Route
+          path="/*"
+          element={
+            <div className="w-full min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white overflow-x-hidden">
+              <Navbar user={user} />
+              <main className="w-full">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route
+                    path="/product"
+                    element={
+                      <ProtectedRoute user={user}>
+                        <ProductPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/product/:id"
+                    element={
+                      <ProtectedRoute user={user}>
+                        <ProductDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/cart"
+                    element={
+                      <ProtectedRoute user={user}>
+                        <CartPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/aboutus" element={<AboutUs />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
