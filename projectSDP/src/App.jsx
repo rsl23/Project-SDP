@@ -25,27 +25,20 @@ import CartPage from "./cart/CartPage";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Tambahkan state loading
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChanged adalah listener dari Firebase.
-    // Ia akan terpanggil setiap kali status otentikasi pengguna berubah (login/logout).
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Set state user dengan data pengguna yang login, atau null jika logout
-      setLoading(false); // Set loading menjadi false setelah status user didapatkan
+      setUser(currentUser);
+      setLoading(false);
     });
 
-    // Membersihkan listener saat komponen tidak lagi digunakan (unmount)
-    // untuk mencegah kebocoran memori.
-    return () => {
-      unsubscribe();
-    };
-  }, []); // Array kosong berarti useEffect ini hanya berjalan sekali saat komponen pertama kali dirender.
+    return () => unsubscribe();
+  }, []);
 
-  // Tampilkan loading screen sederhana selagi status otentikasi diperiksa
   if (loading) {
     return (
-      <div className="w-screen min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] flex justify-center items-center">
         <p className="text-white text-2xl">Memuat...</p>
       </div>
     );
@@ -53,43 +46,41 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        {/* Admin Routes - Terpisah dari user biasa */}
-        <Route
-          path="/admin/*"
-          element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Route>
+      <div className="w-full min-h-screen overflow-hidden"> {/* Tambahkan overflow-hidden */}
+        <Routes>
+          {/* Admin Routes */}
+          <Route
+            path="/admin/*"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          />
 
-        {/* User Routes - Dengan Navbar dan Footer */}
-        <Route
-          path="/*"
-          element={
-            <div className="w-screen min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white">
-              <Navbar user={user} />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/product" element={<ProductPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/aboutus" element={<AboutUs />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart" element={<CartPage />} />
-              </Routes>
-              <Footer />
-            </div>
-          }
-        />
-      </Routes>
+          {/* User Routes */}
+          <Route
+            path="/*"
+            element={
+              <div className="w-full min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white overflow-x-hidden"> {/* Tambahkan overflow-x-hidden */}
+                <Navbar user={user} />
+                <main className="w-full"> {/* Container untuk konten utama */}
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/product" element={<ProductPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/aboutus" element={<AboutUs />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/cart" element={<CartPage />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            }
+          />
+        </Routes>
+      </div>
     </Router>
   );
 }
