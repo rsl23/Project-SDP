@@ -67,6 +67,7 @@ const AdminProducts = () => {
   };
 
   const kategoriOptions = [
+    "All Kategori",
     "Filter Udara",
     "Aksesoris CNC Aluminium",
     "Aksesoris Velg",

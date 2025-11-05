@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProducts } from "../apiService/productApi";
 import { addToCart } from "../apiService/cartApi";
+<<<<<<< Updated upstream
+=======
+import tokopediaLogo from "../assets/tokopedia.jpeg";
+import shopeeLogo from "../assets/shopee.png"; // atau .jpeg, sesuai file Anda
+import toast, { Toaster } from "react-hot-toast";
+import { getAuth } from "firebase/auth";
+>>>>>>> Stashed changes
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -9,8 +16,26 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
 
   const handleAddToCart = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      toast.error("Silakan login terlebih dahulu!", {
+        duration: 2000,
+        position: "top-center",
+      });
+      return;
+    }
+
     try {
       await addToCart(product.id, 1);
+<<<<<<< Updated upstream
+=======
+      toast.success("Berhasil menambahkan ke keranjang!", {
+        duration: 2000,
+        position: "top-center",
+      });
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Gagal menambah ke keranjang:", error);
     }

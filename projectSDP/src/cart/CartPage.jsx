@@ -109,6 +109,147 @@ const CartPage = () => {
         );
     }
 
+<<<<<<< Updated upstream
+=======
+  const handleDelete = async (id) => {
+    try {
+      setCart((prev) => prev.filter((item) => item.id !== id));
+      await deleteCartItem(id);
+    } catch (err) {
+      console.error("Gagal menghapus item:", err);
+      fetchCart();
+    }
+  };
+
+  const handleQuantityChange = async (id, delta) => {
+    const itemToUpdate = cart.find((item) => item.id === id);
+    if (!itemToUpdate) return;
+
+    const newJumlah = itemToUpdate.jumlah + delta;
+    const stok = itemToUpdate.produk?.stok || 0;
+
+    // Validasi: tidak boleh kurang dari 1 atau lebih dari stok
+    if (newJumlah < 1 || newJumlah > stok) return;
+
+    // ✅ Update state dulu (optimistic update)
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, jumlah: newJumlah } : item
+      )
+    );
+
+    // ✅ Update ke database
+    try {
+      await updateCartItem(id, newJumlah);
+    } catch (err) {
+      console.error("Gagal update jumlah:", err);
+      // Rollback jika gagal
+      setCart((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, jumlah: itemToUpdate.jumlah } : item
+        )
+      );
+    }
+  };
+
+  const handleDirectInput = async (id, value) => {
+    const itemToUpdate = cart.find((item) => item.id === id);
+    if (!itemToUpdate) return;
+
+    // Jika input kosong atau tidak valid, biarkan user mengetik
+    if (value === "" || value === "0") {
+      setCart((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, jumlah: "" } : item))
+      );
+      return;
+    }
+
+    const newJumlah = parseInt(value);
+    if (isNaN(newJumlah)) return;
+
+    const stok = itemToUpdate.produk?.stok || 0;
+
+    // Batasi sesuai stok, tapi tetap update state dulu
+    let finalJumlah = newJumlah;
+    if (newJumlah > stok) {
+      finalJumlah = stok;
+      alert(`Stok maksimal: ${stok}`);
+    } else if (newJumlah < 1) {
+      finalJumlah = 1;
+    }
+
+    // Update state dulu (optimistic)
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, jumlah: finalJumlah } : item
+      )
+    );
+
+    // Update database
+    try {
+      await updateCartItem(id, finalJumlah);
+    } catch (err) {
+      console.error("Gagal update jumlah:", err);
+      // Rollback jika gagal
+      setCart((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, jumlah: itemToUpdate.jumlah } : item
+        )
+      );
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Silakan login terlebih dahulu!");
+        return;
+      }
+
+      const userId = user.uid;
+
+      const orderItems = cart.map((item) => ({
+        produk_id: item.produk?.id,
+        jumlah: item.jumlah,
+        produk: {
+          nama: item.produk?.nama,
+          harga: item.produk?.harga,
+          img_url: item.produk?.img_url,
+        },
+      }));
+
+      const total = calculateTotal();
+
+      const res = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, items: orderItems, total }),
+      });
+
+      if (!res.ok) throw new Error("Checkout gagal");
+
+      // ✅ Hapus semua item dari cart di database
+      await Promise.all(cart.map((item) => deleteCartItem(item.id)));
+
+      alert("Checkout berhasil! Order masuk ke sistem.");
+      setCart([]);
+    } catch (err) {
+      console.error(err);
+      alert("Gagal checkout: " + err.message);
+    }
+  };
+
+  const calculateTotal = () =>
+    cart.reduce(
+      (acc, item) => acc + (item.produk?.harga || 0) * item.jumlah,
+      0
+    );
+
+  if (loading) {
+>>>>>>> Stashed changes
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] text-white px-6 py-10 transition-all">
             <div className="flex justify-between items-center mb-8">
@@ -174,6 +315,7 @@ const CartPage = () => {
                                     </div>
                                 </div>
 
+<<<<<<< Updated upstream
                                 <div className="text-right">
                                     <p className="text-lg font-semibold text-indigo-400">
                                         Rp {((item.produk?.harga || 0) * item.jumlah).toLocaleString("id-ID")}
@@ -218,6 +360,37 @@ const CartPage = () => {
                         >
                             Checkout
                         </button>
+=======
+                    <div className="mt-3 flex items-center gap-2">
+                      <button
+                        onClick={() => handleQuantityChange(item.id, -1)}
+                        className="bg-white/20 hover:bg-white/30 text-white rounded-lg px-2 py-1 transition"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max={item.produk?.stok || 999}
+                        value={item.jumlah === "" ? "" : item.jumlah}
+                        onChange={(e) =>
+                          handleDirectInput(item.id, e.target.value)
+                        }
+                        onBlur={(e) => {
+                          // Jika kosong saat blur, set ke 1
+                          if (e.target.value === "" || e.target.value === "0") {
+                            handleDirectInput(item.id, "1");
+                          }
+                        }}
+                        className="bg-white/20 px-4 py-1 rounded-lg text-sm w-16 text-center text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        onClick={() => handleQuantityChange(item.id, 1)}
+                        className="bg-white/20 hover:bg-white/30 text-white rounded-lg px-2 py-1 transition"
+                      >
+                        <Plus size={16} />
+                      </button>
+>>>>>>> Stashed changes
                     </div>
                 </div>
             )}
