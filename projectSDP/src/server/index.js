@@ -296,7 +296,7 @@ app.get("/api/cart", async (req, res) => {
 
 app.post("/api/cart", async (req, res) => {
   try {
-    const { produk_id, jumlah, userId } = req.body; // Tambah userId
+    const { produk_id, jumlah, userId } = req.body;
 
     if (!produk_id || !jumlah || !userId) {
       return res
