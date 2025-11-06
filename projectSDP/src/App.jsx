@@ -1,6 +1,11 @@
-
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase/config";
 import Navbar from "./navbar/Navbar";
@@ -12,6 +17,7 @@ import AboutUs from "./aboutUs/AboutUs";
 import Footer from "./footer/Footer";
 import ProductDetail from "./product/ProductDetail";
 import CartPage from "./cart/CartPage";
+import Profile from "./Profile/Profile";
 
 import AdminRoute from "./admin/AdminRoute";
 import AdminLayout from "./admin/AdminLayout";
@@ -101,6 +107,14 @@ function App() {
                     element={
                       <ProtectedRoute user={user}>
                         <CartPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute user={user}>
+                        <Profile />
                       </ProtectedRoute>
                     }
                   />
