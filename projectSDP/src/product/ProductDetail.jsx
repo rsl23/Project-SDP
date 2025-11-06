@@ -21,7 +21,13 @@ const ProductDetail = () => {
       });
     } catch (error) {
       console.error("Gagal menambah ke keranjang:", error);
-      toast.error("Gagal menambahkan ke keranjang!");
+
+      if (error.message === "User belum login") {
+        toast.error("Silakan login terlebih dahulu!");
+        navigate("/login", { state: { from: location } });
+      } else {
+        toast.error("Gagal menambahkan ke keranjang!");
+      }
     }
   };
 
@@ -50,7 +56,6 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id, navigate]);
 
-  // Fungsi untuk menentukan warna dan teks berdasarkan stock
   const getStockInfo = (stock) => {
     if (stock > 10) {
       return { color: "text-green-400", text: "Tersedia", badge: "bg-green-500" };
@@ -99,7 +104,6 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Product Info */}
           <div className="md:w-1/2 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-4">

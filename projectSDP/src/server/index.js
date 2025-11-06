@@ -39,7 +39,6 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// POST add product + stok awal
 app.post("/api/products", async (req, res) => {
   try {
     const {
@@ -71,7 +70,6 @@ app.post("/api/products", async (req, res) => {
 
     const productRef = await db.collection("products").add(newProduct);
 
-    // Simpan stok awal
     if (stok && Number(stok) > 0) {
       await db.collection("stock").add({
         produk_id: productRef.id,
@@ -94,7 +92,6 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-// PUT update product (data saja)
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -258,12 +255,10 @@ app.get("/api/cart", async (req, res) => {
     const { userId } = req.query;
 
     if (!userId) {
-      return res.status(400).json({ error: "userId wajib diisi" });
+      return res.status(400).json({ error: "userId diperlukan" });
     }
 
-    // Filter cart berdasarkan userId
-    const snapshot = await db
-      .collection("cart")
+    const snapshot = await db.collection("cart")
       .where("userId", "==", userId)
       .get();
 
@@ -277,37 +272,19 @@ app.get("/api/cart", async (req, res) => {
         .get();
       const produkData = produkDoc.exists ? produkDoc.data() : null;
 
-      // Hitung stok real-time
-      if (produkData) {
-        const stockSnap = await db
-          .collection("stock")
-          .where("produk_id", "==", data.produk_id)
-          .get();
-
-        let totalMasuk = 0;
-        let totalKeluar = 0;
-        stockSnap.forEach((s) => {
-          const st = s.data();
-          if (st.tipe === "masuk") totalMasuk += st.jumlah;
-          else if (st.tipe === "keluar") totalKeluar += st.jumlah;
-        });
-        const stokAkhir = totalMasuk - totalKeluar;
-
-        cartItems.push({
-          id: doc.id,
-          userId: data.userId,
-          produk_id: data.produk_id,
-          jumlah: data.jumlah,
-          createdAt: data.createdAt,
-          produk: {
-            id: data.produk_id,
+      cartItems.push({
+        id: doc.id,
+        produk_id: data.produk_id,
+        jumlah: data.jumlah,
+        createdAt: data.createdAt,
+        produk: produkData
+          ? {
             nama: produkData.nama,
             harga: produkData.harga,
             img_url: produkData.img_url,
-            stok: stokAkhir,
-          },
-        });
-      }
+          }
+          : null,
+      });
     }
 
     res.status(200).json(cartItems);
@@ -319,12 +296,12 @@ app.get("/api/cart", async (req, res) => {
 
 app.post("/api/cart", async (req, res) => {
   try {
-    const { userId, produk_id, jumlah } = req.body;
+    const { produk_id, jumlah, userId } = req.body; // Tambah userId
 
-    if (!userId || !produk_id || !jumlah) {
+    if (!produk_id || !jumlah || !userId) {
       return res
         .status(400)
-        .json({ error: "userId, produk_id dan jumlah wajib diisi" });
+        .json({ error: "produk_id, jumlah, dan userId wajib diisi" });
     }
 
     const produkRef = db.collection("products").doc(produk_id);
@@ -334,50 +311,34 @@ app.post("/api/cart", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
-    // Cek apakah produk sudah ada di cart user ini
-    const existingCart = await db
-      .collection("cart")
+    const existingCart = await db.collection("cart")
       .where("userId", "==", userId)
       .where("produk_id", "==", produk_id)
       .get();
 
+    let cartItem;
+
     if (!existingCart.empty) {
-      // Jika sudah ada, update jumlahnya
-      const cartDoc = existingCart.docs[0];
-      const currentJumlah = cartDoc.data().jumlah;
-      const newJumlah = currentJumlah + jumlah;
+      const existingDoc = existingCart.docs[0];
+      const existingData = existingDoc.data();
+      const newJumlah = existingData.jumlah + jumlah;
 
-      await cartDoc.ref.update({ jumlah: newJumlah });
-
-      const produkData = produkDoc.data();
-      return res.status(200).json({
-        id: cartDoc.id,
-        userId,
+      await existingDoc.ref.update({ jumlah: newJumlah });
+      cartItem = { id: existingDoc.id, jumlah: newJumlah };
+    } else {
+      const newCart = await db.collection("cart").add({
         produk_id,
-        jumlah: newJumlah,
-        message: "Jumlah item di cart berhasil diperbarui",
-        produk: {
-          nama: produkData.nama,
-          harga: produkData.harga,
-          img_url: produkData.img_url,
-        },
+        jumlah,
+        userId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      cartItem = { id: newCart.id, jumlah };
     }
-
-    // Jika belum ada, tambahkan baru
-    const newCart = await db.collection("cart").add({
-      userId,
-      produk_id,
-      jumlah,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
 
     const produkData = produkDoc.data();
     res.status(201).json({
-      id: newCart.id,
-      userId,
+      ...cartItem,
       produk_id,
-      jumlah,
       produk: {
         nama: produkData.nama,
         harga: produkData.harga,
@@ -467,11 +428,9 @@ app.post("/api/orders", async (req, res) => {
 
 app.get("/api/orders", async (req, res) => {
   try {
-    const { userId } = req.query; // Query parameter untuk filter by user
+    const { userId } = req.query;
 
     let query = db.collection("orders").orderBy("createdAt", "desc");
-
-    // Jika ada userId, filter berdasarkan userId
     if (userId) {
       query = db
         .collection("orders")
