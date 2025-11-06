@@ -7,6 +7,7 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [processingOrder, setProcessingOrder] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
@@ -17,11 +18,76 @@ const AdminOrders = () => {
     return () => unsubscribe();
   }, []);
 
+  // AdminOrders.jsx - Update handleStatusChange
   const handleStatusChange = async (orderId, status) => {
     try {
+      setProcessingOrder(orderId);
+
+      console.log(`🔄 Changing order ${orderId} status to: ${status}`);
+
+      // Update status order di Firebase
       await updateDoc(doc(db, "orders", orderId), { status });
+      console.log(`✅ Order status updated to: ${status}`);
+
+      // Handle stok berdasarkan status
+      if (status === "accepted") {
+        // Konfirmasi stok - stok tetap berkurang
+        console.log(`🔒 Confirming stock for order ${orderId}`);
+        const confirmResponse = await fetch(`http://localhost:5000/api/orders/${orderId}/confirm-stock`, {
+          method: "POST"
+        });
+
+        const confirmResult = await confirmResponse.json();
+        console.log(`📨 Confirm stock response:`, confirmResult);
+
+        if (!confirmResponse.ok) {
+          throw new Error(confirmResult.error || "Gagal mengonfirmasi stok");
+        }
+
+        console.log(`✅ Stock confirmed for order ${orderId}`);
+
+      } else if (status === "rejected") {
+        // Kembalikan stok - stok dikembalikan
+        console.log(`🔄 Returning stock for order ${orderId}`);
+        const returnResponse = await fetch(`http://localhost:5000/api/orders/${orderId}/return-stock`, {
+          method: "POST"
+        });
+
+        const returnResult = await returnResponse.json();
+        console.log(`📨 Return stock response:`, returnResult);
+
+        if (!returnResponse.ok) {
+          // Jika return stock gagal, kita masih bisa update status order tapi beri warning
+          console.warn(`⚠️ Stock return failed but order status updated:`, returnResult);
+          alert(`Status order berhasil diubah ke Ditolak, tetapi ada masalah mengembalikan stok: ${returnResult.error}`);
+        } else {
+          console.log(`✅ Stock returned for order ${orderId}`);
+        }
+      }
+
+      alert(`Status order berhasil diubah menjadi ${status === "accepted" ? "Diterima" : "Ditolak"}`);
+
     } catch (err) {
-      console.error("Gagal update status:", err);
+      console.error("❌ Gagal update status:", err);
+
+      let errorMessage = "Gagal mengupdate status order: ";
+      if (err.message.includes("Gagal mengonfirmasi stok")) {
+        errorMessage += "Stok tidak dapat dikonfirmasi. ";
+      } else if (err.message.includes("Gagal mengembalikan stok")) {
+        errorMessage += "Stok tidak dapat dikembalikan. ";
+      }
+      errorMessage += err.message;
+
+      alert(errorMessage);
+
+      // Refresh data untuk memastikan sync
+      const orderDoc = await doc(db, "orders", orderId).get();
+      if (orderDoc.exists) {
+        const currentStatus = orderDoc.data().status;
+        console.log(`🔄 Current order status after error: ${currentStatus}`);
+      }
+    } finally {
+      setProcessingOrder(null);
     }
   };
 
@@ -64,7 +130,9 @@ const AdminOrders = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Kelola Pesanan</h1>
-          <p className="text-gray-600">Kelola dan pantau semua pesanan pelanggan</p>
+          <p className="text-gray-600">
+            Kelola pesanan dan stok akan otomatis disesuaikan saat menerima/menolak pesanan
+          </p>
         </div>
 
         {/* Filter Status */}
@@ -137,17 +205,33 @@ const AdminOrders = () => {
                         <>
                           <button
                             onClick={() => handleStatusChange(order.id, "accepted")}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all shadow-sm hover:shadow-md"
+                            disabled={processingOrder === order.id}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${processingOrder === order.id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-green-500 text-white hover:bg-green-600"
+                              }`}
                           >
-                            <CheckCircle className="w-4 h-4" />
-                            Terima
+                            {processingOrder === order.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <CheckCircle className="w-4 h-4" />
+                            )}
+                            {processingOrder === order.id ? "Memproses..." : "Terima"}
                           </button>
                           <button
                             onClick={() => handleStatusChange(order.id, "rejected")}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm hover:shadow-md"
+                            disabled={processingOrder === order.id}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${processingOrder === order.id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-600"
+                              }`}
                           >
-                            <XCircle className="w-4 h-4" />
-                            Tolak
+                            {processingOrder === order.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                            {processingOrder === order.id ? "Memproses..." : "Tolak"}
                           </button>
                         </>
                       ) : (
@@ -158,6 +242,9 @@ const AdminOrders = () => {
                           }`}>
                           {getStatusIcon(order.status)}
                           {order.status === "accepted" ? "Pesanan Telah Diterima" : "Pesanan Telah Ditolak"}
+                          {order.status === "rejected" && (
+                            <span className="text-xs">(Stok telah dikembalikan)</span>
+                          )}
                         </div>
                       )}
                     </div>

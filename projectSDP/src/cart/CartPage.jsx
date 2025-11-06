@@ -17,6 +17,18 @@ const CartPage = () => {
     try {
       setLoading(true);
       const data = await getCart();
+      console.log("🛒 Cart data from API:", data);
+
+      // Log detail setiap item
+      data.forEach((item, index) => {
+        console.log(`📦 Item ${index}:`, {
+          id: item.id,
+          produk_id: item.produk_id,
+          produk: item.produk,
+          jumlah: item.jumlah
+        });
+      });
+
       setCart(data);
     } catch (err) {
       console.error("Gagal mengambil cart:", err);
@@ -60,8 +72,12 @@ const CartPage = () => {
     }
   };
 
+  // Di CartPage.jsx - update handleCheckout
+  // CartPage.jsx - Update handleCheckout
   const handleCheckout = async () => {
     try {
+      console.log("🛒 Starting checkout process...");
+
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -71,35 +87,111 @@ const CartPage = () => {
       }
 
       const userId = user.uid;
+      console.log("👤 User ID:", userId);
 
-      const orderItems = cart.map((item) => ({
-        produk_id: item.produk?.id,
-        jumlah: item.jumlah,
-        produk: {
-          nama: item.produk?.nama,
-          harga: item.produk?.harga,
-          img_url: item.produk?.img_url,
-        },
-      }));
+      // Pastikan cart tidak kosong
+      if (cart.length === 0) {
+        alert("Keranjang kosong!");
+        return;
+      }
 
-      const total = calculateTotal();
+      console.log("📋 Raw cart data:", cart);
 
-      const res = await fetch("http://localhost:5000/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, items: orderItems, total }),
+      // Prepare order items - FIXED VERSION
+      const orderItems = cart.map((item) => {
+        console.log("🔍 Processing cart item:", item);
+
+        // Validasi data yang diperlukan
+        if (!item.produk_id) {
+          throw new Error(`produk_id tidak ditemukan untuk item: ${item.id}`);
+        }
+
+        if (!item.produk) {
+          throw new Error(`Data produk tidak lengkap untuk item: ${item.id}`);
+        }
+
+        if (!item.jumlah || item.jumlah < 1) {
+          throw new Error(`Jumlah tidak valid untuk item: ${item.id}`);
+        }
+
+        return {
+          produk_id: item.produk_id, // Gunakan produk_id langsung dari item
+          jumlah: item.jumlah,
+          produk: {
+            nama: item.produk.nama || "Produk tidak diketahui",
+            harga: item.produk.harga || 0,
+            img_url: item.produk.img_url || "",
+          },
+        };
       });
 
-      if (!res.ok) throw new Error("Checkout gagal");
+      console.log("✅ Processed order items:", orderItems);
+
+      // Validasi final sebelum kirim
+      const invalidItems = orderItems.filter(item => !item.produk_id || !item.jumlah);
+      if (invalidItems.length > 0) {
+        throw new Error(`Terdapat ${invalidItems.length} item dengan data tidak valid`);
+      }
+
+      const total = calculateTotal();
+      console.log("💰 Total:", total);
+
+      // Kirim request ke backend
+      console.log("📤 Sending order to backend...");
+      const res = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          items: orderItems,
+          total
+        }),
+      });
+
+      console.log("📡 Response status:", res.status);
+
+      const responseData = await res.json();
+      console.log("📨 Response data:", responseData);
+
+      if (!res.ok) {
+        // Jika error dari backend, tampilkan pesan error yang lebih spesifik
+        const errorMsg = responseData.error || responseData.details || `HTTP error! status: ${res.status}`;
+        throw new Error(errorMsg);
+      }
 
       // ✅ Hapus semua item dari cart di database
-      await Promise.all(cart.map((item) => deleteCartItem(item.id)));
+      console.log("🗑️ Clearing cart items...");
+      const deletePromises = cart.map((item) => deleteCartItem(item.id));
+      await Promise.all(deletePromises);
 
-      alert("Checkout berhasil! Order masuk ke sistem.");
+      console.log("🎉 Checkout successful!");
+      alert("Checkout berhasil! Order masuk ke sistem. Stok sementara telah dikurangi.");
+
+      // Clear local state
       setCart([]);
+
     } catch (err) {
-      console.error(err);
-      alert("Gagal checkout: " + err.message);
+      console.error("❌ Checkout error:", err);
+      console.error("❌ Error stack:", err.stack);
+
+      let errorMessage = "Gagal checkout: ";
+
+      if (err.message.includes("Stok tidak cukup")) {
+        errorMessage += err.message;
+      } else if (err.message.includes("produk_id tidak ditemukan")) {
+        errorMessage += "Data keranjang tidak valid. Silakan refresh halaman dan coba lagi.";
+      } else if (err.message.includes("Data produk tidak lengkap")) {
+        errorMessage += "Beberapa produk tidak ditemukan. Silakan refresh halaman.";
+      } else {
+        errorMessage += err.message;
+      }
+
+      alert(errorMessage);
+
+      // Refresh cart untuk sync data
+      fetchCart();
     }
   };
 

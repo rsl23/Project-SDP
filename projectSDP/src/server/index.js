@@ -12,26 +12,47 @@ app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").get();
     const products = [];
+
     for (const doc of snapshot.docs) {
       const data = doc.data();
-      const stockSnap = await db
-        .collection("stock")
+
+      console.log(`\n🔍 Calculating stock for product: ${data.nama} (${doc.id})`);
+
+      // Hitung stok dari tabel stock
+      const stockSnap = await db.collection("stock")
         .where("produk_id", "==", doc.id)
         .get();
+
       let totalMasuk = 0;
       let totalKeluar = 0;
+
       stockSnap.forEach((s) => {
         const st = s.data();
-        if (st.tipe === "masuk") totalMasuk += st.jumlah;
-        else if (st.tipe === "keluar") totalKeluar += st.jumlah;
+
+        if (st.tipe === "masuk") {
+          totalMasuk += st.jumlah;
+          console.log(`➕ MASUK: ${st.jumlah} - ${st.keterangan}`);
+        } else if (st.tipe === "keluar") {
+          if (st.status !== "returned") {
+            totalKeluar += st.jumlah;
+            console.log(`➖ KELUAR: ${st.jumlah} - ${st.status} - ${st.keterangan}`);
+          } else {
+            console.log(`⏸️  KELUAR RETURNED (skip): ${st.jumlah} - ${st.keterangan}`);
+          }
+        }
       });
+
       const stokAkhir = totalMasuk - totalKeluar;
+
+      console.log(`📊 Total MASUK: ${totalMasuk}, Total KELUAR: ${totalKeluar}, STOK AKHIR: ${stokAkhir}`);
+
       products.push({
         id: doc.id,
         ...data,
         stok: stokAkhir,
       });
     }
+
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -403,26 +424,265 @@ app.delete("/api/cart/:id", async (req, res) => {
 
 app.post("/api/orders", async (req, res) => {
   try {
+    console.log("📦 Received order request:", req.body);
+
     const { userId, items, total } = req.body;
 
-    if (!userId || !items || items.length === 0) {
-      return res.status(400).json({ error: "userId dan items wajib diisi" });
+    if (!userId) {
+      return res.status(400).json({ error: "userId wajib diisi" });
     }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Items wajib diisi dan harus array" });
+    }
+
+    if (!total || isNaN(total)) {
+      return res.status(400).json({ error: "Total wajib diisi dan harus angka" });
+    }
+
+    console.log("🔍 Validating stock for", items.length, "items...");
+
+    for (const item of items) {
+      console.log("📋 Checking item:", item);
+
+      if (!item.produk_id) {
+        return res.status(400).json({ error: "produk_id wajib diisi untuk setiap item" });
+      }
+
+      if (!item.jumlah || item.jumlah < 1) {
+        return res.status(400).json({ error: "Jumlah item harus lebih dari 0" });
+      }
+
+      const produkDoc = await db.collection("products").doc(item.produk_id).get();
+      if (!produkDoc.exists) {
+        return res.status(404).json({ error: `Produk dengan ID ${item.produk_id} tidak ditemukan` });
+      }
+
+      const stockSnap = await db.collection("stock")
+        .where("produk_id", "==", item.produk_id)
+        .get();
+
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+
+      stockSnap.forEach((s) => {
+        const st = s.data();
+        if (st.tipe === "masuk") totalMasuk += st.jumlah;
+        else if (st.tipe === "keluar" && st.status !== "returned") totalKeluar += st.jumlah; // PASTIKAN SAMA
+      });
+
+      const stokAkhir = totalMasuk - totalKeluar;
+      console.log(`📊 Stock for ${item.produk_id}: ${stokAkhir} (needed: ${item.jumlah})`);
+
+      if (stokAkhir < item.jumlah) {
+        const produkData = produkDoc.data();
+        return res.status(400).json({
+          error: `Stok tidak cukup untuk produk "${produkData.nama}". Stok tersedia: ${stokAkhir}, dibutuhkan: ${item.jumlah}`
+        });
+      }
+
+      await db.collection("stock").add({
+        produk_id: item.produk_id,
+        tipe: "keluar",
+        jumlah: item.jumlah,
+        keterangan: "Stok dikurangi untuk order pending",
+        status: "pending",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`✅ Stock reduced for product ${item.produk_id}`);
+    }
+
+    console.log("💾 Saving order to database...");
     const newOrder = await db.collection("orders").add({
       userId,
       items,
-      total,
+      total: Number(total),
       status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    res
-      .status(201)
-      .json({ message: "Order berhasil dibuat", orderId: newOrder.id });
+
+    console.log("🎉 Order created successfully:", newOrder.id);
+
+    res.status(201).json({
+      message: "Order berhasil dibuat",
+      orderId: newOrder.id
+    });
   } catch (err) {
-    console.error("Error create order:", err);
-    res
-      .status(500)
-      .json({ error: "Gagal membuat order", details: err.message });
+    console.error("❌ Error create order:", err);
+    res.status(500).json({
+      error: "Gagal membuat order",
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+app.post("/api/orders/:orderId/return-stock", async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    console.log(`🔄 Processing stock return for order: ${orderId}`);
+    const orderDoc = await db.collection("orders").doc(orderId).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: "Order tidak ditemukan" });
+    }
+
+    const order = orderDoc.data();
+    console.log(`📦 Order found with ${order.items?.length} items`);
+    const stockReturnPromises = order.items?.map(async (item) => {
+      console.log(`🔄 Returning stock for product: ${item.produk_id}, quantity: ${item.jumlah}`);
+
+      try {
+        const stockSnap = await db.collection("stock")
+          .where("produk_id", "==", item.produk_id)
+          .where("status", "==", "pending")
+          .get();
+
+        console.log(`📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`);
+
+        if (!stockSnap.empty) {
+          let latestStock = null;
+          let latestDate = null;
+
+          stockSnap.forEach((doc) => {
+            const data = doc.data();
+            const date = data.createdAt?.toDate();
+            if (!latestDate || date > latestDate) {
+              latestDate = date;
+              latestStock = { doc, data };
+            }
+          });
+
+          if (latestStock) {
+            console.log(`📝 Latest stock record to update:`, latestStock.data);
+            await latestStock.doc.ref.update({
+              status: "returned",
+              returned_at: admin.firestore.FieldValue.serverTimestamp(),
+              keterangan: "Stok dikembalikan - order ditolak"
+            });
+
+            console.log(`✅ Stock returned for product ${item.produk_id} (status updated to returned)`);
+            return { success: true, product_id: item.produk_id, quantity: item.jumlah };
+          }
+        } else {
+          console.log(`⚠️ No pending stock found for product ${item.produk_id}`);
+          return { success: false, product_id: item.produk_id, error: "No pending stock found" };
+        }
+      } catch (error) {
+        console.error(`❌ Error returning stock for product ${item.produk_id}:`, error);
+        return { success: false, product_id: item.produk_id, error: error.message };
+      }
+    });
+
+    const results = await Promise.all(stockReturnPromises);
+    const successfulReturns = results.filter(r => r.success);
+    const failedReturns = results.filter(r => !r.success);
+
+    console.log(`📊 Stock return results: ${successfulReturns.length} success, ${failedReturns.length} failed`);
+
+    if (failedReturns.length > 0) {
+      return res.status(207).json({
+        message: "Stok sebagian berhasil dikembalikan",
+        successful: successfulReturns,
+        failed: failedReturns
+      });
+    }
+
+    console.log(`🎉 All stock successfully returned for order ${orderId}`);
+    res.status(200).json({
+      message: "Stok berhasil dikembalikan untuk semua item",
+      returned_items: successfulReturns
+    });
+  } catch (err) {
+    console.error("❌ Error return stock:", err);
+    res.status(500).json({
+      error: "Gagal mengembalikan stok",
+      details: err.message
+    });
+  }
+});
+
+app.post("/api/orders/:orderId/confirm-stock", async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    console.log(`🔒 Confirming stock for order: ${orderId}`);
+
+    const orderDoc = await db.collection("orders").doc(orderId).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: "Order tidak ditemukan" });
+    }
+
+    const order = orderDoc.data();
+    console.log(`📦 Order found with ${order.items?.length} items`);
+
+    const confirmPromises = order.items?.map(async (item) => {
+      console.log(`🔒 Confirming stock for product: ${item.produk_id}`);
+
+      try {
+        const stockSnap = await db.collection("stock")
+          .where("produk_id", "==", item.produk_id)
+          .where("status", "==", "pending")
+          .get();
+
+        console.log(`📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`);
+
+        if (!stockSnap.empty) {
+          let latestStock = null;
+          let latestDate = null;
+
+          stockSnap.forEach((doc) => {
+            const data = doc.data();
+            const date = data.createdAt?.toDate();
+            if (!latestDate || date > latestDate) {
+              latestDate = date;
+              latestStock = doc;
+            }
+          });
+
+          if (latestStock) {
+            await latestStock.ref.update({
+              status: "confirmed",
+              confirmed_at: admin.firestore.FieldValue.serverTimestamp(),
+              keterangan: "Stok terkonfirmasi - order diterima"
+            });
+
+            console.log(`✅ Stock confirmed for product ${item.produk_id}`);
+            return { success: true, product_id: item.produk_id };
+          }
+        } else {
+          console.log(`⚠️ No pending stock found for product ${item.produk_id}`);
+          return { success: false, product_id: item.produk_id, error: "No pending stock found" };
+        }
+      } catch (error) {
+        console.error(`❌ Error confirming stock for product ${item.produk_id}:`, error);
+        return { success: false, product_id: item.produk_id, error: error.message };
+      }
+    });
+
+    const results = await Promise.all(confirmPromises);
+    const successfulConfirms = results.filter(r => r.success);
+    const failedConfirms = results.filter(r => !r.success);
+
+    console.log(`📊 Stock confirm results: ${successfulConfirms.length} success, ${failedConfirms.length} failed`);
+
+    if (failedConfirms.length > 0) {
+      return res.status(207).json({
+        message: "Stok sebagian berhasil dikonfirmasi",
+        successful: successfulConfirms,
+        failed: failedConfirms
+      });
+    }
+
+    res.status(200).json({
+      message: "Stok berhasil dikonfirmasi untuk semua item",
+      confirmed_items: successfulConfirms
+    });
+  } catch (err) {
+    console.error("❌ Error confirm stock:", err);
+    res.status(500).json({
+      error: "Gagal mengonfirmasi stok",
+      details: err.message
+    });
   }
 });
 
