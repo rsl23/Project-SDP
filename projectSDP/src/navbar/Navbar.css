@@ -234,11 +234,23 @@
   box-shadow: 0 0 15px rgba(204, 0, 102, 0.3);
 }
 
+.navbar-profile a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
 .navbar-profile span {
   color: white;
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+}
+
+.navbar-profile a:hover span {
+  color: #ff0080;
 }
 
 /* Logout Button */
@@ -344,11 +356,25 @@
     border: 1px solid rgba(204, 0, 102, 0.3);
   }
 
+  .navbar-profile-mobile a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    width: 100%;
+  }
+
   .navbar-profile-mobile .profile-name {
     color: white;
     font-size: 1rem;
     font-weight: 600;
     text-align: center;
+    transition: color 0.3s ease;
+  }
+
+  .navbar-profile-mobile a:hover .profile-name {
+    color: #ff0080;
   }
 
   .mobile-auth-buttons {
@@ -436,6 +462,14 @@
   object-fit: cover;
   /* Memastikan gambar tidak gepeng */
   border: 2px solid #cc0066;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.1);
+  border-color: #ff0080;
+  box-shadow: 0 0 15px rgba(204, 0, 102, 0.6);
 }
 
 .profile-avatar-fallback {
@@ -450,4 +484,13 @@
   font-weight: bold;
   font-size: 1.1rem;
   border: 2px solid #cc0066;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar-fallback:hover {
+  transform: scale(1.1);
+  border-color: #ff0080;
+  box-shadow: 0 0 15px rgba(204, 0, 102, 0.6);
+  background: linear-gradient(135deg, #ff0080 0%, #0000ff 100%);
 }

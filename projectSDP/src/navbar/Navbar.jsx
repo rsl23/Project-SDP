@@ -156,21 +156,27 @@ const Navbar = ({ user }) => {
             <div className="navbar-auth-mobile">
               {user ? (
                 <div className="navbar-profile-mobile">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="Profile"
-                      className="profile-avatar"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="profile-avatar-fallback">
-                      {getInitials()}
-                    </div>
-                  )}
-                  <span className="profile-name">
-                    {user.displayName || user.email}
-                  </span>
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3"
+                  >
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt="Profile"
+                        className="profile-avatar cursor-pointer"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="profile-avatar-fallback cursor-pointer">
+                        {getInitials()}
+                      </div>
+                    )}
+                    <span className="profile-name">
+                      {user.displayName || user.email}
+                    </span>
+                  </Link>
                   <button onClick={handleLogout} className="btn-logout">
                     Logout
                   </button>
@@ -192,19 +198,23 @@ const Navbar = ({ user }) => {
           <div className="navbar-auth">
             {user ? (
               <div className="navbar-profile">
-                {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt="Profile"
-                    className="profile-avatar"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="profile-avatar-fallback">{getInitials()}</div>
-                )}
-                <span className="profile-name">
-                  {user.displayName || user.email}
-                </span>
+                <Link to="/profile" className="flex items-center gap-3">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt="Profile"
+                      className="profile-avatar cursor-pointer"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="profile-avatar-fallback cursor-pointer">
+                      {getInitials()}
+                    </div>
+                  )}
+                  <span className="profile-name">
+                    {user.displayName || user.email}
+                  </span>
+                </Link>
                 <button onClick={handleLogout} className="btn-logout">
                   Logout
                 </button>
