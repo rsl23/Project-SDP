@@ -35,6 +35,13 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Error states
+  const [errors, setErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   const auth = getAuth();
   const navigate = useNavigate();
 
@@ -91,16 +98,29 @@ const Profile = () => {
 
       // Update email
       await updateEmail(user, newEmail);
-      toast.success("Email berhasil diperbarui!");
+
+      // Send verification email to new email
+      await user.reload();
+
+      toast.success(
+        "Email berhasil diperbarui! Silakan cek inbox untuk verifikasi."
+      );
       setCurrentPassword("");
+      setNewEmail(user.email || "");
     } catch (err) {
       console.error("Error updating email:", err);
       if (err.code === "auth/wrong-password") {
         toast.error("Password salah");
       } else if (err.code === "auth/email-already-in-use") {
         toast.error("Email sudah digunakan");
+      } else if (err.code === "auth/operation-not-allowed") {
+        toast.error(
+          "Fitur ubah email belum diaktifkan. Silakan hubungi administrator."
+        );
+      } else if (err.code === "auth/requires-recent-login") {
+        toast.error("Silakan login ulang untuk mengubah email");
       } else {
-        toast.error("Gagal mengubah email: " + err.message);
+        toast.error("Gagal mengubah email. Fitur ini mungkin belum tersedia.");
       }
     }
   };
@@ -108,18 +128,44 @@ const Profile = () => {
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Semua field harus diisi");
-      return;
+    // Reset errors
+    setErrors({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+
+    // Validation
+    let hasError = false;
+    const newErrors = {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    };
+
+    if (!currentPassword) {
+      newErrors.currentPassword = "Password lama harus diisi";
+      hasError = true;
     }
 
-    if (newPassword !== confirmPassword) {
-      toast.error("Password baru tidak cocok");
-      return;
+    if (!newPassword) {
+      newErrors.newPassword = "Password baru harus diisi";
+      hasError = true;
+    } else if (newPassword.length < 6) {
+      newErrors.newPassword = "Password minimal 6 karakter";
+      hasError = true;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Password minimal 6 karakter");
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Konfirmasi password harus diisi";
+      hasError = true;
+    } else if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = "Konfirmasi password tidak sesuai";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
@@ -137,10 +183,30 @@ const Profile = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setErrors({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (err) {
       console.error("Error updating password:", err);
-      if (err.code === "auth/wrong-password") {
-        toast.error("Password lama salah");
+      console.error("Error code:", err.code); // Debug log
+
+      if (
+        err.code === "auth/wrong-password" ||
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/invalid-login-credentials"
+      ) {
+        setErrors({
+          currentPassword: "Password lama tidak cocok",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        toast.error("Password lama tidak cocok");
+      } else if (err.code === "auth/too-many-requests") {
+        toast.error("Terlalu banyak percobaan. Coba lagi nanti.");
+      } else if (err.code === "auth/requires-recent-login") {
+        toast.error("Sesi login Anda sudah kadaluarsa. Silakan login ulang.");
       } else {
         toast.error("Gagal mengubah password: " + err.message);
       }
@@ -247,42 +313,58 @@ const Profile = () => {
           {activeTab === "profile" && (
             <div>
               <h2 className="text-2xl font-semibold mb-6">Informasi Profil</h2>
-              <form onSubmit={handleUpdateEmail} className="space-y-6">
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    <User className="inline mr-2" size={16} />
+                    User ID
+                  </label>
+                  <div className="w-full px-4 py-2 rounded-lg bg-white/20 text-gray-300">
+                    {user.uid}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     <Mail className="inline mr-2" size={16} />
                     Email
                   </label>
-                  <input
-                    type="email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="email@example.com"
-                  />
+                  <div className="w-full px-4 py-2 rounded-lg bg-white/20 text-gray-300">
+                    {user.email}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Untuk mengubah email, silakan hubungi administrator
+                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    <Lock className="inline mr-2" size={16} />
-                    Password Saat Ini (untuk konfirmasi)
+                    <CheckCircle className="inline mr-2" size={16} />
+                    Status Verifikasi
                   </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Masukkan password saat ini"
-                  />
+                  <div className="w-full px-4 py-2 rounded-lg bg-white/20">
+                    {user.emailVerified ? (
+                      <span className="text-green-400">
+                        ✓ Email Terverifikasi
+                      </span>
+                    ) : (
+                      <span className="text-yellow-400">
+                        ⚠ Belum Terverifikasi
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold transition-all shadow-lg"
-                >
-                  Perbarui Email
-                </button>
-              </form>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    <Clock className="inline mr-2" size={16} />
+                    Tanggal Bergabung
+                  </label>
+                  <div className="w-full px-4 py-2 rounded-lg bg-white/20 text-gray-300">
+                    {formatDate(user.metadata.creationTime)}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -299,10 +381,25 @@ const Profile = () => {
                   <input
                     type="password"
                     value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      if (errors.currentPassword) {
+                        setErrors({ ...errors, currentPassword: "" });
+                      }
+                    }}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.currentPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Masukkan password lama"
                   />
+                  {errors.currentPassword && (
+                    <p className="text-red-400 text-sm mt-1 flex items-center">
+                      <AlertCircle size={14} className="mr-1" />
+                      {errors.currentPassword}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -313,10 +410,25 @@ const Profile = () => {
                   <input
                     type="password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (errors.newPassword) {
+                        setErrors({ ...errors, newPassword: "" });
+                      }
+                    }}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.newPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Minimal 6 karakter"
                   />
+                  {errors.newPassword && (
+                    <p className="text-red-400 text-sm mt-1 flex items-center">
+                      <AlertCircle size={14} className="mr-1" />
+                      {errors.newPassword}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -327,10 +439,25 @@ const Profile = () => {
                   <input
                     type="password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) {
+                        setErrors({ ...errors, confirmPassword: "" });
+                      }
+                    }}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.confirmPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Ketik ulang password baru"
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-red-400 text-sm mt-1 flex items-center">
+                      <AlertCircle size={14} className="mr-1" />
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                 </div>
 
                 <button
