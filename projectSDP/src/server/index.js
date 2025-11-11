@@ -46,10 +46,21 @@ app.get("/api/products", async (req, res) => {
 
       console.log(`📊 Total MASUK: ${totalMasuk}, Total KELUAR: ${totalKeluar}, STOK AKHIR: ${stokAkhir}`);
 
+      // Ambil data kategori
+      let kategoriData = null;
+      if (data.kategori_id) {
+        const kategoriDoc = await db.collection("categories").doc(data.kategori_id).get();
+        if (kategoriDoc.exists) {
+          kategoriData = kategoriDoc.data();
+        }
+      }
+
       products.push({
         id: doc.id,
         ...data,
         stok: stokAkhir,
+        kategori_nama: kategoriData ? kategoriData.nama : "Tidak ada kategori",
+        kategori_id: data.kategori_id || null
       });
     }
 
@@ -64,7 +75,7 @@ app.post("/api/products", async (req, res) => {
   try {
     const {
       nama,
-      kategori,
+      kategori_id,
       harga,
       img_url,
       deskripsi,
@@ -73,13 +84,19 @@ app.post("/api/products", async (req, res) => {
       stok,
     } = req.body;
 
-    if (!nama || !kategori || !harga) {
+    if (!nama || !kategori_id || !harga) {
       return res.status(400).json({ error: "Data produk tidak lengkap" });
+    }
+
+    // Validasi kategori exists
+    const kategoriDoc = await db.collection("categories").doc(kategori_id).get();
+    if (!kategoriDoc.exists) {
+      return res.status(400).json({ error: "Kategori tidak ditemukan" });
     }
 
     const newProduct = {
       nama,
-      kategori,
+      kategori_id,
       harga,
       img_url: img_url || "",
       deskripsi: deskripsi || "",
@@ -118,6 +135,14 @@ app.put("/api/products/:id", async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
+    // Jika update kategori_id, validasi kategori exists
+    if (updateData.kategori_id) {
+      const kategoriDoc = await db.collection("categories").doc(updateData.kategori_id).get();
+      if (!kategoriDoc.exists) {
+        return res.status(400).json({ error: "Kategori tidak ditemukan" });
+      }
+    }
+
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
 
@@ -148,29 +173,104 @@ app.put("/api/products/:id/stock", async (req, res) => {
     if (!Number.isInteger(stok) || stok < 0)
       return res.status(400).json({ error: "Stok tidak valid" });
 
+    console.log(`🔄 Updating stock for product ${id} to ${stok}`);
+
     const stockSnap = await db
       .collection("stock")
       .where("produk_id", "==", id)
-      .where("keterangan", "==", "Stok awal produk")
       .get();
 
-    stockSnap.forEach((doc) => doc.ref.delete());
-    if (stok > 0) {
-      await db.collection("stock").add({
-        produk_id: id,
-        tipe: "masuk",
-        jumlah: stok,
-        keterangan: "Stok awal produk",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    let totalMasuk = 0;
+    let totalKeluar = 0;
+
+    stockSnap.forEach((doc) => {
+      const data = doc.data();
+      if (data.tipe === "masuk") {
+        totalMasuk += data.jumlah;
+      } else if (data.tipe === "keluar" && data.status !== "returned") {
+        totalKeluar += data.jumlah;
+      }
+    });
+
+    console.log(`📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${totalMasuk - totalKeluar}`);
+
+    const stokAkhirSekarang = totalMasuk - totalKeluar;
+    const selisihStok = stok - stokAkhirSekarang;
+
+    console.log(`🎯 Target stok: ${stok}, Selisih: ${selisihStok}`);
+
+    if (selisihStok !== 0) {
+      const stokAwalSnap = await db
+        .collection("stock")
+        .where("produk_id", "==", id)
+        .where("keterangan", "==", "Stok awal produk")
+        .get();
+
+      let stokAwalDoc = null;
+      stokAwalSnap.forEach(doc => {
+        stokAwalDoc = { ref: doc.ref, data: doc.data() };
       });
+
+      if (stokAwalDoc) {
+        const newStokAwal = stokAwalDoc.data.jumlah + selisihStok;
+        if (newStokAwal < 0) {
+          return res.status(400).json({
+            error: `Tidak dapat mengurangi stok. Stok minimum: ${stokAkhirSekarang + stokAwalDoc.data.jumlah}`
+          });
+        }
+
+        await stokAwalDoc.ref.update({
+          jumlah: newStokAwal,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`📝 Updated existing stok awal: ${stokAwalDoc.data.jumlah} → ${newStokAwal}`);
+      } else {
+        if (selisihStok > 0) {
+          await db.collection("stock").add({
+            produk_id: id,
+            tipe: "masuk",
+            jumlah: selisihStok,
+            keterangan: "Stok awal produk",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          console.log(`📝 Created new stok awal: ${selisihStok}`);
+        } else {
+          return res.status(400).json({
+            error: "Tidak dapat mengurangi stok karena tidak ada stok awal yang bisa dikurangi"
+          });
+        }
+      }
     }
 
-    res.status(200).json({ message: "Stok berhasil diperbarui", stok });
+    const updatedStockSnap = await db
+      .collection("stock")
+      .where("produk_id", "==", id)
+      .get();
+
+    let updatedTotalMasuk = 0;
+    let updatedTotalKeluar = 0;
+
+    updatedStockSnap.forEach((doc) => {
+      const data = doc.data();
+      if (data.tipe === "masuk") {
+        updatedTotalMasuk += data.jumlah;
+      } else if (data.tipe === "keluar" && data.status !== "returned") {
+        updatedTotalKeluar += data.jumlah;
+      }
+    });
+
+    const stokAkhirBaru = updatedTotalMasuk - updatedTotalKeluar;
+    console.log(`✅ Updated - Masuk: ${updatedTotalMasuk}, Keluar: ${updatedTotalKeluar}, Stok Akhir: ${stokAkhirBaru}`);
+
+    res.status(200).json({
+      message: "Stok berhasil diperbarui",
+      stok: stokAkhirBaru,
+      previous_stock: stokAkhirSekarang,
+      adjustment: selisihStok
+    });
   } catch (error) {
     console.error("Error update stok:", error);
-    res
-      .status(500)
-      .json({ error: "Gagal update stok", details: error.message });
+    res.status(500).json({ error: "Gagal update stok", details: error.message });
   }
 });
 
@@ -721,6 +821,120 @@ app.patch("/api/orders/:orderId", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Gagal update status order" });
+  }
+});
+
+app.get("/api/categories", async (req, res) => {
+  try {
+    const snapshot = await db.collection("categories")
+      .orderBy("nama", "asc")
+      .get();
+
+    const categories = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ error: "Gagal mengambil kategori" });
+  }
+});
+
+app.post("/api/categories", async (req, res) => {
+  try {
+    const { nama } = req.body;
+
+    if (!nama || nama.trim() === "") {
+      return res.status(400).json({ error: "Nama kategori tidak boleh kosong" });
+    }
+
+    // Cek apakah kategori sudah ada
+    const existingCategory = await db.collection("categories")
+      .where("nama", "==", nama.trim())
+      .get();
+
+    if (!existingCategory.empty) {
+      return res.status(400).json({ error: "Kategori sudah ada" });
+    }
+
+    const newCategory = {
+      nama: nama.trim(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const categoryRef = await db.collection("categories").add(newCategory);
+
+    res.status(201).json({
+      id: categoryRef.id,
+      ...newCategory,
+      message: "Kategori berhasil ditambahkan"
+    });
+  } catch (error) {
+    console.error("Error adding category:", error);
+    res.status(500).json({ error: "Gagal menambah kategori" });
+  }
+});
+
+app.delete("/api/categories/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const productsUsingCategory = await db.collection("products")
+      .where("kategori_id", "==", id)
+      .get();
+
+    if (!productsUsingCategory.empty) {
+      return res.status(400).json({
+        error: "Tidak dapat menghapus kategori karena masih digunakan oleh produk",
+        productCount: productsUsingCategory.size
+      });
+    }
+
+    await db.collection("categories").doc(id).delete();
+
+    res.status(200).json({
+      message: "Kategori berhasil dihapus",
+      id
+    });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    res.status(500).json({ error: "Gagal menghapus kategori" });
+  }
+});
+
+app.put("/api/categories/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama } = req.body;
+
+    if (!nama || nama.trim() === "") {
+      return res.status(400).json({ error: "Nama kategori tidak boleh kosong" });
+    }
+
+    const existingCategory = await db.collection("categories")
+      .where("nama", "==", nama.trim())
+      .get();
+
+    const isDuplicate = existingCategory.docs.some(doc => doc.id !== id);
+    if (isDuplicate) {
+      return res.status(400).json({ error: "Kategori sudah ada" });
+    }
+
+    await db.collection("categories").doc(id).update({
+      nama: nama.trim(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.status(200).json({
+      id,
+      nama: nama.trim(),
+      message: "Kategori berhasil diupdate"
+    });
+  } catch (error) {
+    console.error("Error updating category:", error);
+    res.status(500).json({ error: "Gagal mengupdate kategori" });
   }
 });
 
