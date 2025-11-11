@@ -941,9 +941,4 @@ app.put("/api/categories/:id", async (req, res) => {
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\nServer berjalan di http://localhost:${PORT}`);
-  console.log(`API Endpoints:`);
-  console.log(`GET    /api/products     - Get all products`);
-  console.log(`POST   /api/products     - Add new product`);
-  console.log(`PUT    /api/products/:id - Update product`);
-  console.log(`DELETE /api/products/:id - Delete product\n`);
 });
