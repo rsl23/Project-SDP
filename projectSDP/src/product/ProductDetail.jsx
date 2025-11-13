@@ -6,7 +6,15 @@ import { addToCart } from "../apiService/cartApi";
 import tokopediaLogo from "../assets/tokopedia.jpeg";
 import shopeeLogo from "../assets/shopee.png";
 import toast, { Toaster } from "react-hot-toast";
-import { ArrowLeft, ShoppingCart, Package, Tag, ExternalLink, Star, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  Package,
+  Tag,
+  ExternalLink,
+  Star,
+  Truck,
+} from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -24,10 +32,10 @@ const ProductDetail = () => {
         duration: 3000,
         position: "top-center",
         style: {
-          background: '#1e1b4b',
-          color: 'white',
-          border: '1px solid #4f46e5'
-        }
+          background: "#1e1b4b",
+          color: "white",
+          border: "1px solid #4f46e5",
+        },
       });
     } catch (error) {
       console.error("Gagal menambah ke keranjang:", error);
@@ -35,19 +43,19 @@ const ProductDetail = () => {
       if (error.message === "User belum login") {
         toast.error("Silakan login terlebih dahulu!", {
           style: {
-            background: '#7f1d1d',
-            color: 'white',
-            border: '1px solid #dc2626'
-          }
+            background: "#7f1d1d",
+            color: "white",
+            border: "1px solid #dc2626",
+          },
         });
         navigate("/login", { state: { from: location } });
       } else {
         toast.error("Gagal menambahkan ke keranjang!", {
           style: {
-            background: '#7f1d1d',
-            color: 'white',
-            border: '1px solid #dc2626'
-          }
+            background: "#7f1d1d",
+            color: "white",
+            border: "1px solid #dc2626",
+          },
         });
       }
     }
@@ -59,7 +67,7 @@ const ProductDetail = () => {
         setLoading(true);
         const [productsData, categoriesData] = await Promise.all([
           getProducts(),
-          getCategories()
+          getCategories(),
         ]);
 
         const selected = productsData.find((p) => p.id.toString() === id);
@@ -71,15 +79,14 @@ const ProductDetail = () => {
 
         setProduct(selected);
         setCategories(categoriesData);
-
       } catch (err) {
         console.error("Error fetching data:", err);
         toast.error("Gagal memuat data produk", {
           style: {
-            background: '#7f1d1d',
-            color: 'white',
-            border: '1px solid #dc2626'
-          }
+            background: "#7f1d1d",
+            color: "white",
+            border: "1px solid #dc2626",
+          },
         });
       } finally {
         setLoading(false);
@@ -94,7 +101,7 @@ const ProductDetail = () => {
 
     if (product.kategori_nama) return product.kategori_nama;
     if (product.kategori_id) {
-      const category = categories.find(cat => cat.id === product.kategori_id);
+      const category = categories.find((cat) => cat.id === product.kategori_id);
       if (category) return category.nama;
     }
     if (product.kategori) return product.kategori;
@@ -107,21 +114,21 @@ const ProductDetail = () => {
         color: "text-green-400",
         text: "Tersedia",
         badge: "bg-green-500/20 border-green-500/50 text-green-300",
-        icon: "🟢"
+        icon: "🟢",
       };
     } else if (stock > 0) {
       return {
         color: "text-yellow-400",
         text: "Hampir Habis",
         badge: "bg-yellow-500/20 border-yellow-500/50 text-yellow-300",
-        icon: "🟡"
+        icon: "🟡",
       };
     } else {
       return {
         color: "text-red-400",
         text: "Stok Habis",
         badge: "bg-red-500/20 border-red-500/50 text-red-300",
-        icon: "🔴"
+        icon: "🔴",
       };
     }
   };
@@ -144,7 +151,9 @@ const ProductDetail = () => {
           <div className="w-20 h-20 mx-auto mb-6 bg-white/10 rounded-full flex items-center justify-center">
             <Package className="text-white" size={40} />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Produk Tidak Ditemukan</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Produk Tidak Ditemukan
+          </h2>
           <button
             onClick={() => navigate("/product")}
             className="px-8 py-3 bg-gradient-to-r from-pink-500 to-indigo-600 text-white rounded-xl hover:from-pink-600 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg"
@@ -170,7 +179,10 @@ const ProductDetail = () => {
             onClick={() => navigate(-1)}
             className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             <span className="font-medium">Kembali</span>
           </button>
         </div>
@@ -179,16 +191,21 @@ const ProductDetail = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
           {/* Product Image */}
           <div className="flex justify-center">
             <div className="relative group">
-              <div className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}></div>
+              <div
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+              ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} group-hover:scale-105`}
+                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${
+                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -206,14 +223,15 @@ const ProductDetail = () => {
 
           {/* Product Info */}
           <div className="flex flex-col justify-center space-y-8">
-
             {/* Header Section */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
                   {product.nama}
                 </h1>
-                <div className={`px-4 py-2 rounded-full border ${stockInfo.badge} backdrop-blur-sm`}>
+                <div
+                  className={`px-4 py-2 rounded-full border ${stockInfo.badge} backdrop-blur-sm`}
+                >
                   <span className="flex items-center gap-2 text-sm font-semibold">
                     {stockInfo.icon} {stockInfo.text}
                   </span>
@@ -227,7 +245,9 @@ const ProductDetail = () => {
                 </p>
                 <div className="flex items-center gap-1 bg-yellow-500/20 px-3 py-1 rounded-full">
                   <Star size={16} className="text-yellow-400 fill-current" />
-                  <span className="text-yellow-300 text-sm font-medium">5.0</span>
+                  <span className="text-yellow-300 text-sm font-medium">
+                    5.0
+                  </span>
                 </div>
               </div>
             </div>
@@ -273,7 +293,9 @@ const ProductDetail = () => {
                   {product.deskripsi}
                 </p>
               ) : (
-                <p className="text-gray-400 italic">Tidak ada deskripsi untuk produk ini.</p>
+                <p className="text-gray-400 italic">
+                  Tidak ada deskripsi untuk produk ini.
+                </p>
               )}
             </div>
 
@@ -283,10 +305,11 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full group relative overflow-hidden px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 ${product.stok === 0
+                className={`w-full group relative overflow-hidden px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 ${
+                  product.stok === 0
                     ? "bg-gray-600/50 cursor-not-allowed"
                     : "bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 hover:shadow-2xl hover:scale-105"
-                  }`}
+                }`}
               >
                 <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 <ShoppingCart size={24} className="relative z-10" />
@@ -297,50 +320,72 @@ const ProductDetail = () => {
 
               {/* E-commerce Links */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <a
-                  href={product.link_tokopedia || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium transition-all duration-300 ${!product.link_tokopedia || product.stok === 0
-                      ? "bg-gray-600/50 cursor-not-allowed opacity-50"
-                      : "bg-green-600 hover:bg-green-700 hover:scale-105 hover:shadow-xl"
-                    }`}
-                  onClick={(e) => (!product.link_tokopedia || product.stok === 0) && e.preventDefault()}
-                >
-                  <img
-                    src={tokopediaLogo}
-                    alt="Tokopedia"
-                    className="w-6 h-6 object-contain rounded"
-                  />
-                  <span>Tokopedia</span>
-                  <ExternalLink size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                {product.link_tokopedia ? (
+                  <a
+                    href={product.link_tokopedia}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium transition-all duration-300 bg-green-600 hover:bg-green-700 hover:scale-105 hover:shadow-xl text-white"
+                  >
+                    <img
+                      src={tokopediaLogo}
+                      alt="Tokopedia"
+                      className="w-6 h-6 object-contain rounded"
+                    />
+                    <span>Beli di Tokopedia</span>
+                    <ExternalLink
+                      size={16}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </a>
+                ) : (
+                  <div className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium bg-gray-600/50 cursor-not-allowed opacity-50 text-white">
+                    <img
+                      src={tokopediaLogo}
+                      alt="Tokopedia"
+                      className="w-6 h-6 object-contain rounded"
+                    />
+                    <span>Link Tidak Tersedia</span>
+                  </div>
+                )}
 
-                <a
-                  href={product.link_shopee || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium transition-all duration-300 ${!product.link_shopee || product.stok === 0
-                      ? "bg-gray-600/50 cursor-not-allowed opacity-50"
-                      : "bg-orange-600 hover:bg-orange-700 hover:scale-105 hover:shadow-xl"
-                    }`}
-                  onClick={(e) => (!product.link_shopee || product.stok === 0) && e.preventDefault()}
-                >
-                  <img
-                    src={shopeeLogo}
-                    alt="Shopee"
-                    className="w-6 h-6 object-contain"
-                  />
-                  <span>Shopee</span>
-                  <ExternalLink size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                {product.link_shopee ? (
+                  <a
+                    href={product.link_shopee}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium transition-all duration-300 bg-orange-600 hover:bg-orange-700 hover:scale-105 hover:shadow-xl text-white"
+                  >
+                    <img
+                      src={shopeeLogo}
+                      alt="Shopee"
+                      className="w-6 h-6 object-contain"
+                    />
+                    <span>Beli di Shopee</span>
+                    <ExternalLink
+                      size={16}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </a>
+                ) : (
+                  <div className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-medium bg-gray-600/50 cursor-not-allowed opacity-50 text-white">
+                    <img
+                      src={shopeeLogo}
+                      alt="Shopee"
+                      className="w-6 h-6 object-contain"
+                    />
+                    <span>Link Tidak Tersedia</span>
+                  </div>
+                )}
               </div>
 
               {/* Shipping Info */}
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <Truck size={20} className="text-indigo-400" />
-                  <span className="text-sm">Gratis pengiriman untuk order di atas Rp 500.000</span>
+                  <span className="text-sm">
+                    Gratis pengiriman untuk order di atas Rp 500.000
+                  </span>
                 </div>
               </div>
             </div>
