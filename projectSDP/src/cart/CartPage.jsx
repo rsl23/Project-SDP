@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getCart, deleteCartItem, updateCartItem } from "../apiService/cartApi";
-import { Trash2, Plus, Minus, ShoppingCart, ArrowLeft, Package, CreditCard, Truck, Shield } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Minus,
+  ShoppingCart,
+  ArrowLeft,
+  Package,
+  CreditCard,
+  Truck,
+  Shield,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 
@@ -38,7 +48,7 @@ const CartPage = () => {
   };
 
   const handleQuantityChange = async (id, delta) => {
-    const item = cart.find(item => item.id === id);
+    const item = cart.find((item) => item.id === id);
     if (!item) return;
 
     const newJumlah = item.jumlah + delta;
@@ -46,7 +56,7 @@ const CartPage = () => {
 
     if (newJumlah < 1 || newJumlah > stok) return;
 
-    setUpdatingItems(prev => new Set(prev).add(id));
+    setUpdatingItems((prev) => new Set(prev).add(id));
 
     setCart((prev) =>
       prev.map((item) =>
@@ -65,7 +75,7 @@ const CartPage = () => {
       );
     } finally {
       // Remove from updating items
-      setUpdatingItems(prev => {
+      setUpdatingItems((prev) => {
         const newSet = new Set(prev);
         newSet.delete(id);
         return newSet;
@@ -123,9 +133,13 @@ const CartPage = () => {
 
       console.log("✅ Processed order items:", orderItems);
 
-      const invalidItems = orderItems.filter(item => !item.produk_id || !item.jumlah);
+      const invalidItems = orderItems.filter(
+        (item) => !item.produk_id || !item.jumlah
+      );
       if (invalidItems.length > 0) {
-        throw new Error(`Terdapat ${invalidItems.length} item dengan data tidak valid`);
+        throw new Error(
+          `Terdapat ${invalidItems.length} item dengan data tidak valid`
+        );
       }
 
       const total = calculateTotal();
@@ -140,7 +154,7 @@ const CartPage = () => {
         body: JSON.stringify({
           userId,
           items: orderItems,
-          total
+          total,
         }),
       });
 
@@ -150,7 +164,10 @@ const CartPage = () => {
       console.log("📨 Response data:", responseData);
 
       if (!res.ok) {
-        const errorMsg = responseData.error || responseData.details || `HTTP error! status: ${res.status}`;
+        const errorMsg =
+          responseData.error ||
+          responseData.details ||
+          `HTTP error! status: ${res.status}`;
         throw new Error(errorMsg);
       }
 
@@ -159,10 +176,11 @@ const CartPage = () => {
       await Promise.all(deletePromises);
 
       console.log("🎉 Checkout successful!");
-      alert("Checkout berhasil! Order masuk ke sistem. Stok sementara telah dikurangi.");
+      alert(
+        "Checkout berhasil! Order masuk ke sistem. Stok sementara telah dikurangi."
+      );
 
       setCart([]);
-
     } catch (err) {
       console.error("❌ Checkout error:", err);
       console.error("❌ Error stack:", err.stack);
@@ -172,9 +190,11 @@ const CartPage = () => {
       if (err.message.includes("Stok tidak cukup")) {
         errorMessage += err.message;
       } else if (err.message.includes("produk_id tidak ditemukan")) {
-        errorMessage += "Data keranjang tidak valid. Silakan refresh halaman dan coba lagi.";
+        errorMessage +=
+          "Data keranjang tidak valid. Silakan refresh halaman dan coba lagi.";
       } else if (err.message.includes("Data produk tidak lengkap")) {
-        errorMessage += "Beberapa produk tidak ditemukan. Silakan refresh halaman.";
+        errorMessage +=
+          "Beberapa produk tidak ditemukan. Silakan refresh halaman.";
       } else {
         errorMessage += err.message;
       }
@@ -190,8 +210,7 @@ const CartPage = () => {
       0
     );
 
-  const getTotalItems = () =>
-    cart.reduce((acc, item) => acc + item.jumlah, 0);
+  const getTotalItems = () => cart.reduce((acc, item) => acc + item.jumlah, 0);
 
   if (loading) {
     return (
@@ -226,7 +245,10 @@ const CartPage = () => {
             onClick={() => navigate(-1)}
             className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             <span className="font-medium">Kembali Belanja</span>
           </button>
         </div>
@@ -238,7 +260,9 @@ const CartPage = () => {
             <div className="w-24 h-24 mx-auto mb-6 bg-white/10 rounded-full flex items-center justify-center">
               <ShoppingCart size={40} className="text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-4">Keranjang Kosong</h3>
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Keranjang Kosong
+            </h3>
             <p className="text-gray-400 mb-8">
               Yuk, temukan produk menarik dan mulai belanja!
             </p>
@@ -271,7 +295,9 @@ const CartPage = () => {
                           }}
                         />
                         <div className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                          {item.produk?.kategori_nama || item.produk?.kategori || "Produk"}
+                          {item.produk?.kategori_nama ||
+                            item.produk?.kategori ||
+                            "Produk"}
                         </div>
                       </div>
                     </div>
@@ -290,7 +316,9 @@ const CartPage = () => {
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => handleQuantityChange(item.id, -1)}
-                            disabled={updatingItems.has(item.id) || item.jumlah <= 1}
+                            disabled={
+                              updatingItems.has(item.id) || item.jumlah <= 1
+                            }
                             className="p-2 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                           >
                             <Minus size={18} />
@@ -309,7 +337,10 @@ const CartPage = () => {
 
                           <button
                             onClick={() => handleQuantityChange(item.id, 1)}
-                            disabled={updatingItems.has(item.id) || item.jumlah >= (item.produk?.stok || 0)}
+                            disabled={
+                              updatingItems.has(item.id) ||
+                              item.jumlah >= (item.produk?.stok || 0)
+                            }
                             className="p-2 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                           >
                             <Plus size={18} />
@@ -322,7 +353,10 @@ const CartPage = () => {
                           <p className="text-lg font-semibold text-white">
                             Subtotal:{" "}
                             <span className="text-indigo-400">
-                              Rp {((item.produk?.harga || 0) * item.jumlah).toLocaleString("id-ID")}
+                              Rp{" "}
+                              {(
+                                (item.produk?.harga || 0) * item.jumlah
+                              ).toLocaleString("id-ID")}
                             </span>
                           </p>
                           <p className="text-sm text-gray-400 mt-1">
@@ -354,7 +388,9 @@ const CartPage = () => {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between items-center text-gray-300">
                     <span>Total Item:</span>
-                    <span className="text-white font-semibold">{getTotalItems()} item</span>
+                    <span className="text-white font-semibold">
+                      {getTotalItems()} item
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-gray-300">
                     <span>Subtotal:</span>
@@ -391,7 +427,9 @@ const CartPage = () => {
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-3 text-sm text-gray-300">
                     <Truck size={16} className="text-green-400" />
-                    <span>Gratis pengiriman untuk order di atas Rp 500.000</span>
+                    <span>
+                      Gratis pengiriman untuk order di atas Rp 500.000
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-300">
                     <Shield size={16} className="text-blue-400" />

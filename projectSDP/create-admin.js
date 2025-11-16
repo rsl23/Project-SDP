@@ -13,8 +13,8 @@ import { auth, db } from "./src/firebase/config.js";
 
 async function createAdminUser() {
   const adminData = {
-    name: "Admin BJM Parts",
-    email: "admin@bjmparts.com",
+    name: "Admin BJM Parts 2",
+    email: "rsl777.la@gmail.com",
     password: "admin123456", // Ganti dengan password yang aman!
   };
 
@@ -41,7 +41,7 @@ async function createAdminUser() {
       name: adminData.name,
       email: adminData.email,
       firebase_uid: user.uid,
-      role: "admin", // 🔑 Role admin
+      role: "admin", // Role admin
       auth_provider: "email/password",
       email_verified: user.emailVerified,
       createdAt: serverTimestamp(),

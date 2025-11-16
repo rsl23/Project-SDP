@@ -16,10 +16,13 @@ app.get("/api/products", async (req, res) => {
     for (const doc of snapshot.docs) {
       const data = doc.data();
 
-      console.log(`\n🔍 Calculating stock for product: ${data.nama} (${doc.id})`);
+      console.log(
+        `\n🔍 Calculating stock for product: ${data.nama} (${doc.id})`
+      );
 
       // Hitung stok dari tabel stock
-      const stockSnap = await db.collection("stock")
+      const stockSnap = await db
+        .collection("stock")
         .where("produk_id", "==", doc.id)
         .get();
 
@@ -35,21 +38,30 @@ app.get("/api/products", async (req, res) => {
         } else if (st.tipe === "keluar") {
           if (st.status !== "returned") {
             totalKeluar += st.jumlah;
-            console.log(`➖ KELUAR: ${st.jumlah} - ${st.status} - ${st.keterangan}`);
+            console.log(
+              `➖ KELUAR: ${st.jumlah} - ${st.status} - ${st.keterangan}`
+            );
           } else {
-            console.log(`⏸️  KELUAR RETURNED (skip): ${st.jumlah} - ${st.keterangan}`);
+            console.log(
+              `⏸️  KELUAR RETURNED (skip): ${st.jumlah} - ${st.keterangan}`
+            );
           }
         }
       });
 
       const stokAkhir = totalMasuk - totalKeluar;
 
-      console.log(`📊 Total MASUK: ${totalMasuk}, Total KELUAR: ${totalKeluar}, STOK AKHIR: ${stokAkhir}`);
+      console.log(
+        `📊 Total MASUK: ${totalMasuk}, Total KELUAR: ${totalKeluar}, STOK AKHIR: ${stokAkhir}`
+      );
 
       // Ambil data kategori
       let kategoriData = null;
       if (data.kategori_id) {
-        const kategoriDoc = await db.collection("categories").doc(data.kategori_id).get();
+        const kategoriDoc = await db
+          .collection("categories")
+          .doc(data.kategori_id)
+          .get();
         if (kategoriDoc.exists) {
           kategoriData = kategoriDoc.data();
         }
@@ -60,7 +72,7 @@ app.get("/api/products", async (req, res) => {
         ...data,
         stok: stokAkhir,
         kategori_nama: kategoriData ? kategoriData.nama : "Tidak ada kategori",
-        kategori_id: data.kategori_id || null
+        kategori_id: data.kategori_id || null,
       });
     }
 
@@ -89,7 +101,10 @@ app.post("/api/products", async (req, res) => {
     }
 
     // Validasi kategori exists
-    const kategoriDoc = await db.collection("categories").doc(kategori_id).get();
+    const kategoriDoc = await db
+      .collection("categories")
+      .doc(kategori_id)
+      .get();
     if (!kategoriDoc.exists) {
       return res.status(400).json({ error: "Kategori tidak ditemukan" });
     }
@@ -137,7 +152,10 @@ app.put("/api/products/:id", async (req, res) => {
 
     // Jika update kategori_id, validasi kategori exists
     if (updateData.kategori_id) {
-      const kategoriDoc = await db.collection("categories").doc(updateData.kategori_id).get();
+      const kategoriDoc = await db
+        .collection("categories")
+        .doc(updateData.kategori_id)
+        .get();
       if (!kategoriDoc.exists) {
         return res.status(400).json({ error: "Kategori tidak ditemukan" });
       }
@@ -192,7 +210,11 @@ app.put("/api/products/:id/stock", async (req, res) => {
       }
     });
 
-    console.log(`📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${totalMasuk - totalKeluar}`);
+    console.log(
+      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${
+        totalMasuk - totalKeluar
+      }`
+    );
 
     const stokAkhirSekarang = totalMasuk - totalKeluar;
     const selisihStok = stok - stokAkhirSekarang;
@@ -207,7 +229,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
         .get();
 
       let stokAwalDoc = null;
-      stokAwalSnap.forEach(doc => {
+      stokAwalSnap.forEach((doc) => {
         stokAwalDoc = { ref: doc.ref, data: doc.data() };
       });
 
@@ -215,15 +237,19 @@ app.put("/api/products/:id/stock", async (req, res) => {
         const newStokAwal = stokAwalDoc.data.jumlah + selisihStok;
         if (newStokAwal < 0) {
           return res.status(400).json({
-            error: `Tidak dapat mengurangi stok. Stok minimum: ${stokAkhirSekarang + stokAwalDoc.data.jumlah}`
+            error: `Tidak dapat mengurangi stok. Stok minimum: ${
+              stokAkhirSekarang + stokAwalDoc.data.jumlah
+            }`,
           });
         }
 
         await stokAwalDoc.ref.update({
           jumlah: newStokAwal,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        console.log(`📝 Updated existing stok awal: ${stokAwalDoc.data.jumlah} → ${newStokAwal}`);
+        console.log(
+          `📝 Updated existing stok awal: ${stokAwalDoc.data.jumlah} → ${newStokAwal}`
+        );
       } else {
         if (selisihStok > 0) {
           await db.collection("stock").add({
@@ -236,7 +262,8 @@ app.put("/api/products/:id/stock", async (req, res) => {
           console.log(`📝 Created new stok awal: ${selisihStok}`);
         } else {
           return res.status(400).json({
-            error: "Tidak dapat mengurangi stok karena tidak ada stok awal yang bisa dikurangi"
+            error:
+              "Tidak dapat mengurangi stok karena tidak ada stok awal yang bisa dikurangi",
           });
         }
       }
@@ -260,17 +287,21 @@ app.put("/api/products/:id/stock", async (req, res) => {
     });
 
     const stokAkhirBaru = updatedTotalMasuk - updatedTotalKeluar;
-    console.log(`✅ Updated - Masuk: ${updatedTotalMasuk}, Keluar: ${updatedTotalKeluar}, Stok Akhir: ${stokAkhirBaru}`);
+    console.log(
+      `✅ Updated - Masuk: ${updatedTotalMasuk}, Keluar: ${updatedTotalKeluar}, Stok Akhir: ${stokAkhirBaru}`
+    );
 
     res.status(200).json({
       message: "Stok berhasil diperbarui",
       stok: stokAkhirBaru,
       previous_stock: stokAkhirSekarang,
-      adjustment: selisihStok
+      adjustment: selisihStok,
     });
   } catch (error) {
     console.error("Error update stok:", error);
-    res.status(500).json({ error: "Gagal update stok", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal update stok", details: error.message });
   }
 });
 
@@ -379,7 +410,8 @@ app.get("/api/cart", async (req, res) => {
       return res.status(400).json({ error: "userId diperlukan" });
     }
 
-    const snapshot = await db.collection("cart")
+    const snapshot = await db
+      .collection("cart")
       .where("userId", "==", userId)
       .get();
 
@@ -392,6 +424,37 @@ app.get("/api/cart", async (req, res) => {
         .doc(data.produk_id)
         .get();
       const produkData = produkDoc.exists ? produkDoc.data() : null;
+      const stockSnap = await db
+        .collection("stock")
+        .where("produk_id", "==", data.produk_id)
+        .get();
+
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+
+      stockSnap.forEach((s) => {
+        const st = s.data();
+
+        if (st.tipe === "masuk") {
+          totalMasuk += st.jumlah;
+          console.log(`➕ MASUK: ${st.jumlah} - ${st.keterangan}`);
+        } else if (st.tipe === "keluar") {
+          if (st.status !== "returned") {
+            totalKeluar += st.jumlah;
+            console.log(
+              `➖ KELUAR: ${st.jumlah} - ${st.status} - ${st.keterangan}`
+            );
+          } else {
+            console.log(
+              `⏸️  KELUAR RETURNED (skip): ${st.jumlah} - ${st.keterangan}`
+            );
+          }
+        }
+      });
+
+      const stokAkhir = totalMasuk - totalKeluar;
+      console.log(`Ini stok akhir ${stokAkhir}`);
+      produkData.stok = stokAkhir;
 
       cartItems.push({
         id: doc.id,
@@ -400,10 +463,11 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-            nama: produkData.nama,
-            harga: produkData.harga,
-            img_url: produkData.img_url,
-          }
+              nama: produkData.nama,
+              harga: produkData.harga,
+              img_url: produkData.img_url,
+              stok: produkData.stok,
+            }
           : null,
       });
     }
@@ -432,7 +496,8 @@ app.post("/api/cart", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
-    const existingCart = await db.collection("cart")
+    const existingCart = await db
+      .collection("cart")
       .where("userId", "==", userId)
       .where("produk_id", "==", produk_id)
       .get();
@@ -533,11 +598,15 @@ app.post("/api/orders", async (req, res) => {
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "Items wajib diisi dan harus array" });
+      return res
+        .status(400)
+        .json({ error: "Items wajib diisi dan harus array" });
     }
 
     if (!total || isNaN(total)) {
-      return res.status(400).json({ error: "Total wajib diisi dan harus angka" });
+      return res
+        .status(400)
+        .json({ error: "Total wajib diisi dan harus angka" });
     }
 
     console.log("🔍 Validating stock for", items.length, "items...");
@@ -546,19 +615,29 @@ app.post("/api/orders", async (req, res) => {
       console.log("📋 Checking item:", item);
 
       if (!item.produk_id) {
-        return res.status(400).json({ error: "produk_id wajib diisi untuk setiap item" });
+        return res
+          .status(400)
+          .json({ error: "produk_id wajib diisi untuk setiap item" });
       }
 
       if (!item.jumlah || item.jumlah < 1) {
-        return res.status(400).json({ error: "Jumlah item harus lebih dari 0" });
+        return res
+          .status(400)
+          .json({ error: "Jumlah item harus lebih dari 0" });
       }
 
-      const produkDoc = await db.collection("products").doc(item.produk_id).get();
+      const produkDoc = await db
+        .collection("products")
+        .doc(item.produk_id)
+        .get();
       if (!produkDoc.exists) {
-        return res.status(404).json({ error: `Produk dengan ID ${item.produk_id} tidak ditemukan` });
+        return res.status(404).json({
+          error: `Produk dengan ID ${item.produk_id} tidak ditemukan`,
+        });
       }
 
-      const stockSnap = await db.collection("stock")
+      const stockSnap = await db
+        .collection("stock")
         .where("produk_id", "==", item.produk_id)
         .get();
 
@@ -568,16 +647,19 @@ app.post("/api/orders", async (req, res) => {
       stockSnap.forEach((s) => {
         const st = s.data();
         if (st.tipe === "masuk") totalMasuk += st.jumlah;
-        else if (st.tipe === "keluar" && st.status !== "returned") totalKeluar += st.jumlah; // PASTIKAN SAMA
+        else if (st.tipe === "keluar" && st.status !== "returned")
+          totalKeluar += st.jumlah; // PASTIKAN SAMA
       });
 
       const stokAkhir = totalMasuk - totalKeluar;
-      console.log(`📊 Stock for ${item.produk_id}: ${stokAkhir} (needed: ${item.jumlah})`);
+      console.log(
+        `📊 Stock for ${item.produk_id}: ${stokAkhir} (needed: ${item.jumlah})`
+      );
 
       if (stokAkhir < item.jumlah) {
         const produkData = produkDoc.data();
         return res.status(400).json({
-          error: `Stok tidak cukup untuk produk "${produkData.nama}". Stok tersedia: ${stokAkhir}, dibutuhkan: ${item.jumlah}`
+          error: `Stok tidak cukup untuk produk "${produkData.nama}". Stok tersedia: ${stokAkhir}, dibutuhkan: ${item.jumlah}`,
         });
       }
 
@@ -606,14 +688,14 @@ app.post("/api/orders", async (req, res) => {
 
     res.status(201).json({
       message: "Order berhasil dibuat",
-      orderId: newOrder.id
+      orderId: newOrder.id,
     });
   } catch (err) {
     console.error("❌ Error create order:", err);
     res.status(500).json({
       error: "Gagal membuat order",
       details: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
   }
 });
@@ -630,15 +712,20 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
     const order = orderDoc.data();
     console.log(`📦 Order found with ${order.items?.length} items`);
     const stockReturnPromises = order.items?.map(async (item) => {
-      console.log(`🔄 Returning stock for product: ${item.produk_id}, quantity: ${item.jumlah}`);
+      console.log(
+        `🔄 Returning stock for product: ${item.produk_id}, quantity: ${item.jumlah}`
+      );
 
       try {
-        const stockSnap = await db.collection("stock")
+        const stockSnap = await db
+          .collection("stock")
           .where("produk_id", "==", item.produk_id)
           .where("status", "==", "pending")
           .get();
 
-        console.log(`📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`);
+        console.log(
+          `📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`
+        );
 
         if (!stockSnap.empty) {
           let latestStock = null;
@@ -658,46 +745,67 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
             await latestStock.doc.ref.update({
               status: "returned",
               returned_at: admin.firestore.FieldValue.serverTimestamp(),
-              keterangan: "Stok dikembalikan - order ditolak"
+              keterangan: "Stok dikembalikan - order ditolak",
             });
 
-            console.log(`✅ Stock returned for product ${item.produk_id} (status updated to returned)`);
-            return { success: true, product_id: item.produk_id, quantity: item.jumlah };
+            console.log(
+              `✅ Stock returned for product ${item.produk_id} (status updated to returned)`
+            );
+            return {
+              success: true,
+              product_id: item.produk_id,
+              quantity: item.jumlah,
+            };
           }
         } else {
-          console.log(`⚠️ No pending stock found for product ${item.produk_id}`);
-          return { success: false, product_id: item.produk_id, error: "No pending stock found" };
+          console.log(
+            `⚠️ No pending stock found for product ${item.produk_id}`
+          );
+          return {
+            success: false,
+            product_id: item.produk_id,
+            error: "No pending stock found",
+          };
         }
       } catch (error) {
-        console.error(`❌ Error returning stock for product ${item.produk_id}:`, error);
-        return { success: false, product_id: item.produk_id, error: error.message };
+        console.error(
+          `❌ Error returning stock for product ${item.produk_id}:`,
+          error
+        );
+        return {
+          success: false,
+          product_id: item.produk_id,
+          error: error.message,
+        };
       }
     });
 
     const results = await Promise.all(stockReturnPromises);
-    const successfulReturns = results.filter(r => r.success);
-    const failedReturns = results.filter(r => !r.success);
+    const successfulReturns = results.filter((r) => r.success);
+    const failedReturns = results.filter((r) => !r.success);
 
-    console.log(`📊 Stock return results: ${successfulReturns.length} success, ${failedReturns.length} failed`);
+    console.log(
+      `📊 Stock return results: ${successfulReturns.length} success, ${failedReturns.length} failed`
+    );
 
     if (failedReturns.length > 0) {
       return res.status(207).json({
         message: "Stok sebagian berhasil dikembalikan",
         successful: successfulReturns,
-        failed: failedReturns
+        failed: failedReturns,
       });
     }
 
     console.log(`🎉 All stock successfully returned for order ${orderId}`);
     res.status(200).json({
       message: "Stok berhasil dikembalikan untuk semua item",
-      returned_items: successfulReturns
+      returned_items: successfulReturns,
     });
   } catch (err) {
     console.error("❌ Error return stock:", err);
     res.status(500).json({
       error: "Gagal mengembalikan stok",
-      details: err.message
+      details: err.message,
     });
   }
 });
@@ -719,12 +827,15 @@ app.post("/api/orders/:orderId/confirm-stock", async (req, res) => {
       console.log(`🔒 Confirming stock for product: ${item.produk_id}`);
 
       try {
-        const stockSnap = await db.collection("stock")
+        const stockSnap = await db
+          .collection("stock")
           .where("produk_id", "==", item.produk_id)
           .where("status", "==", "pending")
           .get();
 
-        console.log(`📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`);
+        console.log(
+          `📊 Found ${stockSnap.size} pending stock records for product ${item.produk_id}`
+        );
 
         if (!stockSnap.empty) {
           let latestStock = null;
@@ -743,45 +854,60 @@ app.post("/api/orders/:orderId/confirm-stock", async (req, res) => {
             await latestStock.ref.update({
               status: "confirmed",
               confirmed_at: admin.firestore.FieldValue.serverTimestamp(),
-              keterangan: "Stok terkonfirmasi - order diterima"
+              keterangan: "Stok terkonfirmasi - order diterima",
             });
 
             console.log(`✅ Stock confirmed for product ${item.produk_id}`);
             return { success: true, product_id: item.produk_id };
           }
         } else {
-          console.log(`⚠️ No pending stock found for product ${item.produk_id}`);
-          return { success: false, product_id: item.produk_id, error: "No pending stock found" };
+          console.log(
+            `⚠️ No pending stock found for product ${item.produk_id}`
+          );
+          return {
+            success: false,
+            product_id: item.produk_id,
+            error: "No pending stock found",
+          };
         }
       } catch (error) {
-        console.error(`❌ Error confirming stock for product ${item.produk_id}:`, error);
-        return { success: false, product_id: item.produk_id, error: error.message };
+        console.error(
+          `❌ Error confirming stock for product ${item.produk_id}:`,
+          error
+        );
+        return {
+          success: false,
+          product_id: item.produk_id,
+          error: error.message,
+        };
       }
     });
 
     const results = await Promise.all(confirmPromises);
-    const successfulConfirms = results.filter(r => r.success);
-    const failedConfirms = results.filter(r => !r.success);
+    const successfulConfirms = results.filter((r) => r.success);
+    const failedConfirms = results.filter((r) => !r.success);
 
-    console.log(`📊 Stock confirm results: ${successfulConfirms.length} success, ${failedConfirms.length} failed`);
+    console.log(
+      `📊 Stock confirm results: ${successfulConfirms.length} success, ${failedConfirms.length} failed`
+    );
 
     if (failedConfirms.length > 0) {
       return res.status(207).json({
         message: "Stok sebagian berhasil dikonfirmasi",
         successful: successfulConfirms,
-        failed: failedConfirms
+        failed: failedConfirms,
       });
     }
 
     res.status(200).json({
       message: "Stok berhasil dikonfirmasi untuk semua item",
-      confirmed_items: successfulConfirms
+      confirmed_items: successfulConfirms,
     });
   } catch (err) {
     console.error("❌ Error confirm stock:", err);
     res.status(500).json({
       error: "Gagal mengonfirmasi stok",
-      details: err.message
+      details: err.message,
     });
   }
 });
@@ -826,13 +952,14 @@ app.patch("/api/orders/:orderId", async (req, res) => {
 
 app.get("/api/categories", async (req, res) => {
   try {
-    const snapshot = await db.collection("categories")
+    const snapshot = await db
+      .collection("categories")
       .orderBy("nama", "asc")
       .get();
 
-    const categories = snapshot.docs.map(doc => ({
+    const categories = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
     res.status(200).json(categories);
@@ -847,11 +974,14 @@ app.post("/api/categories", async (req, res) => {
     const { nama } = req.body;
 
     if (!nama || nama.trim() === "") {
-      return res.status(400).json({ error: "Nama kategori tidak boleh kosong" });
+      return res
+        .status(400)
+        .json({ error: "Nama kategori tidak boleh kosong" });
     }
 
     // Cek apakah kategori sudah ada
-    const existingCategory = await db.collection("categories")
+    const existingCategory = await db
+      .collection("categories")
       .where("nama", "==", nama.trim())
       .get();
 
@@ -869,7 +999,7 @@ app.post("/api/categories", async (req, res) => {
     res.status(201).json({
       id: categoryRef.id,
       ...newCategory,
-      message: "Kategori berhasil ditambahkan"
+      message: "Kategori berhasil ditambahkan",
     });
   } catch (error) {
     console.error("Error adding category:", error);
@@ -881,14 +1011,16 @@ app.delete("/api/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const productsUsingCategory = await db.collection("products")
+    const productsUsingCategory = await db
+      .collection("products")
       .where("kategori_id", "==", id)
       .get();
 
     if (!productsUsingCategory.empty) {
       return res.status(400).json({
-        error: "Tidak dapat menghapus kategori karena masih digunakan oleh produk",
-        productCount: productsUsingCategory.size
+        error:
+          "Tidak dapat menghapus kategori karena masih digunakan oleh produk",
+        productCount: productsUsingCategory.size,
       });
     }
 
@@ -896,7 +1028,7 @@ app.delete("/api/categories/:id", async (req, res) => {
 
     res.status(200).json({
       message: "Kategori berhasil dihapus",
-      id
+      id,
     });
   } catch (error) {
     console.error("Error deleting category:", error);
@@ -910,27 +1042,30 @@ app.put("/api/categories/:id", async (req, res) => {
     const { nama } = req.body;
 
     if (!nama || nama.trim() === "") {
-      return res.status(400).json({ error: "Nama kategori tidak boleh kosong" });
+      return res
+        .status(400)
+        .json({ error: "Nama kategori tidak boleh kosong" });
     }
 
-    const existingCategory = await db.collection("categories")
+    const existingCategory = await db
+      .collection("categories")
       .where("nama", "==", nama.trim())
       .get();
 
-    const isDuplicate = existingCategory.docs.some(doc => doc.id !== id);
+    const isDuplicate = existingCategory.docs.some((doc) => doc.id !== id);
     if (isDuplicate) {
       return res.status(400).json({ error: "Kategori sudah ada" });
     }
 
     await db.collection("categories").doc(id).update({
       nama: nama.trim(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     res.status(200).json({
       id,
       nama: nama.trim(),
-      message: "Kategori berhasil diupdate"
+      message: "Kategori berhasil diupdate",
     });
   } catch (error) {
     console.error("Error updating category:", error);
