@@ -53,3 +53,18 @@ export async function deleteProduct(id) {
     throw error;
   }
 }
+
+export async function updateProductStock(id, stockData) {
+  try {
+    const response = await fetch(`${API_URL}/${id}/stock`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(stockData),
+    });
+    if (!response.ok) throw new Error("Gagal update stok produk");
+    return await response.json();
+  } catch (error) {
+    console.error("Error di updateProductStock:", error);
+    throw error;
+  }
+}

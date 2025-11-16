@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
+  sendEmailVerification,
 } from "firebase/auth";
 import {
   doc,
@@ -17,12 +18,17 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 import ResetPassword from "./ResetPassword/ResetPassword";
+import {
+  Mail,
+  AlertCircle,
+  X,
+  Shield,
+  RefreshCw,
+  CheckCircle
+} from "lucide-react";
 
 // Fungsi untuk cek dan sync email verification
-async function checkAndSyncEmailVerification() {
-  const user = auth.currentUser;
-  if (!user) return;
-
+async function checkAndSyncEmailVerification(user) {
   // Refresh data user dari Firebase Auth
   await user.reload();
 
@@ -32,8 +38,21 @@ async function checkAndSyncEmailVerification() {
       email_verified: true,
     });
     console.log("Firestore updated: email_verified = true");
+    return true;
   } else {
     console.log("User belum verifikasi email");
+    return false;
+  }
+}
+
+// Fungsi untuk kirim ulang email verifikasi
+async function resendVerificationEmail(user) {
+  try {
+    await sendEmailVerification(user);
+    return true;
+  } catch (error) {
+    console.error("Gagal mengirim ulang email verifikasi:", error);
+    return false;
   }
 }
 
@@ -63,9 +82,13 @@ function InputField({
 function LoginForm() {
   const navigate = useNavigate();
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendSuccess, setResendSuccess] = useState(false);
+
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -85,7 +108,19 @@ function LoginForm() {
         form.password
       );
       const user = userCredential.user;
-      await checkAndSyncEmailVerification();
+
+      // Cek apakah email sudah diverifikasi
+      const isVerified = await checkAndSyncEmailVerification(user);
+
+      if (!isVerified) {
+        // Jika belum verifikasi, tampilkan modal dan logout
+        setCurrentUser(user);
+        setShowVerificationModal(true);
+        await auth.signOut(); // Logout user karena belum verifikasi
+        return;
+      }
+
+      // Jika sudah verifikasi, lanjutkan login
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists() && userDoc.data().role === "admin") {
         navigate("/admin");
@@ -94,7 +129,37 @@ function LoginForm() {
       }
     } catch (err) {
       console.error("Error login dengan email:", err);
-      setError("Email atau password salah. Silakan coba lagi.");
+      const errorCode = err.code;
+
+      if (errorCode === 'auth/invalid-credential') {
+        setError("Email atau password salah.");
+      } else if (errorCode === 'auth/too-many-requests') {
+        setError("Terlalu banyak percobaan login. Coba lagi nanti.");
+      } else if (errorCode === 'auth/user-not-found') {
+        setError("Email tidak terdaftar.");
+      } else {
+        setError("Terjadi kesalahan. Silakan coba lagi.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    try {
+      const success = await resendVerificationEmail(currentUser);
+      if (success) {
+        setResendSuccess(true);
+        setTimeout(() => setResendSuccess(false), 3000);
+      } else {
+        setError("Gagal mengirim ulang email verifikasi. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error("Error resend verification:", error);
+      setError("Terjadi kesalahan saat mengirim ulang email verifikasi.");
     } finally {
       setLoading(false);
     }
@@ -122,7 +187,8 @@ function LoginForm() {
           createdAt: serverTimestamp(),
         });
       }
-      await checkAndSyncEmailVerification();
+
+      // Google tidak perlu verifikasi email tambahan
       const updatedUserDoc = await getDoc(userDocRef);
       if (updatedUserDoc.exists() && updatedUserDoc.data().role === "admin") {
         navigate("/admin");
@@ -222,6 +288,143 @@ function LoginForm() {
           Daftar di sini
         </Link>
       </p>
+
+      {/* Modal Verifikasi Email */}
+      <AnimatePresence>
+        {showVerificationModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          >
+            {/* Backdrop dengan blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowVerificationModal(false)}
+            />
+
+            {/* Popup Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative bg-gradient-to-br from-white to-amber-50 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-amber-200"
+            >
+              {/* Header dengan gradient */}
+              <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-full">
+                      <AlertCircle size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Verifikasi Diperlukan</h2>
+                      <p className="text-amber-100 text-sm">Lengkapi verifikasi email Anda</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowVerificationModal(false)}
+                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {/* Success Message untuk resend */}
+                <AnimatePresence>
+                  {resendSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
+                        <span className="text-green-800 text-sm font-medium">
+                          Email verifikasi telah dikirim ulang!
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Main Message */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail size={32} className="text-amber-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Periksa Email Anda
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Kami telah mengirimkan link verifikasi ke email Anda.
+                    Klik link tersebut untuk mengaktifkan akun dan melanjutkan login.
+                  </p>
+                </div>
+
+                {/* Tips Box */}
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <Shield size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-blue-800 font-medium text-sm mb-1">
+                        💡 Tidak menemukan email?
+                      </p>
+                      <ul className="text-blue-700 text-sm space-y-1">
+                        <li>• Cek folder <strong>Spam</strong> atau <strong>Promosi</strong></li>
+                        <li>• Pastikan email sudah benar: <strong>{currentUser?.email}</strong></li>
+                        <li>• Tunggu beberapa menit jika belum menerima</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowVerificationModal(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 border border-gray-200"
+                  >
+                    Nanti Saja
+                  </button>
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={loading}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw size={16} className="animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={16} />
+                        Kirim Ulang
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-400/10 rounded-full translate-y-12 -translate-x-12"></div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Reset Password */}
       {showResetModal && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-20">
           <ResetPassword
@@ -236,7 +439,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
       <div className="mb-8 text-center">
         <div className="flex justify-center items-center">
           <div className="">

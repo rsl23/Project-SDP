@@ -32,7 +32,7 @@ const AdminLayout = () => {
     { path: "/admin/products", icon: Package, label: "Produk" },
     { path: "/admin/users", icon: Users, label: "Users" },
     { path: "/admin/orders", icon: ShoppingCart, label: "Orders" },
-    { path: "/admin/settings", icon: Settings, label: "Settings" },
+    // { path: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
   const isActive = (path) => {

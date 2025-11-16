@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import Joi from "joi";
 
@@ -26,6 +26,14 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import {
+  Mail,
+  CheckCircle,
+  AlertCircle,
+  X,
+  Shield,
+  Star
+} from "lucide-react";
 
 function InputField({
   label,
@@ -61,6 +69,7 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const schema = Joi.object({
     name: Joi.string().min(3).max(50).required().messages({
@@ -114,18 +123,19 @@ function RegisterForm() {
           createdAt: serverTimestamp(),
         });
 
-        // Logout setelah register supaya tidak auto-login
-        await signOut(auth);
-
-        // Tampilkan success message
-        setSuccess(true);
+        // Google tidak perlu verifikasi email, langsung login
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } else {
-        // User sudah pernah register - logout dan redirect ke login
-        await signOut(auth);
-        setError("Akun ini sudah terdaftar. Silakan login.");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+        // User sudah pernah register - langsung login
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error("Error saat registrasi dengan Google:", error);
@@ -175,11 +185,15 @@ function RegisterForm() {
         email,
         firebase_uid: user.uid,
         auth_provider: "email/password",
-        email_verified: user.emailVerified,
+        email_verified: false, // Set false karena belum verifikasi
         createdAt: serverTimestamp(),
       });
 
+      // Kirim email verifikasi
       await sendEmailVerification(user);
+
+      // Simpan email untuk ditampilkan di success message
+      setRegisteredEmail(email);
 
       // Logout user setelah register agar tidak auto-login
       await signOut(auth);
@@ -207,9 +221,8 @@ function RegisterForm() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${
-            loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
-          }`}
+          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
+            }`}
         >
           <svg
             className="w-5 h-5 mr-3"
@@ -282,9 +295,8 @@ function RegisterForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
-              loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
-            }`}
+            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
+              }`}
           >
             {loading ? "Mendaftar..." : "Register dengan Email"}
           </button>
@@ -301,58 +313,136 @@ function RegisterForm() {
         </p>
       </div>
 
-      {success && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-sm">
-            <div className="mb-4">
-              <svg
-                className="w-16 h-16 mx-auto text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-green-600 mb-2">
-              Registrasi Berhasil! ✅
-            </h2>
-            <p className="text-gray-700 mb-6">
-              Akun Anda berhasil dibuat.{" "}
-              {form.email && (
-                <span>Silakan cek email untuk verifikasi sebelum login.</span>
-              )}
-            </p>
-            <button
-              onClick={() => {
-                setSuccess(false);
-                setForm({
-                  name: "",
-                  email: "",
-                  password: "",
-                  confirmPassword: "",
-                });
-                navigate("/login");
-              }}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          >
+            {/* Backdrop dengan blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSuccess(false)}
+            />
+
+            {/* Popup Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-white/20"
             >
-              Lanjut ke Login
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Header dengan gradient */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-full">
+                      <CheckCircle size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Registrasi Berhasil!</h2>
+                      <p className="text-green-100 text-sm">Akun Anda berhasil dibuat</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSuccess(false)}
+                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {/* Email Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <Mail size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-blue-800 font-medium text-sm">
+                        Email verifikasi telah dikirim ke:
+                      </p>
+                      <p className="text-blue-900 font-semibold text-lg mt-1">
+                        {registeredEmail}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Important Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-amber-800 font-medium text-sm mb-2">
+                        ⚠️ Verifikasi Email Diperlukan
+                      </p>
+                      <p className="text-amber-700 text-sm">
+                        Anda harus memverifikasi email terlebih dahulu sebelum bisa login.
+                        Cek folder spam jika email tidak ditemukan di inbox.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Shield size={16} className="text-green-500 flex-shrink-0" />
+                    <span>Akun Anda terlindungi dengan sistem keamanan terbaik</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Star size={16} className="text-yellow-500 flex-shrink-0" />
+                    <span>Akses penuh ke semua fitur BJM Parts</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setSuccess(false);
+                      setForm({
+                        name: "",
+                        email: "",
+                        password: "",
+                        confirmPassword: "",
+                      });
+                    }}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 border border-gray-200"
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Login Sekarang
+                  </button>
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-400/10 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-400/10 rounded-full translate-y-12 -translate-x-12"></div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0b0f3a] via-[#240b6c] to-[#050018] p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
       <div className="mb-8 text-center">
         <div className="flex justify-center items-center">
           <div className="">
