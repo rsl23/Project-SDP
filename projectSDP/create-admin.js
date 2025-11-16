@@ -4,7 +4,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "./src/firebase/config.js";
+import { auth, db } from "./frontend/src/firebase/config.js";
 
 /**
  * Script untuk membuat admin user pertama kali
