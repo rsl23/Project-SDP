@@ -1,4 +1,5 @@
 import React from "react";
+import { TextInput, Label } from "flowbite-react";
 
 export default function InputField({
   label,
@@ -7,17 +8,25 @@ export default function InputField({
   value,
   onChange,
   placeholder,
+  required = false,
+  disabled = false,
 }) {
   return (
     <div>
-      <label className="text-sm text-slate-700 font-semibold">{label}</label>
-      <input
+      {label && (
+        <div className="mb-2 block">
+          <Label htmlFor={name} value={label} />
+        </div>
+      )}
+      <TextInput
+        id={name}
         name={name}
+        type={type}
         value={value}
         onChange={onChange}
-        type={type}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        required={required}
+        disabled={disabled}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-
+import { Alert } from "flowbite-react";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -24,7 +24,7 @@ import {
   X,
   Shield,
   RefreshCw,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 
 // Fungsi untuk cek dan sync email verification
@@ -54,29 +54,6 @@ async function resendVerificationEmail(user) {
     console.error("Gagal mengirim ulang email verifikasi:", error);
     return false;
   }
-}
-
-function InputField({
-  label,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  name,
-}) {
-  return (
-    <div>
-      <label className="text-sm text-slate-700 font-semibold">{label}</label>
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-900"
-      />
-    </div>
-  );
 }
 
 function LoginForm() {
@@ -131,11 +108,11 @@ function LoginForm() {
       console.error("Error login dengan email:", err);
       const errorCode = err.code;
 
-      if (errorCode === 'auth/invalid-credential') {
+      if (errorCode === "auth/invalid-credential") {
         setError("Email atau password salah.");
-      } else if (errorCode === 'auth/too-many-requests') {
+      } else if (errorCode === "auth/too-many-requests") {
         setError("Terlalu banyak percobaan login. Coba lagi nanti.");
-      } else if (errorCode === 'auth/user-not-found') {
+      } else if (errorCode === "auth/user-not-found") {
         setError("Email tidak terdaftar.");
       } else {
         setError("Terjadi kesalahan. Silakan coba lagi.");
@@ -209,10 +186,10 @@ function LoginForm() {
         type="button"
         onClick={handleGoogleSignIn}
         disabled={loading}
-        className="w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition hover:bg-gray-50 disabled:opacity-70 disabled:cursor-wait"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg
-          className="w-5 h-5 mr-3"
+          className="w-5 h-5"
           viewBox="0 0 48 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -234,7 +211,12 @@ function LoginForm() {
             fill="#EA4335"
           ></path>
         </svg>
-        {loading ? "Memproses..." : "Lanjutkan dengan Google"}
+        <span
+          className="font-medium text-gray-700 text-base"
+          style={{ color: "#374151" }}
+        >
+          {loading ? "Memproses..." : "Lanjutkan dengan Google"}
+        </span>
       </button>
 
       <div className="flex items-center my-4">
@@ -245,30 +227,60 @@ function LoginForm() {
 
       <form onSubmit={handleEmailLogin}>
         <div className="space-y-4">
-          <InputField
-            label="Email"
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Password"
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={handleChange}
-          />
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+              style={{ color: "#1f2937" }}
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              style={{ color: "#111827", backgroundColor: "#ffffff" }}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+              style={{ color: "#1f2937" }}
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              style={{ color: "#111827", backgroundColor: "#ffffff" }}
+            />
+          </div>
         </div>
 
-        {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+        {error && (
+          <div className="mt-4">
+            <Alert color="failure" icon={AlertCircle}>
+              {error}
+            </Alert>
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition disabled:opacity-70 disabled:cursor-wait"
+          className="w-full mt-6 px-4 py-3 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-semibold text-base rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
         >
           {loading ? "Memproses..." : "Masuk"}
         </button>
@@ -323,8 +335,12 @@ function LoginForm() {
                       <AlertCircle size={24} className="text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold">Verifikasi Diperlukan</h2>
-                      <p className="text-amber-100 text-sm">Lengkapi verifikasi email Anda</p>
+                      <h2 className="text-2xl font-bold">
+                        Verifikasi Diperlukan
+                      </h2>
+                      <p className="text-amber-100 text-sm">
+                        Lengkapi verifikasi email Anda
+                      </p>
                     </div>
                   </div>
                   <button
@@ -348,7 +364,10 @@ function LoginForm() {
                       className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4"
                     >
                       <div className="flex items-center gap-2">
-                        <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
+                        <CheckCircle
+                          size={16}
+                          className="text-green-600 flex-shrink-0"
+                        />
                         <span className="text-green-800 text-sm font-medium">
                           Email verifikasi telah dikirim ulang!
                         </span>
@@ -366,22 +385,31 @@ function LoginForm() {
                     Periksa Email Anda
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    Kami telah mengirimkan link verifikasi ke email Anda.
-                    Klik link tersebut untuk mengaktifkan akun dan melanjutkan login.
+                    Kami telah mengirimkan link verifikasi ke email Anda. Klik
+                    link tersebut untuk mengaktifkan akun dan melanjutkan login.
                   </p>
                 </div>
 
                 {/* Tips Box */}
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <Shield size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Shield
+                      size={16}
+                      className="text-blue-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-blue-800 font-medium text-sm mb-1">
                         💡 Tidak menemukan email?
                       </p>
                       <ul className="text-blue-700 text-sm space-y-1">
-                        <li>• Cek folder <strong>Spam</strong> atau <strong>Promosi</strong></li>
-                        <li>• Pastikan email sudah benar: <strong>{currentUser?.email}</strong></li>
+                        <li>
+                          • Cek folder <strong>Spam</strong> atau{" "}
+                          <strong>Promosi</strong>
+                        </li>
+                        <li>
+                          • Pastikan email sudah benar:{" "}
+                          <strong>{currentUser?.email}</strong>
+                        </li>
                         <li>• Tunggu beberapa menit jika belum menerima</li>
                       </ul>
                     </div>

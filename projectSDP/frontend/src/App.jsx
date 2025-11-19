@@ -86,22 +86,8 @@ function App() {
               <main className="w-full">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  <Route
-                    path="/product"
-                    element={
-                      <ProtectedRoute user={user}>
-                        <ProductPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/product/:id"
-                    element={
-                      <ProtectedRoute user={user}>
-                        <ProductDetail />
-                      </ProtectedRoute>
-                    }
-                  />
+                  <Route path="/product" element={<ProductPage />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
                   <Route
                     path="/cart"
                     element={

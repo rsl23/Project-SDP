@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { Alert } from "flowbite-react";
 import Joi from "joi";
 
 // Import Firebase services dari config
@@ -26,37 +27,7 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import {
-  Mail,
-  CheckCircle,
-  AlertCircle,
-  X,
-  Shield,
-  Star
-} from "lucide-react";
-
-function InputField({
-  label,
-  type = "text",
-  name,
-  value,
-  onChange,
-  placeholder,
-}) {
-  return (
-    <label className="block">
-      <span className="text-sm font-medium text-gray-700">{label}</span>
-      <input
-        name={name}
-        value={value}
-        onChange={onChange}
-        type={type}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-gray-300 shadow-sm p-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
-    </label>
-  );
-}
+import { Mail, CheckCircle, AlertCircle, X, Shield, Star } from "lucide-react";
 
 function RegisterForm() {
   const navigate = useNavigate();
@@ -221,11 +192,10 @@ function RegisterForm() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
-            }`}
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
-            className="w-5 h-5 mr-3"
+            className="w-5 h-5"
             viewBox="0 0 48 48"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +217,12 @@ function RegisterForm() {
               fill="#EA4335"
             ></path>
           </svg>
-          Daftar dengan Google
+          <span
+            className="font-medium text-gray-700 text-base"
+            style={{ color: "#374151" }}
+          >
+            Daftar dengan Google
+          </span>
         </button>
         <div className="flex items-center my-4">
           <hr className="w-full border-gray-300" />
@@ -257,48 +232,105 @@ function RegisterForm() {
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <InputField
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              label="Nama Lengkap"
-              placeholder="Contoh: John Doe"
-            />
-            <InputField
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-            />
-            <InputField
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-            />
-            <InputField
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              label="Konfirmasi Password"
-              type="password"
-              placeholder="••••••••"
-            />
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+                style={{ color: "#1f2937" }}
+              >
+                Nama Lengkap
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Contoh: John Doe"
+                required
+                className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                style={{ color: "#111827", backgroundColor: "#ffffff" }}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+                style={{ color: "#1f2937" }}
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+                className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                style={{ color: "#111827", backgroundColor: "#ffffff" }}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+                style={{ color: "#1f2937" }}
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                style={{ color: "#111827", backgroundColor: "#ffffff" }}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+                style={{ color: "#1f2937" }}
+              >
+                Konfirmasi Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                style={{ color: "#111827", backgroundColor: "#ffffff" }}
+              />
+            </div>
           </div>
 
-          {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+          {error && (
+            <div className="mt-4">
+              <Alert color="failure" icon={AlertCircle}>
+                {error}
+              </Alert>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
-              }`}
+            className="w-full mt-6 px-4 py-3 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-semibold text-base rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
           >
-            {loading ? "Mendaftar..." : "Register dengan Email"}
+            {loading ? "Mendaftar..." : "Daftar"}
           </button>
         </form>
 
@@ -346,8 +378,12 @@ function RegisterForm() {
                       <CheckCircle size={24} className="text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold">Registrasi Berhasil!</h2>
-                      <p className="text-green-100 text-sm">Akun Anda berhasil dibuat</p>
+                      <h2 className="text-2xl font-bold">
+                        Registrasi Berhasil!
+                      </h2>
+                      <p className="text-green-100 text-sm">
+                        Akun Anda berhasil dibuat
+                      </p>
                     </div>
                   </div>
                   <button
@@ -364,7 +400,10 @@ function RegisterForm() {
                 {/* Email Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <Mail size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Mail
+                      size={20}
+                      className="text-blue-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-blue-800 font-medium text-sm">
                         Email verifikasi telah dikirim ke:
@@ -379,14 +418,18 @@ function RegisterForm() {
                 {/* Important Notice */}
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <AlertCircle size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle
+                      size={20}
+                      className="text-amber-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-amber-800 font-medium text-sm mb-2">
                         ⚠️ Verifikasi Email Diperlukan
                       </p>
                       <p className="text-amber-700 text-sm">
-                        Anda harus memverifikasi email terlebih dahulu sebelum bisa login.
-                        Cek folder spam jika email tidak ditemukan di inbox.
+                        Anda harus memverifikasi email terlebih dahulu sebelum
+                        bisa login. Cek folder spam jika email tidak ditemukan
+                        di inbox.
                       </p>
                     </div>
                   </div>
@@ -395,8 +438,13 @@ function RegisterForm() {
                 {/* Features */}
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Shield size={16} className="text-green-500 flex-shrink-0" />
-                    <span>Akun Anda terlindungi dengan sistem keamanan terbaik</span>
+                    <Shield
+                      size={16}
+                      className="text-green-500 flex-shrink-0"
+                    />
+                    <span>
+                      Akun Anda terlindungi dengan sistem keamanan terbaik
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <Star size={16} className="text-yellow-500 flex-shrink-0" />
