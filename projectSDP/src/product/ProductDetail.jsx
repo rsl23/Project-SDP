@@ -14,6 +14,8 @@ import {
   ExternalLink,
   Star,
   Truck,
+  User,
+  MessageCircle,
 } from "lucide-react";
 
 const ProductDetail = () => {
@@ -24,6 +26,28 @@ const ProductDetail = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  // Fetch product reviews
+  const fetchProductReviews = async (productId) => {
+    try {
+      setReviewsLoading(true);
+      const response = await fetch(`http://localhost:5000/api/reviews/product/${productId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(data.reviews);
+        setAverageRating(data.averageRating);
+        setTotalReviews(data.totalReviews);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     try {
@@ -79,6 +103,9 @@ const ProductDetail = () => {
 
         setProduct(selected);
         setCategories(categoriesData);
+
+        // Fetch reviews setelah product ditemukan
+        await fetchProductReviews(selected.id);
       } catch (err) {
         console.error("Error fetching data:", err);
         toast.error("Gagal memuat data produk", {
@@ -130,6 +157,53 @@ const ProductDetail = () => {
         badge: "bg-red-500/20 border-red-500/50 text-red-300",
         icon: "🔴",
       };
+    }
+  };
+
+  const renderRatingStars = (rating, size = "sm") => {
+    const starSize = size === "lg" ? 20 : 16;
+    return (
+      <div className="flex items-center gap-1">
+        <Star
+          size={starSize}
+          className="text-yellow-400 fill-yellow-400"
+        />
+      </div>
+    );
+  };
+
+  const formatReviewDate = (timestamp) => {
+    if (!timestamp) return "";
+
+    try {
+      let date;
+
+      if (timestamp._seconds !== undefined) {
+        date = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
+      }
+      else if (timestamp.seconds !== undefined) {
+        date = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000);
+      }
+      else if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        date = timestamp.toDate();
+      }
+      else {
+        date = new Date(timestamp);
+      }
+
+      if (isNaN(date.getTime())) {
+        return "";
+      }
+
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+    } catch (error) {
+      console.error("Error formatting review date:", error);
+      return "";
     }
   };
 
@@ -195,17 +269,15 @@ const ProductDetail = () => {
           <div className="flex justify-center">
             <div className="relative group">
               <div
-                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
-                  imageLoaded ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
+                  }`}
               ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${
-                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                  } group-hover:scale-105`}
+                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                    } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -238,16 +310,21 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Price */}
+              {/* Price & Rating */}
               <div className="flex items-center gap-4">
                 <p className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent">
                   Rp {product.harga.toLocaleString("id-ID")}
                 </p>
-                <div className="flex items-center gap-1 bg-yellow-500/20 px-3 py-1 rounded-full">
-                  <Star size={16} className="text-yellow-400 fill-current" />
-                  <span className="text-yellow-300 text-sm font-medium">
-                    5.0
-                  </span>
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full">
+                  {renderRatingStars(averageRating, "sm")}
+                  <div className="flex flex-row gap-3 items-center">
+                    <span className="text-white text-sm font-bold">
+                      {averageRating.toFixed(1)}
+                    </span>
+                    <span className="text-gray-300 text-xs">
+                      ({totalReviews} ulasan)
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -305,11 +382,10 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full group relative overflow-hidden px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 ${
-                  product.stok === 0
-                    ? "bg-gray-600/50 cursor-not-allowed"
-                    : "bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 hover:shadow-2xl hover:scale-105"
-                }`}
+                className={`w-full group relative overflow-hidden px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 ${product.stok === 0
+                  ? "bg-gray-600/50 cursor-not-allowed"
+                  : "bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 hover:shadow-2xl hover:scale-105"
+                  }`}
               >
                 <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 <ShoppingCart size={24} className="relative z-10" />
@@ -390,6 +466,87 @@ const ProductDetail = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          {/* Header dengan border bawah */}
+          <div className="border-b border-white/10 pb-6 mb-6">
+            <h2 className="text-xl font-semibold text-white mb-2">Ulasan Produk</h2>
+            <div className="flex items-center gap-4 text-gray-300 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={16}
+                      className={star <= averageRating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                    />
+                  ))}
+                </div>
+                <span className="font-medium text-white">{averageRating.toFixed(1)}</span>
+              </div>
+              <div className="w-px h-4 bg-white/20"></div>
+              <span>{totalReviews} ulasan</span>
+            </div>
+          </div>
+
+          {/* Reviews */}
+          {reviewsLoading ? (
+            <div className="text-center py-8 border border-white/10 rounded-lg bg-white/5">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>
+              <p className="text-gray-300 mt-2 text-sm">Memuat ulasan...</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-12 border border-white/10 rounded-lg bg-white/5">
+              <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 border border-white/10">
+                <MessageCircle size={20} className="text-gray-400" />
+              </div>
+              <p className="text-gray-400 text-sm">Belum ada ulasan</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="p-4 border border-white/10 rounded-lg bg-white/5 hover:border-white/20 transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-indigo-500/10 rounded-full flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                      <User size={16} className="text-indigo-400" />
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-white text-sm font-medium">
+                          {review.user?.displayName || "Pelanggan"}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              size={12}
+                              className={star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {review.komentar && (
+                        <p className="text-gray-300 text-sm leading-relaxed mb-2">
+                          {review.komentar}
+                        </p>
+                      )}
+
+                      <div className="text-gray-500 text-xs">
+                        {formatReviewDate(review.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

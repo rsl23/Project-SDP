@@ -95,12 +95,15 @@ function LoginForm() {
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
+
     if (!form.email || !form.password) {
       setError("Email dan password wajib diisi.");
       return;
     }
+
     setLoading(true);
     setError("");
+
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -109,33 +112,40 @@ function LoginForm() {
       );
       const user = userCredential.user;
 
-      // Cek apakah email sudah diverifikasi
-      const isVerified = await checkAndSyncEmailVerification(user);
+      // Dapatkan data user di Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const role = userDoc.exists() ? userDoc.data().role : "user";
 
-      if (!isVerified) {
-        // Jika belum verifikasi, tampilkan modal dan logout
-        setCurrentUser(user);
-        setShowVerificationModal(true);
-        await auth.signOut(); // Logout user karena belum verifikasi
+      // === ADMIN SKIP EMAIL VERIFICATION ===
+      if (role === "admin") {
+        navigate("/admin");
         return;
       }
 
-      // Jika sudah verifikasi, lanjutkan login
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
+      // === USER BIASA WAJIB VERIFIKASI EMAIL ===
+      const isVerified = await checkAndSyncEmailVerification(user);
+
+      if (!isVerified) {
+        // Tampilkan modal verifikasi & logout
+        setCurrentUser(user);
+        setShowVerificationModal(true);
+        await auth.signOut();
+        return;
       }
+
+      // Jika user biasa sudah terverifikasi → lanjut login
+      navigate("/");
+
     } catch (err) {
-      console.error("Error login dengan email:", err);
+      console.error("Error login:", err);
       const errorCode = err.code;
 
-      if (errorCode === 'auth/invalid-credential') {
+      if (errorCode === "auth/invalid-credential") {
         setError("Email atau password salah.");
-      } else if (errorCode === 'auth/too-many-requests') {
+      } else if (errorCode === "auth/too-many-requests") {
         setError("Terlalu banyak percobaan login. Coba lagi nanti.");
-      } else if (errorCode === 'auth/user-not-found') {
+      } else if (errorCode === "auth/user-not-found") {
         setError("Email tidak terdaftar.");
       } else {
         setError("Terjadi kesalahan. Silakan coba lagi.");
@@ -144,6 +154,7 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
 
   const handleResendVerification = async () => {
     if (!currentUser) return;

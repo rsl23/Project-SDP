@@ -211,8 +211,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
     });
 
     console.log(
-      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${
-        totalMasuk - totalKeluar
+      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${totalMasuk - totalKeluar
       }`
     );
 
@@ -237,9 +236,8 @@ app.put("/api/products/:id/stock", async (req, res) => {
         const newStokAwal = stokAwalDoc.data.jumlah + selisihStok;
         if (newStokAwal < 0) {
           return res.status(400).json({
-            error: `Tidak dapat mengurangi stok. Stok minimum: ${
-              stokAkhirSekarang + stokAwalDoc.data.jumlah
-            }`,
+            error: `Tidak dapat mengurangi stok. Stok minimum: ${stokAkhirSekarang + stokAwalDoc.data.jumlah
+              }`,
           });
         }
 
@@ -463,11 +461,11 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-              nama: produkData.nama,
-              harga: produkData.harga,
-              img_url: produkData.img_url,
-              stok: produkData.stok,
-            }
+            nama: produkData.nama,
+            harga: produkData.harga,
+            img_url: produkData.img_url,
+            stok: produkData.stok,
+          }
           : null,
       });
     }
@@ -916,16 +914,26 @@ app.get("/api/orders", async (req, res) => {
   try {
     const { userId } = req.query;
 
-    let query = db.collection("orders").orderBy("createdAt", "desc");
+    let query = db.collection("orders");
+    const snapshot = await query.get();
+
+    let orders = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Apply user filter manually
     if (userId) {
-      query = db
-        .collection("orders")
-        .where("userId", "==", userId)
-        .orderBy("createdAt", "desc");
+      orders = orders.filter(order => order.userId === userId);
     }
 
-    const snapshot = await query.get();
-    const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    // Sort by createdAt manually
+    orders.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateB - dateA;
+    });
+
     res.json(orders);
   } catch (err) {
     console.error(err);
@@ -1070,6 +1078,201 @@ app.put("/api/categories/:id", async (req, res) => {
   } catch (error) {
     console.error("Error updating category:", error);
     res.status(500).json({ error: "Gagal mengupdate kategori" });
+  }
+});
+
+
+//---------------- Review APIs ----------------
+app.post("/api/reviews", async (req, res) => {
+  try {
+    const { userId, produk_id, order_id, rating, komentar } = req.body;
+
+    if (!userId || !produk_id || !order_id || !rating) {
+      return res.status(400).json({ error: "Data review tidak lengkap" });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Rating harus antara 1-5" });
+    }
+
+    // Cek apakah user sudah memberikan review untuk produk ini di order yang sama
+    // Simplified query tanpa composite index
+    const reviewsSnapshot = await db.collection("reviews").get();
+    const existingReview = reviewsSnapshot.docs.find(doc => {
+      const data = doc.data();
+      return data.userId === userId &&
+        data.produk_id === produk_id &&
+        data.order_id === order_id;
+    });
+
+    if (existingReview) {
+      return res.status(400).json({ error: "Anda sudah memberikan review untuk produk ini" });
+    }
+
+    // Validasi order exists dan milik user
+    const orderDoc = await db.collection("orders").doc(order_id).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: "Order tidak ditemukan" });
+    }
+
+    const orderData = orderDoc.data();
+    if (orderData.userId !== userId) {
+      return res.status(403).json({ error: "Anda tidak memiliki akses ke order ini" });
+    }
+
+    // Validasi produk exists
+    const produkDoc = await db.collection("products").doc(produk_id).get();
+    if (!produkDoc.exists) {
+      return res.status(404).json({ error: "Produk tidak ditemukan" });
+    }
+
+    const reviewData = {
+      userId,
+      produk_id,
+      order_id,
+      rating: Number(rating),
+      komentar: komentar || "",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const reviewRef = await db.collection("reviews").add(reviewData);
+
+    res.status(201).json({
+      message: "Review berhasil ditambahkan",
+      reviewId: reviewRef.id,
+      ...reviewData,
+    });
+  } catch (error) {
+    console.error("❌ Error tambah review:", error);
+    res.status(500).json({ error: "Gagal menambah review" });
+  }
+});
+
+app.get("/api/reviews", async (req, res) => {
+  try {
+    const { produk_id, userId, order_id } = req.query;
+
+    // Get all reviews and filter manually to avoid composite index issues
+    let query = db.collection("reviews");
+    const snapshot = await query.get();
+
+    let reviews = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Apply filters manually
+    if (produk_id) {
+      reviews = reviews.filter(review => review.produk_id === produk_id);
+    }
+    if (userId) {
+      reviews = reviews.filter(review => review.userId === userId);
+    }
+    if (order_id) {
+      reviews = reviews.filter(review => review.order_id === order_id);
+    }
+
+    // Sort by createdAt manually
+    reviews.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateB - dateA;
+    });
+
+    // Get user and product data for each review
+    const enhancedReviews = [];
+    for (const review of reviews) {
+      // Get user data
+      let userData = null;
+      try {
+        const userDoc = await admin.auth().getUser(review.userId);
+        userData = {
+          email: userDoc.email,
+          displayName: userDoc.displayName || userDoc.email.split('@')[0],
+        };
+      } catch (error) {
+        userData = { email: "User", displayName: "User" };
+      }
+
+      // Get product data
+      let productData = null;
+      if (review.produk_id) {
+        const productDoc = await db.collection("products").doc(review.produk_id).get();
+        if (productDoc.exists) {
+          productData = productDoc.data();
+        }
+      }
+
+      enhancedReviews.push({
+        id: review.id,
+        ...review,
+        user: userData,
+        product: productData ? {
+          nama: productData.nama,
+          img_url: productData.img_url
+        } : null,
+      });
+    }
+
+    res.status(200).json(enhancedReviews);
+  } catch (error) {
+    console.error("❌ Error ambil reviews:", error);
+    res.status(500).json({ error: "Gagal mengambil reviews" });
+  }
+});
+
+app.get("/api/reviews/product/:produk_id", async (req, res) => {
+  try {
+    const { produk_id } = req.params;
+
+    // Get all reviews and filter by product_id
+    const snapshot = await db.collection("reviews").get();
+    const reviews = [];
+    let totalRating = 0;
+
+    for (const doc of snapshot.docs) {
+      const reviewData = doc.data();
+
+      if (reviewData.produk_id === produk_id) {
+        // Get user data
+        let userData = null;
+        try {
+          const userDoc = await admin.auth().getUser(reviewData.userId);
+          userData = {
+            email: userDoc.email,
+            displayName: userDoc.displayName || userDoc.email.split('@')[0],
+          };
+        } catch (error) {
+          userData = { email: "User", displayName: "User" };
+        }
+
+        reviews.push({
+          id: doc.id,
+          ...reviewData,
+          user: userData,
+        });
+
+        totalRating += reviewData.rating;
+      }
+    }
+
+    // Sort by createdAt manually
+    reviews.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return dateB - dateA;
+    });
+
+    const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
+
+    res.status(200).json({
+      reviews,
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalReviews: reviews.length,
+    });
+  } catch (error) {
+    console.error("❌ Error ambil reviews produk:", error);
+    res.status(500).json({ error: "Gagal mengambil reviews produk" });
   }
 });
 

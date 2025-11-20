@@ -13,9 +13,37 @@ const Product = () => {
     const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState("default");
+    const [productRatings, setProductRatings] = useState({});
     const categoryDropdownRef = useRef(null);
     const sortDropdownRef = useRef(null);
     const navigate = useNavigate();
+
+    // Fetch product reviews
+    const fetchProductReviews = async (productId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/reviews/product/${productId}`);
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    averageRating: data.averageRating,
+                    totalReviews: data.totalReviews
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching reviews for product:", productId, error);
+        }
+        return { averageRating: 0, totalReviews: 0 };
+    };
+
+    // Fetch all products reviews
+    const fetchAllProductReviews = async (productsData) => {
+        const ratings = {};
+        for (const product of productsData) {
+            const reviewData = await fetchProductReviews(product.id);
+            ratings[product.id] = reviewData;
+        }
+        setProductRatings(ratings);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,6 +55,9 @@ const Product = () => {
                 ]);
                 setProducts(productsData);
                 setCategories(categoriesData);
+
+                // Fetch reviews untuk semua produk
+                await fetchAllProductReviews(productsData);
             } catch (err) {
                 console.error("Gagal memuat data:", err);
             } finally {
@@ -68,6 +99,22 @@ const Product = () => {
         return { text: "Stok Habis", color: "text-red-400", bg: "bg-red-500/20" };
     };
 
+    // Fungsi untuk render rating stars
+    const renderRatingStars = (rating, size = "sm") => {
+        const starSize = size === "sm" ? 12 : 14;
+        return (
+            <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                        key={star}
+                        size={starSize}
+                        className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                    />
+                ))}
+            </div>
+        );
+    };
+
     const filteredAndSortedProducts = useMemo(() => {
         let result = products.filter((p) => p.active);
 
@@ -91,12 +138,19 @@ const Product = () => {
             case "name":
                 result = [...result].sort((a, b) => a.nama.localeCompare(b.nama));
                 break;
+            case "rating":
+                result = [...result].sort((a, b) => {
+                    const ratingA = productRatings[a.id]?.averageRating || 0;
+                    const ratingB = productRatings[b.id]?.averageRating || 0;
+                    return ratingB - ratingA;
+                });
+                break;
             default:
                 break;
         }
 
         return result;
-    }, [products, searchTerm, selectedCategory, categories, sortBy]);
+    }, [products, searchTerm, selectedCategory, categories, sortBy, productRatings]);
 
     const availableCategories = useMemo(() => {
         const categoryNames = products
@@ -117,6 +171,7 @@ const Product = () => {
             case "price-low": return "Harga: Rendah ke Tinggi";
             case "price-high": return "Harga: Tinggi ke Rendah";
             case "name": return "Nama: A-Z";
+            case "rating": return "Rating Tertinggi";
             default: return "Urutkan";
         }
     };
@@ -269,6 +324,18 @@ const Product = () => {
                                             <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
                                         )}
                                     </div>
+                                    <div
+                                        className="px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors text-white flex items-center justify-between"
+                                        onClick={() => {
+                                            setSortBy("rating");
+                                            setSortDropdownOpen(false);
+                                        }}
+                                    >
+                                        <span>Rating Tertinggi</span>
+                                        {sortBy === "rating" && (
+                                            <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -300,6 +367,8 @@ const Product = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredAndSortedProducts.map((p) => {
                             const stockStatus = getStockStatus(p.stok);
+                            const productRating = productRatings[p.id] || { averageRating: 0, totalReviews: 0 };
+
                             return (
                                 <div
                                     key={p.id}
@@ -335,17 +404,19 @@ const Product = () => {
                                             <span className="text-2xl font-bold text-transparent bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text">
                                                 Rp {p.harga.toLocaleString("id-ID")}
                                             </span>
-                                            <div className="flex items-center gap-1 text-yellow-400">
-                                                <Star size={14} fill="currentColor" />
-                                                <span className="text-xs text-gray-300">5.0</span>
+                                            <div className="flex items-center gap-1">
+                                                {renderRatingStars(productRating.averageRating)}
+                                                <span className="text-xs text-gray-300">
+                                                    {productRating.averageRating > 0 ? productRating.averageRating.toFixed(1) : '0.0'}
+                                                </span>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center justify-between text-xs text-gray-400">
                                             <span>Stok: {p.stok}</span>
                                             <div className="flex items-center gap-1">
+                                                <span>({productRating.totalReviews} ulasan)</span>
                                                 <ShoppingCart size={14} />
-                                                <span>Beli</span>
                                             </div>
                                         </div>
                                     </div>
