@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import { Card, Button, Spinner, Badge } from "flowbite-react";
 
 const CartPage = () => {
   const [cart, setCart] = useState([]);
@@ -216,8 +217,8 @@ const CartPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Memuat keranjang...</p>
+          <Spinner size="xl" color="pink" />
+          <p className="text-white text-lg mt-4">Memuat keranjang...</p>
         </div>
       </div>
     );
@@ -243,13 +244,10 @@ const CartPage = () => {
 
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="flex items-center gap-3 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 rounded-xl text-white font-medium transition-all duration-300 shadow-lg"
           >
-            <ArrowLeft
-              size={20}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            <span className="font-medium">Kembali Belanja</span>
+            <ArrowLeft size={20} />
+            <span>Kembali Belanja</span>
           </button>
         </div>
       </div>
@@ -268,7 +266,7 @@ const CartPage = () => {
             </p>
             <button
               onClick={() => navigate("/product")}
-              className="px-8 py-4 bg-gradient-to-r from-pink-500 to-indigo-600 text-white rounded-2xl hover:from-pink-600 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:scale-105"
+              className="px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:scale-105"
             >
               Jelajahi Produk
             </button>
@@ -415,13 +413,10 @@ const CartPage = () => {
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-2xl"
+                  className="w-full px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:scale-105 flex items-center justify-center gap-3"
                 >
-                  <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    <CreditCard size={24} />
-                    Checkout Sekarang
-                  </span>
+                  <CreditCard size={24} />
+                  Checkout Sekarang
                 </button>
 
                 <div className="mt-6 space-y-3">

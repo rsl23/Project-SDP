@@ -21,6 +21,7 @@ import {
   Image,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Button, Badge, Card, Spinner } from "flowbite-react";
 
 // Review Modal Component
 const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
@@ -77,7 +78,11 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
                   className="text-2xl focus:outline-none"
                 >
                   <Star
-                    className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
+                    className={
+                      star <= rating
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }
                     size={32}
                   />
                 </button>
@@ -101,20 +106,17 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
 
           {/* Buttons */}
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-            >
+            <Button color="gray" onClick={onClose} className="flex-1">
               Batal
-            </button>
-            <button
+            </Button>
+            <Button
+              gradientDuoTone="purpleToBlue"
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+              className="flex-1"
             >
               {loading ? "Mengirim..." : "Kirim Review"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -179,7 +181,7 @@ const Profile = () => {
       setOrders(data);
 
       // Filter hanya order yang diterima
-      const accepted = data.filter(order => order.status === "accepted");
+      const accepted = data.filter((order) => order.status === "accepted");
       setAcceptedOrders(accepted);
 
       // Fetch reviews for each order
@@ -194,11 +196,13 @@ const Profile = () => {
 
   const fetchUserReviews = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reviews?userId=${userId}`);
+      const response = await fetch(
+        `http://localhost:5000/api/reviews?userId=${userId}`
+      );
       if (response.ok) {
         const userReviews = await response.json();
         const reviewsMap = {};
-        userReviews.forEach(review => {
+        userReviews.forEach((review) => {
           const key = `${review.order_id}_${review.produk_id}`;
           reviewsMap[key] = review;
         });
@@ -436,15 +440,16 @@ const Profile = () => {
       let date;
 
       if (timestamp._seconds !== undefined) {
-        date = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
-      }
-      else if (timestamp.seconds !== undefined) {
-        date = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000);
-      }
-      else if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        date = new Date(
+          timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000
+        );
+      } else if (timestamp.seconds !== undefined) {
+        date = new Date(
+          timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+        );
+      } else if (timestamp.toDate && typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
-      }
-      else {
+      } else {
         date = new Date(timestamp);
       }
 
@@ -453,16 +458,19 @@ const Profile = () => {
       }
 
       // Format: "20 Nov 2023, 14:30"
-      return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }) + ', ' + date.toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-
+      return (
+        date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }) +
+        ", " +
+        date.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
     } catch (error) {
       console.error("Error formatting date:", error);
       return "Tanggal tidak valid";
@@ -496,9 +504,13 @@ const Profile = () => {
 
       console.log("📝 Auth date diformat:", formatted);
       return formatted;
-
     } catch (error) {
-      console.error("❌ Error formatting auth date:", error, "Date string:", dateString);
+      console.error(
+        "❌ Error formatting auth date:",
+        error,
+        "Date string:",
+        dateString
+      );
       return "Tanggal tidak valid";
     }
   };
@@ -526,30 +538,33 @@ const Profile = () => {
         <div className="flex gap-4 mb-8 border-b border-white/20">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "profile"
-              ? "border-b-2 border-indigo-500 text-indigo-400"
-              : "text-gray-400 hover:text-white"
-              }`}
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "profile"
+                ? "border-b-2 border-indigo-500 text-indigo-400"
+                : "text-gray-400 hover:text-white"
+            }`}
           >
             <User className="inline mr-2" size={18} />
             Profil
           </button>
           <button
             onClick={() => setActiveTab("security")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "security"
-              ? "border-b-2 border-indigo-500 text-indigo-400"
-              : "text-gray-400 hover:text-white"
-              }`}
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "security"
+                ? "border-b-2 border-indigo-500 text-indigo-400"
+                : "text-gray-400 hover:text-white"
+            }`}
           >
             <Lock className="inline mr-2" size={18} />
             Keamanan
           </button>
           <button
             onClick={() => setActiveTab("orders")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "orders"
-              ? "border-b-2 border-indigo-500 text-indigo-400"
-              : "text-gray-400 hover:text-white"
-              }`}
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "orders"
+                ? "border-b-2 border-indigo-500 text-indigo-400"
+                : "text-gray-400 hover:text-white"
+            }`}
           >
             <Package className="inline mr-2" size={18} />
             Riwayat Pesanan
@@ -636,10 +651,11 @@ const Profile = () => {
                         setErrors({ ...errors, currentPassword: "" });
                       }
                     }}
-                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${errors.currentPassword
-                      ? "ring-2 ring-red-500"
-                      : "focus:ring-indigo-500"
-                      }`}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.currentPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Masukkan password lama"
                   />
                   {errors.currentPassword && (
@@ -664,10 +680,11 @@ const Profile = () => {
                         setErrors({ ...errors, newPassword: "" });
                       }
                     }}
-                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${errors.newPassword
-                      ? "ring-2 ring-red-500"
-                      : "focus:ring-indigo-500"
-                      }`}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.newPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Minimal 6 karakter"
                   />
                   {errors.newPassword && (
@@ -692,10 +709,11 @@ const Profile = () => {
                         setErrors({ ...errors, confirmPassword: "" });
                       }
                     }}
-                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${errors.confirmPassword
-                      ? "ring-2 ring-red-500"
-                      : "focus:ring-indigo-500"
-                      }`}
+                    className={`w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.confirmPassword
+                        ? "ring-2 ring-red-500"
+                        : "focus:ring-indigo-500"
+                    }`}
                     placeholder="Ketik ulang password baru"
                   />
                   {errors.confirmPassword && (
@@ -719,7 +737,9 @@ const Profile = () => {
           {/* Orders Tab - Hanya menampilkan yang diterima */}
           {activeTab === "orders" && (
             <div>
-              <h2 className="text-2xl font-semibold mb-6">Riwayat Pesanan Diterima</h2>
+              <h2 className="text-2xl font-semibold mb-6">
+                Riwayat Pesanan Diterima
+              </h2>
 
               {loading ? (
                 <div className="text-center py-10 text-gray-300">
@@ -743,7 +763,12 @@ const Profile = () => {
                       Belum ada pesanan yang diterima
                       <br />
                       <p className="text-sm text-gray-400 mt-2">
-                        Anda memiliki {orders.filter(order => order.status === "pending").length} pesanan menunggu konfirmasi
+                        Anda memiliki{" "}
+                        {
+                          orders.filter((order) => order.status === "pending")
+                            .length
+                        }{" "}
+                        pesanan menunggu konfirmasi
                       </p>
                     </>
                   )}
@@ -751,7 +776,12 @@ const Profile = () => {
               ) : (
                 <div className="space-y-6">
                   {acceptedOrders.map((order) => {
-                    console.log("🎯 Rendering order:", order.id, "dengan createdAt:", order.createdAt);
+                    console.log(
+                      "🎯 Rendering order:",
+                      order.id,
+                      "dengan createdAt:",
+                      order.createdAt
+                    );
                     return (
                       <div
                         key={order.id}
@@ -790,12 +820,15 @@ const Profile = () => {
                                     alt={item.produk.nama}
                                     className="w-16 h-16 object-cover rounded-lg"
                                     onError={(e) => {
-                                      e.target.style.display = 'none';
+                                      e.target.style.display = "none";
                                     }}
                                   />
                                 ) : (
                                   <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
-                                    <Image className="text-gray-400" size={24} />
+                                    <Image
+                                      className="text-gray-400"
+                                      size={24}
+                                    />
                                   </div>
                                 )}
                               </div>
@@ -811,28 +844,47 @@ const Profile = () => {
                                       Jumlah: {item.jumlah}
                                     </p>
                                     <p className="text-indigo-300 font-semibold mt-1">
-                                      Rp {((item.produk?.harga || 0) * item.jumlah).toLocaleString("id-ID")}
+                                      Rp{" "}
+                                      {(
+                                        (item.produk?.harga || 0) * item.jumlah
+                                      ).toLocaleString("id-ID")}
                                     </p>
                                   </div>
 
                                   {/* Review Button */}
                                   <div>
-                                    {hasUserReviewed(order.id, item.produk_id) ? (
+                                    {hasUserReviewed(
+                                      order.id,
+                                      item.produk_id
+                                    ) ? (
                                       <div className="flex items-center gap-2 text-green-400">
-                                        <Star className="fill-green-400" size={16} />
+                                        <Star
+                                          className="fill-green-400"
+                                          size={16}
+                                        />
                                         <span className="text-sm">
-                                          Telah direview ({hasUserReviewed(order.id, item.produk_id).rating}/5)
+                                          Telah direview (
+                                          {
+                                            hasUserReviewed(
+                                              order.id,
+                                              item.produk_id
+                                            ).rating
+                                          }
+                                          /5)
                                         </span>
                                       </div>
                                     ) : (
                                       <button
-                                        onClick={() => openReviewModal(
-                                          {
-                                            id: item.produk_id,
-                                            nama: item.produk?.nama || "Produk"
-                                          },
-                                          order.id
-                                        )}
+                                        onClick={() =>
+                                          openReviewModal(
+                                            {
+                                              id: item.produk_id,
+                                              nama:
+                                                item.produk?.nama || "Produk",
+                                            },
+                                            order.id
+                                          )
+                                        }
                                         className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium transition"
                                       >
                                         Beri Review

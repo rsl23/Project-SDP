@@ -19,6 +19,7 @@ import {
   Filter,
   ChevronDown,
 } from "lucide-react";
+import { Card, Button, Spinner, Badge } from "flowbite-react";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -40,7 +41,9 @@ const ProductDetail = () => {
   const fetchProductReviews = async (productId) => {
     try {
       setReviewsLoading(true);
-      const response = await fetch(`http://localhost:5000/api/reviews/product/${productId}`);
+      const response = await fetch(
+        `http://localhost:5000/api/reviews/product/${productId}`
+      );
       if (response.ok) {
         const data = await response.json();
         setAllReviews(data.reviews); // Simpan semua review
@@ -60,7 +63,9 @@ const ProductDetail = () => {
     if (ratingFilter === "all") {
       setReviews(allReviews);
     } else {
-      const filtered = allReviews.filter(review => review.rating === parseInt(ratingFilter));
+      const filtered = allReviews.filter(
+        (review) => review.rating === parseInt(ratingFilter)
+      );
       setReviews(filtered);
     }
   }, [ratingFilter, allReviews]);
@@ -185,7 +190,11 @@ const ProductDetail = () => {
           <Star
             key={star}
             size={starSize}
-            className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+            className={
+              star <= rating
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-400"
+            }
           />
         ))}
       </div>
@@ -200,15 +209,16 @@ const ProductDetail = () => {
       let date;
 
       if (timestamp._seconds !== undefined) {
-        date = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
-      }
-      else if (timestamp.seconds !== undefined) {
-        date = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000);
-      }
-      else if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        date = new Date(
+          timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000
+        );
+      } else if (timestamp.seconds !== undefined) {
+        date = new Date(
+          timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+        );
+      } else if (timestamp.toDate && typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
-      }
-      else {
+      } else {
         date = new Date(timestamp);
       }
 
@@ -216,12 +226,11 @@ const ProductDetail = () => {
         return "";
       }
 
-      return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
+      return date.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
       });
-
     } catch (error) {
       console.error("Error formatting review date:", error);
       return "";
@@ -231,27 +240,34 @@ const ProductDetail = () => {
   // Get rating filter label
   const getRatingFilterLabel = () => {
     switch (ratingFilter) {
-      case "all": return "Semua Rating";
-      case "5": return "5 Bintang";
-      case "4": return "4 Bintang";
-      case "3": return "3 Bintang";
-      case "2": return "2 Bintang";
-      case "1": return "1 Bintang";
-      default: return "Semua Rating";
+      case "all":
+        return "Semua Rating";
+      case "5":
+        return "5 Bintang";
+      case "4":
+        return "4 Bintang";
+      case "3":
+        return "3 Bintang";
+      case "2":
+        return "2 Bintang";
+      case "1":
+        return "1 Bintang";
+      default:
+        return "Semua Rating";
     }
   };
 
   // Get count for each rating
   const getRatingCount = (rating) => {
-    return allReviews.filter(review => review.rating === rating).length;
+    return allReviews.filter((review) => review.rating === rating).length;
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Memuat produk...</p>
+          <Spinner size="xl" color="pink" />
+          <p className="text-white text-lg mt-4">Memuat produk...</p>
         </div>
       </div>
     );
@@ -267,12 +283,13 @@ const ProductDetail = () => {
           <h2 className="text-3xl font-bold text-white mb-4">
             Produk Tidak Ditemukan
           </h2>
-          <button
+          <Button
+            gradientDuoTone="pinkToOrange"
+            size="xl"
             onClick={() => navigate("/product")}
-            className="px-8 py-3 bg-gradient-to-r from-pink-500 to-indigo-600 text-white rounded-xl hover:from-pink-600 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg"
           >
             Kembali ke Daftar Produk
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -290,13 +307,10 @@ const ProductDetail = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 rounded-xl text-white font-medium transition-all duration-300 shadow-lg"
           >
-            <ArrowLeft
-              size={20}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            <span className="font-medium">Kembali</span>
+            <ArrowLeft size={20} />
+            Kembali
           </button>
         </div>
       </div>
@@ -308,15 +322,17 @@ const ProductDetail = () => {
           <div className="flex justify-center">
             <div className="relative group">
               <div
-                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
-                  }`}
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
               ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                    } group-hover:scale-105`}
+                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${
+                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -325,7 +341,7 @@ const ProductDetail = () => {
                 />
                 {!imageLoaded && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                    <Spinner size="lg" color="pink" />
                   </div>
                 )}
               </div>
@@ -421,16 +437,14 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full group relative overflow-hidden px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 ${product.stok === 0
-                  ? "bg-gray-600/50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 hover:shadow-2xl hover:scale-105"
-                  }`}
+                className={`w-full px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 text-lg ${
+                  product.stok === 0
+                    ? "bg-gray-600 cursor-not-allowed opacity-50"
+                    : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-2xl hover:scale-105"
+                }`}
               >
-                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                <ShoppingCart size={24} className="relative z-10" />
-                <span className="relative z-10">
-                  {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
-                </span>
+                <ShoppingCart size={24} />
+                {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
               </button>
 
               {/* E-commerce Links */}
@@ -513,7 +527,9 @@ const ProductDetail = () => {
           <div className="border-b border-white/10 pb-6 mb-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-white mb-2">Ulasan Produk</h2>
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  Ulasan Produk
+                </h2>
                 <div className="flex items-center gap-4 text-gray-300 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
@@ -521,11 +537,17 @@ const ProductDetail = () => {
                         <Star
                           key={star}
                           size={16}
-                          className={star <= averageRating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                          className={
+                            star <= averageRating
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-400"
+                          }
                         />
                       ))}
                     </div>
-                    <span className="font-medium text-white">{averageRating.toFixed(1)}</span>
+                    <span className="font-medium text-white">
+                      {averageRating.toFixed(1)}
+                    </span>
                   </div>
                   <div className="w-px h-4 bg-white/20"></div>
                   <span>{totalReviews} ulasan</span>
@@ -542,7 +564,9 @@ const ProductDetail = () => {
                   <span className="text-sm">{getRatingFilterLabel()}</span>
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`transition-transform ${
+                      filterDropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -554,7 +578,11 @@ const ProductDetail = () => {
                           setRatingFilter("all");
                           setFilterDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${ratingFilter === "all" ? "bg-indigo-600 text-white" : "text-gray-300 hover:bg-white/10"}`}
+                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                          ratingFilter === "all"
+                            ? "bg-indigo-600 text-white"
+                            : "text-gray-300 hover:bg-white/10"
+                        }`}
                       >
                         Semua Rating ({totalReviews})
                       </button>
@@ -565,7 +593,11 @@ const ProductDetail = () => {
                             setRatingFilter(rating.toString());
                             setFilterDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString() ? "bg-indigo-600 text-white" : "text-gray-300 hover:bg-white/10"}`}
+                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between ${
+                            ratingFilter === rating.toString()
+                              ? "bg-indigo-600 text-white"
+                              : "text-gray-300 hover:bg-white/10"
+                          }`}
                         >
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
@@ -573,13 +605,19 @@ const ProductDetail = () => {
                                 <Star
                                   key={star}
                                   size={12}
-                                  className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                                  className={
+                                    star <= rating
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-400"
+                                  }
                                 />
                               ))}
                             </div>
                             <span>{rating}</span>
                           </div>
-                          <span className="text-xs text-gray-400">({getRatingCount(rating)})</span>
+                          <span className="text-xs text-gray-400">
+                            ({getRatingCount(rating)})
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -592,7 +630,7 @@ const ProductDetail = () => {
           {/* Reviews */}
           {reviewsLoading ? (
             <div className="text-center py-8 border border-white/10 rounded-lg bg-white/5">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>
+              <Spinner size="lg" color="pink" />
               <p className="text-gray-300 mt-2 text-sm">Memuat ulasan...</p>
             </div>
           ) : reviews.length === 0 ? (
@@ -601,13 +639,17 @@ const ProductDetail = () => {
                 <MessageCircle size={20} className="text-gray-400" />
               </div>
               <p className="text-gray-400 text-sm">
-                {ratingFilter === "all" ? "Belum ada ulasan" : `Tidak ada ulasan dengan rating ${ratingFilter} bintang`}
+                {ratingFilter === "all"
+                  ? "Belum ada ulasan"
+                  : `Tidak ada ulasan dengan rating ${ratingFilter} bintang`}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               <div className="text-gray-400 text-sm mb-4">
-                Menampilkan {reviews.length} ulasan {ratingFilter !== "all" && `dengan rating ${ratingFilter} bintang`}
+                Menampilkan {reviews.length} ulasan{" "}
+                {ratingFilter !== "all" &&
+                  `dengan rating ${ratingFilter} bintang`}
               </div>
               {reviews.map((review) => (
                 <div
@@ -629,7 +671,11 @@ const ProductDetail = () => {
                             <Star
                               key={star}
                               size={12}
-                              className={star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                              className={
+                                star <= review.rating
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-400"
+                              }
                             />
                           ))}
                         </div>
