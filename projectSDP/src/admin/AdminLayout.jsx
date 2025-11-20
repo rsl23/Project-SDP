@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  Images, // Tambah icon untuk gallery
 } from "lucide-react";
 
 const AdminLayout = () => {
@@ -31,9 +32,10 @@ const AdminLayout = () => {
   const menuItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/products", icon: Package, label: "Produk" },
-    { path: "/admin/users", icon: Users, label: "Users" },
+    { path: "/admin/gallery", icon: Images, label: "Gallery" }, // Tambah menu gallery
     { path: "/admin/orders", icon: ShoppingCart, label: "Orders" },
-    { path: "/admin/reviews", icon: Star, label: "Reviews" }, // Tambah menu reviews
+    { path: "/admin/reviews", icon: Star, label: "Reviews" },
+    { path: "/admin/users", icon: Users, label: "Users" },
   ];
 
   const isActive = (path) => {
@@ -72,8 +74,8 @@ const AdminLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center gap-3 p-3 rounded-lg transition ${active
-                    ? "bg-indigo-700 text-white"
-                    : "hover:bg-indigo-800 text-gray-300"
+                  ? "bg-indigo-700 text-white"
+                  : "hover:bg-indigo-800 text-gray-300"
                   }`}
               >
                 <Icon size={20} />

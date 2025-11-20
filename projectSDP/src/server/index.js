@@ -1297,6 +1297,130 @@ app.delete("/api/reviews/:id", async (req, res) => {
   }
 });
 
+//---------------- Gallery APIs ----------------
+//---------------- Gallery APIs ----------------
+app.get("/api/gallery", async (req, res) => {
+  try {
+    console.log("📡 Fetching gallery data from Firestore...");
+
+    // PERBAIKAN: Hapus where active dan orderBy sementara untuk testing
+    const snapshot = await db.collection("gallery").get();
+
+    const galleryItems = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    console.log(`✅ Found ${galleryItems.length} gallery items`);
+    res.status(200).json(galleryItems);
+
+  } catch (error) {
+    console.error("❌ Error fetching gallery:", error);
+    res.status(500).json({ error: "Gagal mengambil data gallery: " + error.message });
+  }
+});
+
+app.post("/api/gallery", async (req, res) => {
+  try {
+    const {
+      image_url,
+      alt_text,
+      description
+    } = req.body;
+
+    console.log("📨 Received gallery data:", { image_url, alt_text, description });
+
+    // PERBAIKAN: Hanya image_url yang required
+    if (!image_url) {
+      return res.status(400).json({
+        error: "image_url wajib diisi"
+      });
+    }
+
+    const galleryData = {
+      image_url,
+      alt_text: alt_text || "Gambar gallery",
+      description: description || "",
+      active: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    console.log("💾 Saving to Firestore:", galleryData);
+    const galleryRef = await db.collection("gallery").add(galleryData);
+
+    res.status(201).json({
+      message: "Gambar gallery berhasil ditambahkan",
+      id: galleryRef.id,
+      ...galleryData,
+    });
+  } catch (error) {
+    console.error("❌ Error tambah gallery:", error);
+    res.status(500).json({ error: "Gagal menambah gambar gallery: " + error.message });
+  }
+});
+
+app.put("/api/gallery/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      image_url,
+      alt_text,
+      description,
+      active
+    } = req.body;
+
+    const galleryRef = db.collection("gallery").doc(id);
+    const doc = await galleryRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Gambar gallery tidak ditemukan" });
+    }
+
+    const updateData = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (image_url !== undefined) updateData.image_url = image_url;
+    if (alt_text !== undefined) updateData.alt_text = alt_text;
+    if (description !== undefined) updateData.description = description;
+    if (active !== undefined) updateData.active = active;
+
+    await galleryRef.update(updateData);
+
+    res.status(200).json({
+      message: "Gambar gallery berhasil diupdate",
+      id,
+      ...updateData,
+    });
+  } catch (error) {
+    console.error("❌ Error update gallery:", error);
+    res.status(500).json({ error: "Gagal update gambar gallery" });
+  }
+});
+
+app.delete("/api/gallery/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const galleryRef = db.collection("gallery").doc(id);
+    const doc = await galleryRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Gambar gallery tidak ditemukan" });
+    }
+
+    await galleryRef.delete();
+
+    res.status(200).json({
+      message: "Gambar gallery berhasil dihapus",
+      id,
+    });
+  } catch (error) {
+    console.error("❌ Error delete gallery:", error);
+    res.status(500).json({ error: "Gagal menghapus gambar gallery" });
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\nServer berjalan di http://localhost:${PORT}`);

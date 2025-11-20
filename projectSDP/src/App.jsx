@@ -29,6 +29,8 @@ import AdminSettings from "./admin/pages/AdminSettings";
 
 import "./App.css";
 import AdminReviews from "./admin/pages/AdminReviews";
+import GalleryPage from "./admin/pages/AdminGallery";
+import GalleryView from "./Testimoni Galeri/GalleryView";
 
 const ProtectedRoute = ({ children, user }) => {
   const location = useLocation();
@@ -78,6 +80,7 @@ function App() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="reviews" element={<AdminReviews />} />
+          <Route path="gallery" element={<GalleryPage />} />
         </Route>
 
         <Route
@@ -123,6 +126,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/aboutus" element={<AboutUs />} />
+                  <Route path="/gallery" element={<GalleryView />} />
                 </Routes>
               </main>
               <Footer />
