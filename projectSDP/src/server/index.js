@@ -1276,6 +1276,27 @@ app.get("/api/reviews/product/:produk_id", async (req, res) => {
   }
 });
 
+app.delete("/api/reviews/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const reviewDoc = await db.collection("reviews").doc(id).get();
+    if (!reviewDoc.exists) {
+      return res.status(404).json({ error: "Review tidak ditemukan" });
+    }
+
+    await db.collection("reviews").doc(id).delete();
+
+    res.status(200).json({
+      message: "Review berhasil dihapus",
+      id
+    });
+  } catch (error) {
+    console.error("❌ Error delete review:", error);
+    res.status(500).json({ error: "Gagal menghapus review" });
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\nServer berjalan di http://localhost:${PORT}`);

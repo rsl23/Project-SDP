@@ -7,6 +7,7 @@ import {
   Package,
   Users,
   ShoppingCart,
+  Star,
   Settings,
   LogOut,
   Menu,
@@ -32,7 +33,7 @@ const AdminLayout = () => {
     { path: "/admin/products", icon: Package, label: "Produk" },
     { path: "/admin/users", icon: Users, label: "Users" },
     { path: "/admin/orders", icon: ShoppingCart, label: "Orders" },
-    // { path: "/admin/settings", icon: Settings, label: "Settings" },
+    { path: "/admin/reviews", icon: Star, label: "Reviews" }, // Tambah menu reviews
   ];
 
   const isActive = (path) => {
@@ -46,9 +47,8 @@ const AdminLayout = () => {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <aside
-        className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-indigo-900 to-purple-900 text-white transition-all duration-300 flex flex-col`}
+        className={`${sidebarOpen ? "w-64" : "w-20"
+          } bg-gradient-to-b from-indigo-900 to-purple-900 text-white transition-all duration-300 flex flex-col`}
       >
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-indigo-700">
@@ -71,11 +71,10 @@ const AdminLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                  active
+                className={`flex items-center gap-3 p-3 rounded-lg transition ${active
                     ? "bg-indigo-700 text-white"
                     : "hover:bg-indigo-800 text-gray-300"
-                }`}
+                  }`}
               >
                 <Icon size={20} />
                 {sidebarOpen && <span>{item.label}</span>}

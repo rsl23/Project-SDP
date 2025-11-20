@@ -28,6 +28,7 @@ import AdminOrders from "./admin/pages/AdminOrders";
 import AdminSettings from "./admin/pages/AdminSettings";
 
 import "./App.css";
+import AdminReviews from "./admin/pages/AdminReviews";
 
 const ProtectedRoute = ({ children, user }) => {
   const location = useLocation();
@@ -76,6 +77,7 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="reviews" element={<AdminReviews />} />
         </Route>
 
         <Route

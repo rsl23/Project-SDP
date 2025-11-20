@@ -6,17 +6,76 @@ import { CheckCircle, XCircle, Clock, Package, User, DollarSign } from "lucide-r
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("pending");
   const [processingOrder, setProcessingOrder] = useState(null);
+  const [users, setUsers] = useState({});
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setOrders(data);
+
+      // Urutkan dari yang terbaru ke terlama berdasarkan createdAt
+      const sortedData = data.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return dateB - dateA; // Terbaru ke terlama
+      });
+
+      setOrders(sortedData);
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+      const data = {};
+      snapshot.forEach(doc => {
+        data[doc.id] = doc.data();
+      });
+      setUsers(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fungsi untuk format tanggal
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "-";
+
+    try {
+      let date;
+
+      if (timestamp._seconds !== undefined) {
+        date = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
+      }
+      else if (timestamp.seconds !== undefined) {
+        date = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000);
+      }
+      else if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        date = timestamp.toDate();
+      }
+      else {
+        date = new Date(timestamp);
+      }
+
+      if (isNaN(date.getTime())) {
+        return "Tanggal tidak valid";
+      }
+
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Tanggal tidak valid";
+    }
+  };
 
   // AdminOrders.jsx - Update handleStatusChange
   const handleStatusChange = async (orderId, status) => {
@@ -137,7 +196,7 @@ const AdminOrders = () => {
 
         {/* Filter Status */}
         <div className="mb-6 flex flex-wrap gap-3">
-          {["all", "pending", "accepted", "rejected"].map((status) => (
+          {["pending", "all", "accepted", "rejected"].map((status) => (
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
@@ -175,19 +234,22 @@ const AdminOrders = () => {
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
                         <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}
                           {order.status === "pending" ? "Menunggu Konfirmasi" :
                             order.status === "accepted" ? "Pesanan Diterima" : "Pesanan Ditolak"}
                         </span>
                         <span className="text-sm text-gray-500 font-mono">#{order.id.slice(-8)}</span>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(order.createdAt)}
+                        </span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex items-center gap-2 text-gray-600">
                           <User className="w-4 h-4" />
-                          <span className="text-sm">User: {order.userId?.slice(0, 8)}...</span>
+                          <span className="text-sm">User: {users[order.userId]?.name || "Tidak diketahui"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Package className="w-4 h-4" />

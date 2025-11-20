@@ -16,6 +16,8 @@ import {
   Truck,
   User,
   MessageCircle,
+  Filter,
+  ChevronDown,
 } from "lucide-react";
 
 const ProductDetail = () => {
@@ -27,9 +29,12 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [allReviews, setAllReviews] = useState([]); // Semua review tanpa filter
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [ratingFilter, setRatingFilter] = useState("all"); // "all", 5, 4, 3, 2, 1
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // Fetch product reviews
   const fetchProductReviews = async (productId) => {
@@ -38,7 +43,8 @@ const ProductDetail = () => {
       const response = await fetch(`http://localhost:5000/api/reviews/product/${productId}`);
       if (response.ok) {
         const data = await response.json();
-        setReviews(data.reviews);
+        setAllReviews(data.reviews); // Simpan semua review
+        setReviews(data.reviews); // Default tampilkan semua
         setAverageRating(data.averageRating);
         setTotalReviews(data.totalReviews);
       }
@@ -48,6 +54,16 @@ const ProductDetail = () => {
       setReviewsLoading(false);
     }
   };
+
+  // Apply rating filter
+  useEffect(() => {
+    if (ratingFilter === "all") {
+      setReviews(allReviews);
+    } else {
+      const filtered = allReviews.filter(review => review.rating === parseInt(ratingFilter));
+      setReviews(filtered);
+    }
+  }, [ratingFilter, allReviews]);
 
   const handleAddToCart = async () => {
     try {
@@ -160,18 +176,23 @@ const ProductDetail = () => {
     }
   };
 
+  // Fungsi untuk render rating stars
   const renderRatingStars = (rating, size = "sm") => {
     const starSize = size === "lg" ? 20 : 16;
     return (
       <div className="flex items-center gap-1">
-        <Star
-          size={starSize}
-          className="text-yellow-400 fill-yellow-400"
-        />
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            size={starSize}
+            className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+          />
+        ))}
       </div>
     );
   };
 
+  // Fungsi untuk format tanggal review
   const formatReviewDate = (timestamp) => {
     if (!timestamp) return "";
 
@@ -205,6 +226,24 @@ const ProductDetail = () => {
       console.error("Error formatting review date:", error);
       return "";
     }
+  };
+
+  // Get rating filter label
+  const getRatingFilterLabel = () => {
+    switch (ratingFilter) {
+      case "all": return "Semua Rating";
+      case "5": return "5 Bintang";
+      case "4": return "4 Bintang";
+      case "3": return "3 Bintang";
+      case "2": return "2 Bintang";
+      case "1": return "1 Bintang";
+      default: return "Semua Rating";
+    }
+  };
+
+  // Get count for each rating
+  const getRatingCount = (rating) => {
+    return allReviews.filter(review => review.rating === rating).length;
   };
 
   if (loading) {
@@ -470,24 +509,83 @@ const ProductDetail = () => {
 
         {/* Reviews Section */}
         <div className="mt-16">
-          {/* Header dengan border bawah */}
+          {/* Header dengan filter */}
           <div className="border-b border-white/10 pb-6 mb-6">
-            <h2 className="text-xl font-semibold text-white mb-2">Ulasan Produk</h2>
-            <div className="flex items-center gap-4 text-gray-300 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={16}
-                      className={star <= averageRating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
-                    />
-                  ))}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-2">Ulasan Produk</h2>
+                <div className="flex items-center gap-4 text-gray-300 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={16}
+                          className={star <= averageRating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-medium text-white">{averageRating.toFixed(1)}</span>
+                  </div>
+                  <div className="w-px h-4 bg-white/20"></div>
+                  <span>{totalReviews} ulasan</span>
                 </div>
-                <span className="font-medium text-white">{averageRating.toFixed(1)}</span>
               </div>
-              <div className="w-px h-4 bg-white/20"></div>
-              <span>{totalReviews} ulasan</span>
+
+              {/* Rating Filter Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors"
+                >
+                  <Filter size={16} />
+                  <span className="text-sm">{getRatingFilterLabel()}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {filterDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-gray-800 border border-white/20 rounded-lg shadow-lg z-10">
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setRatingFilter("all");
+                          setFilterDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${ratingFilter === "all" ? "bg-indigo-600 text-white" : "text-gray-300 hover:bg-white/10"}`}
+                      >
+                        Semua Rating ({totalReviews})
+                      </button>
+                      {[5, 4, 3, 2, 1].map((rating) => (
+                        <button
+                          key={rating}
+                          onClick={() => {
+                            setRatingFilter(rating.toString());
+                            setFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString() ? "bg-indigo-600 text-white" : "text-gray-300 hover:bg-white/10"}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={12}
+                                  className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}
+                                />
+                              ))}
+                            </div>
+                            <span>{rating}</span>
+                          </div>
+                          <span className="text-xs text-gray-400">({getRatingCount(rating)})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -502,10 +600,15 @@ const ProductDetail = () => {
               <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 border border-white/10">
                 <MessageCircle size={20} className="text-gray-400" />
               </div>
-              <p className="text-gray-400 text-sm">Belum ada ulasan</p>
+              <p className="text-gray-400 text-sm">
+                {ratingFilter === "all" ? "Belum ada ulasan" : `Tidak ada ulasan dengan rating ${ratingFilter} bintang`}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
+              <div className="text-gray-400 text-sm mb-4">
+                Menampilkan {reviews.length} ulasan {ratingFilter !== "all" && `dengan rating ${ratingFilter} bintang`}
+              </div>
               {reviews.map((review) => (
                 <div
                   key={review.id}
