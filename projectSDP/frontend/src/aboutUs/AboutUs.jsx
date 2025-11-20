@@ -18,23 +18,27 @@ const AboutUs = () => {
     const fetchGalleryData = async () => {
       try {
         setLoading(true);
-        console.log("🔄 Fetching gallery data for AboutUs page...");
+        console.log("Fetching gallery data for AboutUs page...");
 
         // PERBAIKAN: Gunakan full URL ke Express server
-        const galleryResponse = await fetch("http://localhost:5000/api/gallery");
-        console.log("📊 Gallery response status:", galleryResponse.status);
+        const galleryResponse = await fetch(
+          "http://localhost:5000/api/gallery"
+        );
+        console.log("Gallery response status:", galleryResponse.status);
 
         if (galleryResponse.ok) {
           const galleryData = await galleryResponse.json();
-          console.log("✅ Gallery data received:", galleryData.length, "images");
+          console.log("Gallery data received:", galleryData.length, "images");
           // Filter hanya gambar yang aktif
-          const activeImages = galleryData.filter(image => image.active !== false);
+          const activeImages = galleryData.filter(
+            (image) => image.active !== false
+          );
           setGalleryImages(activeImages);
         } else {
-          console.error("❌ Failed to fetch gallery:", galleryResponse.status);
+          console.error("Failed to fetch gallery:", galleryResponse.status);
         }
       } catch (error) {
-        console.error("❌ Error fetching gallery data:", error);
+        console.error("Error fetching gallery data:", error);
       } finally {
         setLoading(false);
       }
@@ -117,8 +121,8 @@ const AboutUs = () => {
             Gallery Kami
           </h3>
           <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
-            Lihat langsung suasana toko, produk berkualitas, dan aktivitas tim kami
-            yang siap melayani kebutuhan aksesoris motor Anda
+            Lihat langsung suasana toko, produk berkualitas, dan aktivitas tim
+            kami yang siap melayani kebutuhan aksesoris motor Anda
           </p>
 
           {/* Gallery Grid */}
@@ -138,16 +142,24 @@ const AboutUs = () => {
                     alt={image.alt_text}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/300x200/4f46e5/ffffff?text=Gambar+Tidak+Tersedia";
-                      console.error("❌ Image failed to load:", image.image_url);
+                      e.target.src =
+                        "https://via.placeholder.com/300x200/4f46e5/ffffff?text=Gambar+Tidak+Tersedia";
+                      console.error(
+                        "❌ Image failed to load:",
+                        image.image_url
+                      );
                     }}
-                    onLoad={() => console.log("✅ Image loaded:", image.image_url)}
+                    onLoad={() =>
+                      console.log("✅ Image loaded:", image.image_url)
+                    }
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                     <div className="p-4 text-white w-full">
                       <p className="font-semibold text-lg">{image.alt_text}</p>
                       {image.description && (
-                        <p className="text-sm mt-2 opacity-90">{image.description}</p>
+                        <p className="text-sm mt-2 opacity-90">
+                          {image.description}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -160,8 +172,9 @@ const AboutUs = () => {
                 📸 Belum ada gambar gallery
               </div>
               <div className="text-gray-500 max-w-md mx-auto">
-                Gallery akan muncul setelah admin menambahkan gambar melalui dashboard.
-                Silakan hubungi admin untuk menambahkan foto toko, produk, dan aktivitas.
+                Gallery akan muncul setelah admin menambahkan gambar melalui
+                dashboard. Silakan hubungi admin untuk menambahkan foto toko,
+                produk, dan aktivitas.
               </div>
             </div>
           )}
