@@ -1,3 +1,6 @@
+// LoginPage Component - Halaman autentikasi user dengan email/password dan Google
+// Features: Email/password login, Google OAuth, email verification check, forgot password
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -24,15 +27,17 @@ import {
   X,
   Shield,
   RefreshCw,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 
-// Fungsi untuk cek dan sync email verification
+// Helper: Check dan sync email verification status dari Firebase Auth ke Firestore
+// @param user - Firebase Auth user object
+// @returns Boolean - true jika sudah verified, false jika belum
 async function checkAndSyncEmailVerification(user) {
-  // Refresh data user dari Firebase Auth
+  // Refresh data user dari Firebase Auth untuk get status terbaru
   await user.reload();
 
-  // Kalau sudah verifikasi, update Firestore
+  // Kalau sudah verifikasi di Firebase Auth, sync ke Firestore
   if (user.emailVerified) {
     await updateDoc(doc(db, "users", user.uid), {
       email_verified: true,
@@ -45,7 +50,9 @@ async function checkAndSyncEmailVerification(user) {
   }
 }
 
-// Fungsi untuk kirim ulang email verifikasi
+// Helper: Kirim ulang email verifikasi ke user
+// @param user - Firebase Auth user object
+// @returns Boolean - true jika berhasil kirim, false jika gagal
 async function resendVerificationEmail(user) {
   try {
     await sendEmailVerification(user);
@@ -56,6 +63,7 @@ async function resendVerificationEmail(user) {
   }
 }
 
+// Reusable Input Field Component untuk form login
 function InputField({
   label,
   type = "text",
@@ -81,18 +89,21 @@ function InputField({
 
 function LoginForm() {
   const navigate = useNavigate();
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  // State management untuk modals dan form
+  const [showResetModal, setShowResetModal] = useState(false); // Modal forgot password
+  const [showVerificationModal, setShowVerificationModal] = useState(false); // Modal email verification
+  const [currentUser, setCurrentUser] = useState(null); // User yang perlu verifikasi email
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false); // Status kirim ulang email
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Handle login dengan email dan password
+  // Validasi: email verified required untuk login
   const handleEmailLogin = async (e) => {
     e.preventDefault();
 
@@ -136,7 +147,6 @@ function LoginForm() {
 
       // Jika user biasa sudah terverifikasi → lanjut login
       navigate("/");
-
     } catch (err) {
       console.error("Error login:", err);
       const errorCode = err.code;
@@ -154,7 +164,6 @@ function LoginForm() {
       setLoading(false);
     }
   };
-
 
   const handleResendVerification = async () => {
     if (!currentUser) return;
@@ -334,8 +343,12 @@ function LoginForm() {
                       <AlertCircle size={24} className="text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold">Verifikasi Diperlukan</h2>
-                      <p className="text-amber-100 text-sm">Lengkapi verifikasi email Anda</p>
+                      <h2 className="text-2xl font-bold">
+                        Verifikasi Diperlukan
+                      </h2>
+                      <p className="text-amber-100 text-sm">
+                        Lengkapi verifikasi email Anda
+                      </p>
                     </div>
                   </div>
                   <button
@@ -359,7 +372,10 @@ function LoginForm() {
                       className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4"
                     >
                       <div className="flex items-center gap-2">
-                        <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
+                        <CheckCircle
+                          size={16}
+                          className="text-green-600 flex-shrink-0"
+                        />
                         <span className="text-green-800 text-sm font-medium">
                           Email verifikasi telah dikirim ulang!
                         </span>
@@ -377,22 +393,31 @@ function LoginForm() {
                     Periksa Email Anda
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    Kami telah mengirimkan link verifikasi ke email Anda.
-                    Klik link tersebut untuk mengaktifkan akun dan melanjutkan login.
+                    Kami telah mengirimkan link verifikasi ke email Anda. Klik
+                    link tersebut untuk mengaktifkan akun dan melanjutkan login.
                   </p>
                 </div>
 
                 {/* Tips Box */}
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <Shield size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Shield
+                      size={16}
+                      className="text-blue-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-blue-800 font-medium text-sm mb-1">
                         💡 Tidak menemukan email?
                       </p>
                       <ul className="text-blue-700 text-sm space-y-1">
-                        <li>• Cek folder <strong>Spam</strong> atau <strong>Promosi</strong></li>
-                        <li>• Pastikan email sudah benar: <strong>{currentUser?.email}</strong></li>
+                        <li>
+                          • Cek folder <strong>Spam</strong> atau{" "}
+                          <strong>Promosi</strong>
+                        </li>
+                        <li>
+                          • Pastikan email sudah benar:{" "}
+                          <strong>{currentUser?.email}</strong>
+                        </li>
                         <li>• Tunggu beberapa menit jika belum menerima</li>
                       </ul>
                     </div>

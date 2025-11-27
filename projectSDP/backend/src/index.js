@@ -1,18 +1,24 @@
+// Import dependencies untuk Express server dan Firebase
 import express from "express";
 import cors from "cors";
 import { db } from "./firebase.js";
 import { img, u } from "framer-motion/client";
 import admin from "firebase-admin";
 
+// Inisialisasi Express app dan middleware
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Enable CORS untuk akses dari frontend
+app.use(express.json()); // Parse JSON request body
 
+// Endpoint: GET /api/products
+// Fungsi: Mengambil semua produk dengan kalkulasi stok real-time dan data kategori
 app.get("/api/products", async (req, res) => {
   try {
+    // Ambil semua dokumen produk dari Firestore
     const snapshot = await db.collection("products").get();
     const products = [];
 
+    // Iterasi setiap produk untuk menghitung stok real-time
     for (const doc of snapshot.docs) {
       const data = doc.data();
 
@@ -20,15 +26,16 @@ app.get("/api/products", async (req, res) => {
         `\n🔍 Calculating stock for product: ${data.nama} (${doc.id})`
       );
 
-      // Hitung stok dari tabel stock
+      // Kalkulasi stok dari tabel stock (masuk - keluar)
       const stockSnap = await db
         .collection("stock")
         .where("produk_id", "==", doc.id)
         .get();
 
-      let totalMasuk = 0;
-      let totalKeluar = 0;
+      let totalMasuk = 0; // Total stok masuk
+      let totalKeluar = 0; // Total stok keluar yang sudah dikonfirmasi
 
+      // Hitung total masuk dan keluar
       stockSnap.forEach((s) => {
         const st = s.data();
 
@@ -36,6 +43,7 @@ app.get("/api/products", async (req, res) => {
           totalMasuk += st.jumlah;
           console.log(`➕ MASUK: ${st.jumlah} - ${st.keterangan}`);
         } else if (st.tipe === "keluar") {
+          // Hanya hitung stok keluar yang bukan status 'returned' (dibatalkan)
           if (st.status !== "returned") {
             totalKeluar += st.jumlah;
             console.log(
@@ -49,13 +57,14 @@ app.get("/api/products", async (req, res) => {
         }
       });
 
+      // Stok akhir = total masuk - total keluar
       const stokAkhir = totalMasuk - totalKeluar;
 
       console.log(
         `📊 Total MASUK: ${totalMasuk}, Total KELUAR: ${totalKeluar}, STOK AKHIR: ${stokAkhir}`
       );
 
-      // Ambil data kategori
+      // Join dengan tabel kategori untuk mendapatkan nama kategori
       let kategoriData = null;
       if (data.kategori_id) {
         const kategoriDoc = await db
@@ -67,6 +76,7 @@ app.get("/api/products", async (req, res) => {
         }
       }
 
+      // Gabungkan data produk dengan stok dan kategori
       products.push({
         id: doc.id,
         ...data,
@@ -76,6 +86,7 @@ app.get("/api/products", async (req, res) => {
       });
     }
 
+    // Return array produk dengan status 200 OK
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -83,6 +94,8 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/products
+// Fungsi: Menambah produk baru beserta stok awal ke database
 app.post("/api/products", async (req, res) => {
   try {
     const {
@@ -96,11 +109,12 @@ app.post("/api/products", async (req, res) => {
       stok,
     } = req.body;
 
+    // Validasi field wajib: nama, kategori_id, harga
     if (!nama || !kategori_id || !harga) {
       return res.status(400).json({ error: "Data produk tidak lengkap" });
     }
 
-    // Validasi kategori exists
+    // Validasi kategori exists di database
     const kategoriDoc = await db
       .collection("categories")
       .doc(kategori_id)
@@ -109,6 +123,7 @@ app.post("/api/products", async (req, res) => {
       return res.status(400).json({ error: "Kategori tidak ditemukan" });
     }
 
+    // Siapkan object produk baru dengan default values
     const newProduct = {
       nama,
       kategori_id,
@@ -121,8 +136,10 @@ app.post("/api/products", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Simpan produk ke Firestore collection 'products'
     const productRef = await db.collection("products").add(newProduct);
 
+    // Jika ada stok awal, tambahkan entry ke tabel stock dengan tipe 'masuk'
     if (stok && Number(stok) > 0) {
       await db.collection("stock").add({
         produk_id: productRef.id,
@@ -133,6 +150,7 @@ app.post("/api/products", async (req, res) => {
       });
     }
 
+    // Return produk yang baru dibuat dengan status 201 Created
     res.status(201).json({
       message: "Produk berhasil ditambahkan beserta stok awal",
       id: productRef.id,
@@ -145,6 +163,8 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
+// Endpoint: PUT /api/products/:id
+// Fungsi: Update data produk berdasarkan ID (tidak termasuk stok)
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -161,6 +181,7 @@ app.put("/api/products/:id", async (req, res) => {
       }
     }
 
+    // Validasi produk exists di database
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
 
@@ -168,6 +189,7 @@ app.put("/api/products/:id", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
+    // Update dokumen produk dengan data baru
     await productRef.update(updateData);
 
     res.status(200).json({
@@ -183,16 +205,20 @@ app.put("/api/products/:id", async (req, res) => {
   }
 });
 
+// Endpoint: PUT /api/products/:id/stock
+// Fungsi: Update stok produk dengan memodifikasi entry stok awal
 app.put("/api/products/:id/stock", async (req, res) => {
   try {
     const { id } = req.params;
     const { stok } = req.body;
 
+    // Validasi stok harus integer positif
     if (!Number.isInteger(stok) || stok < 0)
       return res.status(400).json({ error: "Stok tidak valid" });
 
     console.log(`🔄 Updating stock for product ${id} to ${stok}`);
 
+    // Hitung stok akhir saat ini dari tabel stock
     const stockSnap = await db
       .collection("stock")
       .where("produk_id", "==", id)
@@ -201,6 +227,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
     let totalMasuk = 0;
     let totalKeluar = 0;
 
+    // Kalkulasi total masuk dan keluar yang sudah confirmed
     stockSnap.forEach((doc) => {
       const data = doc.data();
       if (data.tipe === "masuk") {
@@ -211,7 +238,8 @@ app.put("/api/products/:id/stock", async (req, res) => {
     });
 
     console.log(
-      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${totalMasuk - totalKeluar
+      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${
+        totalMasuk - totalKeluar
       }`
     );
 
@@ -221,6 +249,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
     console.log(`🎯 Target stok: ${stok}, Selisih: ${selisihStok}`);
 
     if (selisihStok !== 0) {
+      // Cari entry stok awal yang sudah ada
       const stokAwalSnap = await db
         .collection("stock")
         .where("produk_id", "==", id)
@@ -232,15 +261,19 @@ app.put("/api/products/:id/stock", async (req, res) => {
         stokAwalDoc = { ref: doc.ref, data: doc.data() };
       });
 
+      // Jika sudah ada entry stok awal, update jumlahnya
       if (stokAwalDoc) {
         const newStokAwal = stokAwalDoc.data.jumlah + selisihStok;
+        // Validasi tidak boleh negatif
         if (newStokAwal < 0) {
           return res.status(400).json({
-            error: `Tidak dapat mengurangi stok. Stok minimum: ${stokAkhirSekarang + stokAwalDoc.data.jumlah
-              }`,
+            error: `Tidak dapat mengurangi stok. Stok minimum: ${
+              stokAkhirSekarang + stokAwalDoc.data.jumlah
+            }`,
           });
         }
 
+        // Update entry stok awal yang ada
         await stokAwalDoc.ref.update({
           jumlah: newStokAwal,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -249,6 +282,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
           `📝 Updated existing stok awal: ${stokAwalDoc.data.jumlah} → ${newStokAwal}`
         );
       } else {
+        // Jika belum ada entry stok awal, buat baru (hanya untuk penambahan stok)
         if (selisihStok > 0) {
           await db.collection("stock").add({
             produk_id: id,
@@ -267,6 +301,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
       }
     }
 
+    // Verifikasi stok akhir setelah update dengan query ulang
     const updatedStockSnap = await db
       .collection("stock")
       .where("produk_id", "==", id)
@@ -275,6 +310,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
     let updatedTotalMasuk = 0;
     let updatedTotalKeluar = 0;
 
+    // Kalkulasi ulang stok akhir setelah update
     updatedStockSnap.forEach((doc) => {
       const data = doc.data();
       if (data.tipe === "masuk") {
@@ -303,11 +339,14 @@ app.put("/api/products/:id/stock", async (req, res) => {
   }
 });
 
+// Endpoint: DELETE /api/products/:id
+// Fungsi: Soft delete produk dan hapus semua entry stok terkait
 app.delete("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`🗑️ Deleting product ${id}`);
 
+    // Validasi produk exists
     const productRef = db.collection("products").doc(id);
     const doc = await productRef.get();
 
@@ -316,12 +355,14 @@ app.delete("/api/products/:id", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
+    // Hapus semua entry stok yang berkaitan dengan produk ini
     const stockSnap = await db
       .collection("stock")
       .where("produk_id", "==", id)
       .get();
 
     if (!stockSnap.empty) {
+      // Batch delete untuk efisiensi
       const batch = db.batch();
       stockSnap.forEach((stockDoc) => batch.delete(stockDoc.ref));
       await batch.commit();
@@ -330,6 +371,7 @@ app.delete("/api/products/:id", async (req, res) => {
       console.log(`ℹ️ No stock found for product ${id}`);
     }
 
+    // Hapus dokumen produk
     await productRef.delete();
 
     console.log(`✅ Product ${id} and related stock deleted successfully`);
@@ -346,22 +388,27 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/stock
+// Fungsi: Menambah entry riwayat stok manual (masuk/keluar)
 app.post("/api/stock", async (req, res) => {
   try {
     const { produk_id, tipe, jumlah, keterangan } = req.body;
 
+    // Validasi field wajib dan tipe harus 'masuk' atau 'keluar'
     if (!produk_id || !["masuk", "keluar"].includes(tipe) || !jumlah) {
       return res
         .status(400)
         .json({ error: "Data stok tidak lengkap / tidak valid" });
     }
 
+    // Validasi produk exists di database
     const produkRef = db.collection("products").doc(produk_id);
     const produkDoc = await produkRef.get();
     if (!produkDoc.exists) {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
+    // Siapkan object stok untuk disimpan
     const stokData = {
       produk_id,
       tipe,
@@ -370,6 +417,7 @@ app.post("/api/stock", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Simpan ke collection stock
     await db.collection("stock").add(stokData);
 
     res
@@ -381,10 +429,14 @@ app.post("/api/stock", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/stock
+// Fungsi: Mengambil riwayat stok, bisa difilter by produk_id
 app.get("/api/stock", async (req, res) => {
   try {
     const { produk_id } = req.query;
+    // Base query dengan sorting descending by createdAt
     let query = db.collection("stock").orderBy("createdAt", "desc");
+    // Filter by produk_id jika ada parameter
     if (produk_id) query = query.where("produk_id", "==", produk_id);
 
     const snapshot = await query.get();
@@ -400,14 +452,18 @@ app.get("/api/stock", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/cart
+// Fungsi: Mengambil cart items milik user dengan data produk dan stok real-time
 app.get("/api/cart", async (req, res) => {
   try {
     const { userId } = req.query;
 
+    // Validasi userId wajib ada
     if (!userId) {
       return res.status(400).json({ error: "userId diperlukan" });
     }
 
+    // Query cart berdasarkan userId
     const snapshot = await db
       .collection("cart")
       .where("userId", "==", userId)
@@ -415,13 +471,17 @@ app.get("/api/cart", async (req, res) => {
 
     const cartItems = [];
 
+    // Iterasi setiap cart item untuk join dengan data produk dan hitung stok
+    // Iterasi setiap cart item untuk join dengan data produk dan hitung stok
     for (const doc of snapshot.docs) {
       const data = doc.data();
+      // Join dengan tabel products untuk data produk
       const produkDoc = await db
         .collection("products")
         .doc(data.produk_id)
         .get();
       const produkData = produkDoc.exists ? produkDoc.data() : null;
+      // Hitung stok real-time dari tabel stock
       const stockSnap = await db
         .collection("stock")
         .where("produk_id", "==", data.produk_id)
@@ -452,8 +512,9 @@ app.get("/api/cart", async (req, res) => {
 
       const stokAkhir = totalMasuk - totalKeluar;
       console.log(`Ini stok akhir ${stokAkhir}`);
-      produkData.stok = stokAkhir;
+      produkData.stok = stokAkhir; // Set stok real-time ke produk data
 
+      // Push cart item dengan data produk dan stok
       cartItems.push({
         id: doc.id,
         produk_id: data.produk_id,
@@ -461,11 +522,11 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-            nama: produkData.nama,
-            harga: produkData.harga,
-            img_url: produkData.img_url,
-            stok: produkData.stok,
-          }
+              nama: produkData.nama,
+              harga: produkData.harga,
+              img_url: produkData.img_url,
+              stok: produkData.stok,
+            }
           : null,
       });
     }
@@ -477,16 +538,20 @@ app.get("/api/cart", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/cart
+// Fungsi: Menambah produk ke cart, update jumlah jika sudah ada
 app.post("/api/cart", async (req, res) => {
   try {
     const { produk_id, jumlah, userId } = req.body;
 
+    // Validasi field wajib
     if (!produk_id || !jumlah || !userId) {
       return res
         .status(400)
         .json({ error: "produk_id, jumlah, dan userId wajib diisi" });
     }
 
+    // Validasi produk exists
     const produkRef = db.collection("products").doc(produk_id);
     const produkDoc = await produkRef.get();
 
@@ -494,6 +559,7 @@ app.post("/api/cart", async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
+    // Cek apakah produk sudah ada di cart user
     const existingCart = await db
       .collection("cart")
       .where("userId", "==", userId)
@@ -502,6 +568,7 @@ app.post("/api/cart", async (req, res) => {
 
     let cartItem;
 
+    // Jika sudah ada, update jumlahnya (increment)
     if (!existingCart.empty) {
       const existingDoc = existingCart.docs[0];
       const existingData = existingDoc.data();
@@ -510,6 +577,7 @@ app.post("/api/cart", async (req, res) => {
       await existingDoc.ref.update({ jumlah: newJumlah });
       cartItem = { id: existingDoc.id, jumlah: newJumlah };
     } else {
+      // Jika belum ada, buat cart item baru
       const newCart = await db.collection("cart").add({
         produk_id,
         jumlah,
@@ -537,21 +605,26 @@ app.post("/api/cart", async (req, res) => {
   }
 });
 
+// Endpoint: PUT /api/cart/:id
+// Fungsi: Update jumlah item di cart
 app.put("/api/cart/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const jumlah = Number(req.body.jumlah);
 
+    // Validasi jumlah harus integer >= 1
     if (!Number.isInteger(jumlah) || jumlah < 1) {
       return res.status(400).json({ error: "Jumlah tidak valid" });
     }
 
+    // Validasi cart item exists
     const cartRef = db.collection("cart").doc(id);
     const doc = await cartRef.get();
 
     if (!doc.exists)
       return res.status(404).json({ error: "Item cart tidak ditemukan" });
 
+    // Update jumlah
     await cartRef.update({ jumlah });
 
     res
@@ -565,9 +638,12 @@ app.put("/api/cart/:id", async (req, res) => {
   }
 });
 
+// Endpoint: DELETE /api/cart/:id
+// Fungsi: Hapus item dari cart
 app.delete("/api/cart/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    // Validasi cart item exists
     const cartRef = db.collection("cart").doc(id);
     const doc = await cartRef.get();
 
@@ -585,22 +661,27 @@ app.delete("/api/cart/:id", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/orders
+// Fungsi: Checkout - buat order baru dengan validasi dan reservasi stok
 app.post("/api/orders", async (req, res) => {
   try {
     console.log("📦 Received order request:", req.body);
 
     const { userId, items, total } = req.body;
 
+    // Validasi field wajib
     if (!userId) {
       return res.status(400).json({ error: "userId wajib diisi" });
     }
 
+    // Validasi items harus array dan tidak kosong
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
         .json({ error: "Items wajib diisi dan harus array" });
     }
 
+    // Validasi total harus number
     if (!total || isNaN(total)) {
       return res
         .status(400)
@@ -609,21 +690,25 @@ app.post("/api/orders", async (req, res) => {
 
     console.log("🔍 Validating stock for", items.length, "items...");
 
+    // Loop setiap item untuk validasi produk dan stok
     for (const item of items) {
       console.log("📋 Checking item:", item);
 
+      // Validasi produk_id wajib
       if (!item.produk_id) {
         return res
           .status(400)
           .json({ error: "produk_id wajib diisi untuk setiap item" });
       }
 
+      // Validasi jumlah harus >= 1
       if (!item.jumlah || item.jumlah < 1) {
         return res
           .status(400)
           .json({ error: "Jumlah item harus lebih dari 0" });
       }
 
+      // Validasi produk exists di database
       const produkDoc = await db
         .collection("products")
         .doc(item.produk_id)
@@ -634,6 +719,7 @@ app.post("/api/orders", async (req, res) => {
         });
       }
 
+      // Hitung stok tersedia dari tabel stock
       const stockSnap = await db
         .collection("stock")
         .where("produk_id", "==", item.produk_id)
@@ -642,11 +728,12 @@ app.post("/api/orders", async (req, res) => {
       let totalMasuk = 0;
       let totalKeluar = 0;
 
+      // Kalkulasi stok (masuk - keluar yang bukan returned)
       stockSnap.forEach((s) => {
         const st = s.data();
         if (st.tipe === "masuk") totalMasuk += st.jumlah;
         else if (st.tipe === "keluar" && st.status !== "returned")
-          totalKeluar += st.jumlah; // PASTIKAN SAMA
+          totalKeluar += st.jumlah;
       });
 
       const stokAkhir = totalMasuk - totalKeluar;
@@ -654,6 +741,7 @@ app.post("/api/orders", async (req, res) => {
         `📊 Stock for ${item.produk_id}: ${stokAkhir} (needed: ${item.jumlah})`
       );
 
+      // Validasi stok cukup untuk order
       if (stokAkhir < item.jumlah) {
         const produkData = produkDoc.data();
         return res.status(400).json({
@@ -661,6 +749,7 @@ app.post("/api/orders", async (req, res) => {
         });
       }
 
+      // Reservasi stok dengan status 'pending' (belum confirmed)
       await db.collection("stock").add({
         produk_id: item.produk_id,
         tipe: "keluar",
@@ -673,6 +762,7 @@ app.post("/api/orders", async (req, res) => {
       console.log(`✅ Stock reduced for product ${item.produk_id}`);
     }
 
+    // Simpan order ke database dengan status 'pending'
     console.log("💾 Saving order to database...");
     const newOrder = await db.collection("orders").add({
       userId,
@@ -698,10 +788,13 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/orders/:orderId/return-stock
+// Fungsi: Kembalikan stok ketika order ditolak (ubah status pending jadi returned)
 app.post("/api/orders/:orderId/return-stock", async (req, res) => {
   try {
     const { orderId } = req.params;
     console.log(`🔄 Processing stock return for order: ${orderId}`);
+    // Validasi order exists
     const orderDoc = await db.collection("orders").doc(orderId).get();
     if (!orderDoc.exists) {
       return res.status(404).json({ error: "Order tidak ditemukan" });
@@ -709,12 +802,14 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
 
     const order = orderDoc.data();
     console.log(`📦 Order found with ${order.items?.length} items`);
+    // Loop setiap item untuk kembalikan stok
     const stockReturnPromises = order.items?.map(async (item) => {
       console.log(
         `🔄 Returning stock for product: ${item.produk_id}, quantity: ${item.jumlah}`
       );
 
       try {
+        // Cari entry stock dengan status 'pending' untuk produk ini
         const stockSnap = await db
           .collection("stock")
           .where("produk_id", "==", item.produk_id)
@@ -726,6 +821,7 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
         );
 
         if (!stockSnap.empty) {
+          // Cari entry paling baru (latest)
           let latestStock = null;
           let latestDate = null;
 
@@ -740,6 +836,7 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
 
           if (latestStock) {
             console.log(`📝 Latest stock record to update:`, latestStock.data);
+            // Update status dari 'pending' ke 'returned' (stok dikembalikan)
             await latestStock.doc.ref.update({
               status: "returned",
               returned_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -808,11 +905,14 @@ app.post("/api/orders/:orderId/return-stock", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/orders/:orderId/confirm-stock
+// Fungsi: Konfirmasi stok ketika order diterima (ubah status pending jadi confirmed)
 app.post("/api/orders/:orderId/confirm-stock", async (req, res) => {
   try {
     const { orderId } = req.params;
     console.log(`🔒 Confirming stock for order: ${orderId}`);
 
+    // Validasi order exists
     const orderDoc = await db.collection("orders").doc(orderId).get();
     if (!orderDoc.exists) {
       return res.status(404).json({ error: "Order tidak ditemukan" });
@@ -910,27 +1010,34 @@ app.post("/api/orders/:orderId/confirm-stock", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/orders
+// Fungsi: Mengambil daftar order, bisa difilter by userId
 app.get("/api/orders", async (req, res) => {
   try {
     const { userId } = req.query;
 
+    // Ambil semua orders dulu
     let query = db.collection("orders");
     const snapshot = await query.get();
 
-    let orders = snapshot.docs.map(doc => ({
+    let orders = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
-    // Apply user filter manually
+    // Filter by userId jika ada (manual karena avoid composite index)
     if (userId) {
-      orders = orders.filter(order => order.userId === userId);
+      orders = orders.filter((order) => order.userId === userId);
     }
 
-    // Sort by createdAt manually
+    // Sort by createdAt descending (manual sort)
     orders.sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      const dateA = a.createdAt?.toDate
+        ? a.createdAt.toDate()
+        : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate
+        ? b.createdAt.toDate()
+        : new Date(b.createdAt);
       return dateB - dateA;
     });
 
@@ -941,11 +1048,14 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
+// Endpoint: PATCH /api/orders/:orderId
+// Fungsi: Update status order (pending, accepted, rejected)
 app.patch("/api/orders/:orderId", async (req, res) => {
   try {
     const { status } = req.body;
     const { orderId } = req.params;
 
+    // Validasi status harus salah satu dari 3 opsi
     if (!["pending", "accepted", "rejected"].includes(status)) {
       return res.status(400).json({ error: "Status tidak valid" });
     }
@@ -958,6 +1068,8 @@ app.patch("/api/orders/:orderId", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/categories
+// Fungsi: Mengambil semua kategori dengan sorting by nama
 app.get("/api/categories", async (req, res) => {
   try {
     const snapshot = await db
@@ -977,17 +1089,20 @@ app.get("/api/categories", async (req, res) => {
   }
 });
 
+// Endpoint: POST /api/categories
+// Fungsi: Menambah kategori baru dengan validasi duplikasi
 app.post("/api/categories", async (req, res) => {
   try {
     const { nama } = req.body;
 
+    // Validasi nama tidak boleh kosong
     if (!nama || nama.trim() === "") {
       return res
         .status(400)
         .json({ error: "Nama kategori tidak boleh kosong" });
     }
 
-    // Cek apakah kategori sudah ada
+    // Cek apakah kategori dengan nama yang sama sudah ada
     const existingCategory = await db
       .collection("categories")
       .where("nama", "==", nama.trim())
@@ -1015,10 +1130,13 @@ app.post("/api/categories", async (req, res) => {
   }
 });
 
+// Endpoint: DELETE /api/categories/:id
+// Fungsi: Hapus kategori (hanya jika tidak dipakai produk)
 app.delete("/api/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validasi kategori tidak digunakan oleh produk
     const productsUsingCategory = await db
       .collection("products")
       .where("kategori_id", "==", id)
@@ -1044,22 +1162,27 @@ app.delete("/api/categories/:id", async (req, res) => {
   }
 });
 
+// Endpoint: PUT /api/categories/:id
+// Fungsi: Update nama kategori dengan validasi duplikasi
 app.put("/api/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { nama } = req.body;
 
+    // Validasi nama tidak boleh kosong atau hanya spasi
     if (!nama || nama.trim() === "") {
       return res
         .status(400)
         .json({ error: "Nama kategori tidak boleh kosong" });
     }
 
+    // Cek apakah nama kategori baru sudah digunakan kategori lain
     const existingCategory = await db
       .collection("categories")
       .where("nama", "==", nama.trim())
       .get();
 
+    // Pastikan kategori yang ditemukan bukan kategori yang sedang diupdate
     const isDuplicate = existingCategory.docs.some((doc) => doc.id !== id);
     if (isDuplicate) {
       return res.status(400).json({ error: "Kategori sudah ada" });
@@ -1081,35 +1204,42 @@ app.put("/api/categories/:id", async (req, res) => {
   }
 });
 
-
 //---------------- Review APIs ----------------
+// Endpoint: POST /api/reviews
+// Fungsi: Menambah review produk dengan validasi duplikasi dan ownership
 app.post("/api/reviews", async (req, res) => {
   try {
     const { userId, produk_id, order_id, rating, komentar } = req.body;
 
+    // Validasi field wajib
     if (!userId || !produk_id || !order_id || !rating) {
       return res.status(400).json({ error: "Data review tidak lengkap" });
     }
 
+    // Validasi rating harus 1-5
     if (rating < 1 || rating > 5) {
       return res.status(400).json({ error: "Rating harus antara 1-5" });
     }
 
-    // Cek apakah user sudah memberikan review untuk produk ini di order yang sama
-    // Simplified query tanpa composite index
+    // Cek duplikasi: user sudah review produk ini di order yang sama?
+    // Manual query untuk avoid composite index
     const reviewsSnapshot = await db.collection("reviews").get();
-    const existingReview = reviewsSnapshot.docs.find(doc => {
+    const existingReview = reviewsSnapshot.docs.find((doc) => {
       const data = doc.data();
-      return data.userId === userId &&
+      return (
+        data.userId === userId &&
         data.produk_id === produk_id &&
-        data.order_id === order_id;
+        data.order_id === order_id
+      );
     });
 
     if (existingReview) {
-      return res.status(400).json({ error: "Anda sudah memberikan review untuk produk ini" });
+      return res
+        .status(400)
+        .json({ error: "Anda sudah memberikan review untuk produk ini" });
     }
 
-    // Validasi order exists dan milik user
+    // Validasi order exists dan milik user (authorization)
     const orderDoc = await db.collection("orders").doc(order_id).get();
     if (!orderDoc.exists) {
       return res.status(404).json({ error: "Order tidak ditemukan" });
@@ -1117,24 +1247,28 @@ app.post("/api/reviews", async (req, res) => {
 
     const orderData = orderDoc.data();
     if (orderData.userId !== userId) {
-      return res.status(403).json({ error: "Anda tidak memiliki akses ke order ini" });
+      return res
+        .status(403)
+        .json({ error: "Anda tidak memiliki akses ke order ini" });
     }
 
-    // Validasi produk exists
+    // Validasi produk exists di database
     const produkDoc = await db.collection("products").doc(produk_id).get();
     if (!produkDoc.exists) {
       return res.status(404).json({ error: "Produk tidak ditemukan" });
     }
 
+    // Siapkan data review untuk disimpan
     const reviewData = {
-      userId,
-      produk_id,
-      order_id,
-      rating: Number(rating),
-      komentar: komentar || "",
+      userId, // ID user yang memberikan review
+      produk_id, // ID produk yang direview
+      order_id, // ID order tempat produk dibeli
+      rating: Number(rating), // Rating 1-5
+      komentar: komentar || "", // Komentar review (opsional)
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Simpan review ke Firestore collection 'reviews'
     const reviewRef = await db.collection("reviews").add(reviewData);
 
     res.status(201).json({
@@ -1148,38 +1282,48 @@ app.post("/api/reviews", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/reviews
+// Fungsi: Mengambil reviews dengan filter (produk_id, userId, order_id) dan join user data
 app.get("/api/reviews", async (req, res) => {
   try {
     const { produk_id, userId, order_id } = req.query;
 
-    // Get all reviews and filter manually to avoid composite index issues
+    // Ambil semua reviews dulu (manual filter untuk avoid composite index requirement)
+    // Composite index diperlukan jika query Firestore dengan multiple where clauses
     let query = db.collection("reviews");
     const snapshot = await query.get();
 
-    let reviews = snapshot.docs.map(doc => ({
+    // Convert snapshot docs menjadi array of objects
+    let reviews = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
-    // Apply filters manually
+    // Terapkan filter secara manual di memory (lebih fleksibel tanpa setup index)
     if (produk_id) {
-      reviews = reviews.filter(review => review.produk_id === produk_id);
+      reviews = reviews.filter((review) => review.produk_id === produk_id);
     }
     if (userId) {
-      reviews = reviews.filter(review => review.userId === userId);
+      reviews = reviews.filter((review) => review.userId === userId);
     }
     if (order_id) {
-      reviews = reviews.filter(review => review.order_id === order_id);
+      reviews = reviews.filter((review) => review.order_id === order_id);
     }
 
-    // Sort by createdAt manually
+    // Sort reviews by createdAt descending (terbaru di atas)
+    // Manual sort karena data sudah di-load ke memory
     reviews.sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-      return dateB - dateA;
+      // Convert Firestore Timestamp ke JavaScript Date
+      const dateA = a.createdAt?.toDate
+        ? a.createdAt.toDate()
+        : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate
+        ? b.createdAt.toDate()
+        : new Date(b.createdAt);
+      return dateB - dateA; // Descending: review terbaru duluan
     });
 
-    // Get user and product data for each review
+    // Join dengan data user dan product untuk response yang lebih informatif
     const enhancedReviews = [];
     for (const review of reviews) {
       // Get user data
@@ -1188,7 +1332,7 @@ app.get("/api/reviews", async (req, res) => {
         const userDoc = await admin.auth().getUser(review.userId);
         userData = {
           email: userDoc.email,
-          displayName: userDoc.displayName || userDoc.email.split('@')[0],
+          displayName: userDoc.displayName || userDoc.email.split("@")[0],
         };
       } catch (error) {
         userData = { email: "User", displayName: "User" };
@@ -1197,7 +1341,10 @@ app.get("/api/reviews", async (req, res) => {
       // Get product data
       let productData = null;
       if (review.produk_id) {
-        const productDoc = await db.collection("products").doc(review.produk_id).get();
+        const productDoc = await db
+          .collection("products")
+          .doc(review.produk_id)
+          .get();
         if (productDoc.exists) {
           productData = productDoc.data();
         }
@@ -1207,10 +1354,12 @@ app.get("/api/reviews", async (req, res) => {
         id: review.id,
         ...review,
         user: userData,
-        product: productData ? {
-          nama: productData.nama,
-          img_url: productData.img_url
-        } : null,
+        product: productData
+          ? {
+              nama: productData.nama,
+              img_url: productData.img_url,
+            }
+          : null,
       });
     }
 
@@ -1221,54 +1370,67 @@ app.get("/api/reviews", async (req, res) => {
   }
 });
 
+// Endpoint: GET /api/reviews/product/:produk_id
+// Fungsi: Mengambil reviews untuk produk tertentu dengan kalkulasi rating rata-rata
 app.get("/api/reviews/product/:produk_id", async (req, res) => {
   try {
     const { produk_id } = req.params;
 
-    // Get all reviews and filter by product_id
+    // Ambil semua reviews dan filter by product_id (manual filter)
     const snapshot = await db.collection("reviews").get();
-    const reviews = [];
-    let totalRating = 0;
+    const reviews = []; // Array untuk menyimpan reviews produk ini
+    let totalRating = 0; // Akumulator untuk menghitung rata-rata rating
 
+    // Loop semua reviews untuk filter yang sesuai product_id
     for (const doc of snapshot.docs) {
       const reviewData = doc.data();
 
+      // Filter hanya reviews untuk produk yang diminta
       if (reviewData.produk_id === produk_id) {
-        // Get user data
+        // Ambil data user dari Firebase Auth untuk ditampilkan
         let userData = null;
         try {
           const userDoc = await admin.auth().getUser(reviewData.userId);
           userData = {
             email: userDoc.email,
-            displayName: userDoc.displayName || userDoc.email.split('@')[0],
+            displayName: userDoc.displayName || userDoc.email.split("@")[0],
           };
         } catch (error) {
           userData = { email: "User", displayName: "User" };
         }
 
+        // Tambahkan review dengan user data ke array
         reviews.push({
           id: doc.id,
           ...reviewData,
           user: userData,
         });
 
+        // Akumulasi rating untuk kalkulasi rata-rata
         totalRating += reviewData.rating;
       }
     }
 
-    // Sort by createdAt manually
+    // Sort reviews by createdAt descending (terbaru duluan)
     reviews.sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      const dateA = a.createdAt?.toDate
+        ? a.createdAt.toDate()
+        : new Date(a.createdAt);
+      const dateB = b.createdAt?.toDate
+        ? b.createdAt.toDate()
+        : new Date(b.createdAt);
       return dateB - dateA;
     });
 
+    // Hitung rata-rata rating (total rating dibagi jumlah reviews)
+    // Jika tidak ada reviews, return 0
     const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
 
+    // Return reviews dengan statistik rating
     res.status(200).json({
-      reviews,
-      averageRating: Math.round(averageRating * 10) / 10,
-      totalReviews: reviews.length,
+      reviews, // Array semua reviews produk dengan user data
+      averageRating: Math.round(averageRating * 10) / 10, // Rata-rata rating (1 desimal)
+      totalReviews: reviews.length, // Total jumlah reviews
     });
   } catch (error) {
     console.error("❌ Error ambil reviews produk:", error);
@@ -1276,10 +1438,13 @@ app.get("/api/reviews/product/:produk_id", async (req, res) => {
   }
 });
 
+// Endpoint: DELETE /api/reviews/:id
+// Fungsi: Hapus review berdasarkan ID
 app.delete("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validasi review exists
     const reviewDoc = await db.collection("reviews").doc(id).get();
     if (!reviewDoc.exists) {
       return res.status(404).json({ error: "Review tidak ditemukan" });
@@ -1289,7 +1454,7 @@ app.delete("/api/reviews/:id", async (req, res) => {
 
     res.status(200).json({
       message: "Review berhasil dihapus",
-      id
+      id,
     });
   } catch (error) {
     console.error("❌ Error delete review:", error);
@@ -1298,51 +1463,59 @@ app.delete("/api/reviews/:id", async (req, res) => {
 });
 
 //---------------- Gallery APIs ----------------
-//---------------- Gallery APIs ----------------
+// Endpoint: GET /api/gallery
+// Fungsi: Mengambil semua gambar gallery untuk ditampilkan di halaman galeri/testimoni
 app.get("/api/gallery", async (req, res) => {
   try {
     console.log("📡 Fetching gallery data from Firestore...");
 
-    // PERBAIKAN: Hapus where active dan orderBy sementara untuk testing
+    // Ambil semua gallery items tanpa filter (termasuk yang active=false)
+    // Admin bisa filter di frontend jika perlu hanya tampilkan yang active
     const snapshot = await db.collection("gallery").get();
 
-    const galleryItems = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    // Convert Firestore documents menjadi array of objects
+    const galleryItems = snapshot.docs.map((doc) => ({
+      id: doc.id, // Document ID dari Firestore
+      ...doc.data(), // Spread semua field (image_url, alt_text, description, active, createdAt)
     }));
 
     console.log(`✅ Found ${galleryItems.length} gallery items`);
     res.status(200).json(galleryItems);
-
   } catch (error) {
     console.error("❌ Error fetching gallery:", error);
-    res.status(500).json({ error: "Gagal mengambil data gallery: " + error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal mengambil data gallery: " + error.message });
   }
 });
 
+// Endpoint: POST /api/gallery
+// Fungsi: Menambah gambar baru ke gallery (untuk admin panel)
 app.post("/api/gallery", async (req, res) => {
   try {
-    const {
+    const { image_url, alt_text, description } = req.body;
+
+    console.log("📨 Received gallery data:", {
       image_url,
       alt_text,
-      description
-    } = req.body;
+      description,
+    });
 
-    console.log("📨 Received gallery data:", { image_url, alt_text, description });
-
-    // PERBAIKAN: Hanya image_url yang required
+    // Validasi field wajib: hanya image_url yang required
+    // alt_text dan description opsional
     if (!image_url) {
       return res.status(400).json({
-        error: "image_url wajib diisi"
+        error: "image_url wajib diisi",
       });
     }
 
+    // Siapkan data gallery dengan default values untuk field opsional
     const galleryData = {
-      image_url,
-      alt_text: alt_text || "Gambar gallery",
-      description: description || "",
-      active: true,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      image_url, // URL gambar (wajib)
+      alt_text: alt_text || "Gambar gallery", // Alt text untuk accessibility
+      description: description || "", // Deskripsi gambar (opsional)
+      active: true, // Default aktif (bisa diubah via PUT)
+      createdAt: admin.firestore.FieldValue.serverTimestamp(), // Timestamp pembuatan
     };
 
     console.log("💾 Saving to Firestore:", galleryData);
@@ -1355,20 +1528,20 @@ app.post("/api/gallery", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error tambah gallery:", error);
-    res.status(500).json({ error: "Gagal menambah gambar gallery: " + error.message });
+    res
+      .status(500)
+      .json({ error: "Gagal menambah gambar gallery: " + error.message });
   }
 });
 
+// Endpoint: PUT /api/gallery/:id
+// Fungsi: Update data gambar gallery (partial update - hanya field yang dikirim)
 app.put("/api/gallery/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const {
-      image_url,
-      alt_text,
-      description,
-      active
-    } = req.body;
+    const { id } = req.params; // ID gallery dari URL parameter
+    const { image_url, alt_text, description, active } = req.body;
 
+    // Validasi gallery item exists
     const galleryRef = db.collection("gallery").doc(id);
     const doc = await galleryRef.get();
 
@@ -1376,14 +1549,17 @@ app.put("/api/gallery/:id", async (req, res) => {
       return res.status(404).json({ error: "Gambar gallery tidak ditemukan" });
     }
 
+    // Siapkan object untuk update (hanya field yang ada di request body)
+    // Timestamp updatedAt selalu ditambahkan
     const updateData = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Conditional update: hanya update field yang dikirim (partial update)
     if (image_url !== undefined) updateData.image_url = image_url;
     if (alt_text !== undefined) updateData.alt_text = alt_text;
     if (description !== undefined) updateData.description = description;
-    if (active !== undefined) updateData.active = active;
+    if (active !== undefined) updateData.active = active; // Toggle visibility
 
     await galleryRef.update(updateData);
 
@@ -1398,10 +1574,13 @@ app.put("/api/gallery/:id", async (req, res) => {
   }
 });
 
+// Endpoint: DELETE /api/gallery/:id
+// Fungsi: Hapus gambar dari gallery secara permanen (hard delete)
 app.delete("/api/gallery/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID gallery dari URL parameter
 
+    // Validasi gallery item exists sebelum dihapus
     const galleryRef = db.collection("gallery").doc(id);
     const doc = await galleryRef.get();
 
@@ -1409,6 +1588,8 @@ app.delete("/api/gallery/:id", async (req, res) => {
       return res.status(404).json({ error: "Gambar gallery tidak ditemukan" });
     }
 
+    // Hard delete: hapus dokumen dari Firestore
+    // Note: URL gambar di storage tidak dihapus otomatis, perlu cleanup manual
     await galleryRef.delete();
 
     res.status(200).json({
@@ -1421,6 +1602,7 @@ app.delete("/api/gallery/:id", async (req, res) => {
   }
 });
 
+// Start Express server pada PORT 5000
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\nServer berjalan di http://localhost:${PORT}`);

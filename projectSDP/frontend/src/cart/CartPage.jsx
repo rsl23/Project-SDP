@@ -1,3 +1,6 @@
+// CartPage Component - Halaman keranjang belanja dengan CRUD operations
+// Features: View cart items, update quantity, delete items, checkout, real-time total calculation
+
 import React, { useEffect, useState } from "react";
 import { getCart, deleteCartItem, updateCartItem } from "../apiService/cartApi";
 import {
@@ -16,19 +19,22 @@ import { getAuth } from "firebase/auth";
 import { Card, Button, Spinner, Badge } from "flowbite-react";
 
 const CartPage = () => {
+  // State management untuk cart items dan loading states
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatingItems, setUpdatingItems] = useState(new Set());
+  const [updatingItems, setUpdatingItems] = useState(new Set()); // Track items sedang diupdate
   const navigate = useNavigate();
 
+  // Fetch cart data saat component mount
   useEffect(() => {
     fetchCart();
   }, []);
 
+  // Ambil semua cart items milik user dari API
   const fetchCart = async () => {
     try {
       setLoading(true);
-      const data = await getCart();
+      const data = await getCart(); // Auto get userId dari Firebase Auth
       console.log("🛒 Cart data from API:", data);
       setCart(data);
     } catch (err) {
@@ -38,16 +44,22 @@ const CartPage = () => {
     }
   };
 
+  // Hapus item dari cart
+  // Optimistic update: remove dari UI dulu, rollback jika API gagal
   const handleDelete = async (id) => {
     try {
-      setCart((prev) => prev.filter((item) => item.id !== id));
+      setCart((prev) => prev.filter((item) => item.id !== id)); // Optimistic update
       await deleteCartItem(id);
     } catch (err) {
       console.error("Gagal menghapus item:", err);
-      fetchCart();
+      fetchCart(); // Rollback dengan re-fetch
     }
   };
 
+  // Update quantity item di cart (increment/decrement)
+  // @param id - ID cart item
+  // @param delta - +1 untuk increment, -1 untuk decrement
+  // Validasi: quantity min 1, max = stock available
   const handleQuantityChange = async (id, delta) => {
     const item = cart.find((item) => item.id === id);
     if (!item) return;
@@ -55,10 +67,12 @@ const CartPage = () => {
     const newJumlah = item.jumlah + delta;
     const stok = item.produk?.stok || 0;
 
+    // Validasi: tidak boleh < 1 atau > stok
     if (newJumlah < 1 || newJumlah > stok) return;
 
-    setUpdatingItems((prev) => new Set(prev).add(id));
+    setUpdatingItems((prev) => new Set(prev).add(id)); // Mark sebagai updating
 
+    // Optimistic update di UI
     setCart((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, jumlah: newJumlah } : item
@@ -69,6 +83,7 @@ const CartPage = () => {
       await updateCartItem(id, newJumlah);
     } catch (err) {
       console.error("Gagal update quantity:", err);
+      // Rollback quantity jika API gagal
       setCart((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, jumlah: item.jumlah } : item

@@ -1,3 +1,6 @@
+// AdminLayout Component - Layout wrapper untuk admin panel dengan sidebar navigation
+// Features: Collapsible sidebar, active route highlighting, logout, responsive
+
 import React, { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
@@ -12,14 +15,15 @@ import {
   LogOut,
   Menu,
   X,
-  Images, // Tambah icon untuk gallery
+  Images, // Icon untuk gallery management
 } from "lucide-react";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Sidebar collapse state
 
+  // Handle logout - sign out dari Firebase dan redirect ke login
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -29,15 +33,18 @@ const AdminLayout = () => {
     }
   };
 
+  // Menu items untuk sidebar navigation
   const menuItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/products", icon: Package, label: "Produk" },
-    { path: "/admin/gallery", icon: Images, label: "Gallery" }, // Tambah menu gallery
+    { path: "/admin/gallery", icon: Images, label: "Gallery" },
     { path: "/admin/orders", icon: ShoppingCart, label: "Orders" },
     { path: "/admin/reviews", icon: Star, label: "Reviews" },
     { path: "/admin/users", icon: Users, label: "Users" },
   ];
 
+  // Helper: Check apakah route sedang aktif
+  // Exact match untuk /admin, startsWith untuk sub-routes
   const isActive = (path) => {
     if (path === "/admin") {
       return location.pathname === "/admin";
@@ -47,12 +54,13 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
+      {/* Sidebar - Collapsible dengan transition */}
       <aside
-        className={`${sidebarOpen ? "w-64" : "w-20"
-          } bg-gradient-to-b from-indigo-900 to-purple-900 text-white transition-all duration-300 flex flex-col`}
+        className={`${
+          sidebarOpen ? "w-64" : "w-20"
+        } bg-gradient-to-b from-indigo-900 to-purple-900 text-white transition-all duration-300 flex flex-col`}
       >
-        {/* Header */}
+        {/* Header dengan toggle button */}
         <div className="p-4 flex items-center justify-between border-b border-indigo-700">
           {sidebarOpen && <h1 className="text-xl font-bold">Admin Panel</h1>}
           <button
@@ -63,7 +71,7 @@ const AdminLayout = () => {
           </button>
         </div>
 
-        {/* Menu Items */}
+        {/* Menu Items dengan active state highlighting */}
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -73,10 +81,11 @@ const AdminLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition ${active
-                  ? "bg-indigo-700 text-white"
-                  : "hover:bg-indigo-800 text-gray-300"
-                  }`}
+                className={`flex items-center gap-3 p-3 rounded-lg transition ${
+                  active
+                    ? "bg-indigo-700 text-white" // Active state styling
+                    : "hover:bg-indigo-800 text-gray-300"
+                }`}
               >
                 <Icon size={20} />
                 {sidebarOpen && <span>{item.label}</span>}

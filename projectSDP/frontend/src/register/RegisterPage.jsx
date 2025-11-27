@@ -1,7 +1,10 @@
+// RegisterPage Component - Halaman registrasi user baru dengan email/password dan Google OAuth
+// Features: Form validation dengan Joi, email verification required, Google sign-in, password confirmation
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import Joi from "joi";
+import Joi from "joi"; // Schema validation library
 
 // Import Firebase services dari config
 import { auth, db } from "../firebase/config";
@@ -18,7 +21,7 @@ import {
   signOut,
 } from "firebase/auth";
 
-// Import Firestore functions
+// Import Firestore functions untuk save user data
 import {
   collection,
   doc,
@@ -26,15 +29,9 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import {
-  Mail,
-  CheckCircle,
-  AlertCircle,
-  X,
-  Shield,
-  Star
-} from "lucide-react";
+import { Mail, CheckCircle, AlertCircle, X, Shield, Star } from "lucide-react";
 
+// Reusable Input Field Component untuk form register
 function InputField({
   label,
   type = "text",
@@ -60,6 +57,7 @@ function InputField({
 
 function RegisterForm() {
   const navigate = useNavigate();
+  // State management untuk form dan UI
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -68,9 +66,11 @@ function RegisterForm() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [success, setSuccess] = useState(false); // Success modal trigger
+  const [registeredEmail, setRegisteredEmail] = useState(""); // Email untuk success message
 
+  // Joi validation schema untuk form register
+  // Rules: name (3-50 char), valid email, password (min 6), password match
   const schema = Joi.object({
     name: Joi.string().min(3).max(50).required().messages({
       "string.empty": "Nama wajib diisi.",
@@ -78,7 +78,7 @@ function RegisterForm() {
       "string.max": "Nama maksimal 50 karakter.",
     }),
     email: Joi.string()
-      .email({ tlds: { allow: false } })
+      .email({ tlds: { allow: false } }) // Validate email format
       .required()
       .messages({
         "string.empty": "Email wajib diisi.",
@@ -221,8 +221,9 @@ function RegisterForm() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
-            }`}
+          className={`w-full flex items-center justify-center py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold shadow-sm transition ${
+            loading ? "opacity-70 cursor-wait" : "hover:bg-gray-50"
+          }`}
         >
           <svg
             className="w-5 h-5 mr-3"
@@ -295,8 +296,9 @@ function RegisterForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
-              }`}
+            className={`w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-semibold shadow-md mt-6 transition ${
+              loading ? "opacity-70 cursor-wait" : "hover:opacity-90"
+            }`}
           >
             {loading ? "Mendaftar..." : "Register dengan Email"}
           </button>
@@ -346,8 +348,12 @@ function RegisterForm() {
                       <CheckCircle size={24} className="text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold">Registrasi Berhasil!</h2>
-                      <p className="text-green-100 text-sm">Akun Anda berhasil dibuat</p>
+                      <h2 className="text-2xl font-bold">
+                        Registrasi Berhasil!
+                      </h2>
+                      <p className="text-green-100 text-sm">
+                        Akun Anda berhasil dibuat
+                      </p>
                     </div>
                   </div>
                   <button
@@ -364,7 +370,10 @@ function RegisterForm() {
                 {/* Email Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <Mail size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Mail
+                      size={20}
+                      className="text-blue-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-blue-800 font-medium text-sm">
                         Email verifikasi telah dikirim ke:
@@ -379,14 +388,18 @@ function RegisterForm() {
                 {/* Important Notice */}
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <AlertCircle size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle
+                      size={20}
+                      className="text-amber-600 mt-0.5 flex-shrink-0"
+                    />
                     <div>
                       <p className="text-amber-800 font-medium text-sm mb-2">
                         ⚠️ Verifikasi Email Diperlukan
                       </p>
                       <p className="text-amber-700 text-sm">
-                        Anda harus memverifikasi email terlebih dahulu sebelum bisa login.
-                        Cek folder spam jika email tidak ditemukan di inbox.
+                        Anda harus memverifikasi email terlebih dahulu sebelum
+                        bisa login. Cek folder spam jika email tidak ditemukan
+                        di inbox.
                       </p>
                     </div>
                   </div>
@@ -395,8 +408,13 @@ function RegisterForm() {
                 {/* Features */}
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Shield size={16} className="text-green-500 flex-shrink-0" />
-                    <span>Akun Anda terlindungi dengan sistem keamanan terbaik</span>
+                    <Shield
+                      size={16}
+                      className="text-green-500 flex-shrink-0"
+                    />
+                    <span>
+                      Akun Anda terlindungi dengan sistem keamanan terbaik
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <Star size={16} className="text-yellow-500 flex-shrink-0" />

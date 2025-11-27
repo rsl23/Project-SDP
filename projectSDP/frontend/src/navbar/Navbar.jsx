@@ -1,3 +1,6 @@
+// Navbar Component - Navigation bar dengan auth state, admin detection, mobile responsive
+// Features: User authentication status, admin panel link, mobile hamburger menu, logout
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
@@ -9,19 +12,22 @@ import "./Navbar.css";
 const Navbar = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Admin role detection
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu toggle
 
+  // Background sync email verification status dari Firebase Auth ke Firestore
+  // Jalan otomatis saat component mount untuk update status terbaru
   useEffect(() => {
     const syncEmailVerification = async () => {
       const user = auth.currentUser;
       if (!user) return;
 
       try {
-        await user.reload();
+        await user.reload(); // Refresh user data dari Firebase Auth
         if (user.emailVerified) {
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
+          // Update Firestore jika belum ter-sync
           if (userDoc.exists() && !userDoc.data().email_verified) {
             await updateDoc(userDocRef, { email_verified: true });
             console.log("✅ Email verification synced in background");
@@ -34,11 +40,14 @@ const Navbar = ({ user }) => {
 
     syncEmailVerification();
 
-    // Cleanup: Reset body scroll when component unmounts
+    // Cleanup: Reset body scroll saat component unmount
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [user]);
+
+  // Check admin role dari Firestore user document
+  // Jalan setiap kali user state berubah
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user) {
@@ -50,7 +59,7 @@ const Navbar = ({ user }) => {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setIsAdmin(userData.role === "admin");
+          setIsAdmin(userData.role === "admin"); // Set true jika role = admin
         }
       } catch (error) {
         console.error("Error checking admin role:", error);
@@ -60,10 +69,12 @@ const Navbar = ({ user }) => {
     checkAdminRole();
   }, [user]);
 
+  // Hide navbar di halaman login dan register
   if (location.pathname === "/login" || location.pathname === "/register") {
     return null;
   }
 
+  // Handle logout - sign out dari Firebase Auth dan redirect ke home
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -74,6 +85,7 @@ const Navbar = ({ user }) => {
     }
   };
 
+  // Toggle mobile menu dan prevent body scroll saat menu open
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     // Prevent body scroll when menu is open

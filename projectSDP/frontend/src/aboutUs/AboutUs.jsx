@@ -1,8 +1,11 @@
+// AboutUs Component - Halaman informasi tentang toko dengan gallery dan kontak
+// Features: Foto toko, deskripsi bisnis, gallery dari API, jam operasional, kontak marketplace
+
 import { Link } from "react-router-dom";
 import { Clock, Package, Truck, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 
-// 1. Semua gambar diimpor di sini
+// Import semua assets images
 import fotoToko from "../assets/foto_toko.png";
 import whatsappIcon from "../assets/whatsapp.png";
 import tokopediaIcon from "../assets/tokopedia.jpeg";
@@ -13,14 +16,15 @@ const AboutUs = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch gallery data dari API - FIXED URL
+  // Fetch gallery images dari API saat component mount
+  // Display hanya images yang active=true
   useEffect(() => {
     const fetchGalleryData = async () => {
       try {
         setLoading(true);
         console.log("Fetching gallery data for AboutUs page...");
 
-        // PERBAIKAN: Gunakan full URL ke Express server
+        // Fetch dari Express server gallery endpoint
         const galleryResponse = await fetch(
           "http://localhost:5000/api/gallery"
         );
@@ -29,7 +33,7 @@ const AboutUs = () => {
         if (galleryResponse.ok) {
           const galleryData = await galleryResponse.json();
           console.log("Gallery data received:", galleryData.length, "images");
-          // Filter hanya gambar yang aktif
+          // Filter hanya gambar yang aktif untuk ditampilkan
           const activeImages = galleryData.filter(
             (image) => image.active !== false
           );
@@ -49,13 +53,14 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-900">
-      {/* Hero Section dengan Gambar Toko */}
+      {/* Hero Section dengan Foto Toko sebagai background */}
       <div className="relative h-64 md:h-96 overflow-hidden">
         <img
           src={fotoToko}
           alt="Berkat Jaya Motor Store"
           className="w-full h-full object-cover opacity-40"
         />
+        {/* Gradient overlay untuk readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-950/80 flex items-center justify-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white text-center px-4">
             Berkat Jaya Motor Sby
@@ -63,7 +68,7 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* Deskripsi Toko */}
+      {/* Deskripsi Toko Section */}
       <div className="max-w-6xl mx-auto px-4 py-12 md:py-16">
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border-t-4 border-pink-500">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">

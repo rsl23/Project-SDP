@@ -1,3 +1,6 @@
+// ProductDetail Component - Halaman detail produk dengan reviews, add to cart, marketplace links
+// Features: Product info lengkap, stock status, reviews dengan rating filter, add to cart, e-commerce links
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getProducts } from "../apiService/productApi";
@@ -5,7 +8,7 @@ import { getCategories } from "../apiService/categoryApi";
 import { addToCart } from "../apiService/cartApi";
 import tokopediaLogo from "../assets/tokopedia.jpeg";
 import shopeeLogo from "../assets/shopee.png";
-import toast, { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast"; // Toast notifications
 import {
   ArrowLeft,
   ShoppingCart,
@@ -22,22 +25,25 @@ import {
 import { Card, Button, Spinner, Badge } from "flowbite-react";
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Product ID dari URL params
   const navigate = useNavigate();
   const location = useLocation();
+  // State management untuk product data dan UI
   const [product, setProduct] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [reviews, setReviews] = useState([]);
-  const [allReviews, setAllReviews] = useState([]); // Semua review tanpa filter
+  const [imageLoaded, setImageLoaded] = useState(false); // Image lazy loading
+  const [reviews, setReviews] = useState([]); // Filtered reviews
+  const [allReviews, setAllReviews] = useState([]); // Original reviews tanpa filter
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [ratingFilter, setRatingFilter] = useState("all"); // "all", 5, 4, 3, 2, 1
+  const [ratingFilter, setRatingFilter] = useState("all"); // Filter: "all", 5, 4, 3, 2, 1
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
-  // Fetch product reviews
+  // Fetch reviews untuk produk ini dari API
+  // @param productId - ID produk
+  // Returns: averageRating, totalReviews, dan array reviews dengan user info
   const fetchProductReviews = async (productId) => {
     try {
       setReviewsLoading(true);
@@ -46,7 +52,7 @@ const ProductDetail = () => {
       );
       if (response.ok) {
         const data = await response.json();
-        setAllReviews(data.reviews); // Simpan semua review
+        setAllReviews(data.reviews); // Simpan semua untuk filtering
         setReviews(data.reviews); // Default tampilkan semua
         setAverageRating(data.averageRating);
         setTotalReviews(data.totalReviews);
@@ -58,7 +64,8 @@ const ProductDetail = () => {
     }
   };
 
-  // Apply rating filter
+  // Apply rating filter saat ratingFilter atau allReviews berubah
+  // Filter reviews berdasarkan rating yang dipilih (1-5 bintang atau semua)
   useEffect(() => {
     if (ratingFilter === "all") {
       setReviews(allReviews);
@@ -70,9 +77,11 @@ const ProductDetail = () => {
     }
   }, [ratingFilter, allReviews]);
 
+  // Handle add to cart dengan error handling dan toast notification
+  // Redirect ke login jika user belum login
   const handleAddToCart = async () => {
     try {
-      await addToCart(product.id, 1);
+      await addToCart(product.id, 1); // Add 1 qty ke cart
       toast.success("Berhasil menambahkan ke keranjang!", {
         duration: 3000,
         position: "top-center",
@@ -85,6 +94,7 @@ const ProductDetail = () => {
     } catch (error) {
       console.error("Gagal menambah ke keranjang:", error);
 
+      // Special handling untuk user belum login
       if (error.message === "User belum login") {
         toast.error("Silakan login terlebih dahulu!", {
           style: {
@@ -93,7 +103,7 @@ const ProductDetail = () => {
             border: "1px solid #dc2626",
           },
         });
-        navigate("/login", { state: { from: location } });
+        navigate("/login", { state: { from: location } }); // Redirect dengan return URL
       } else {
         toast.error("Gagal menambahkan ke keranjang!", {
           style: {

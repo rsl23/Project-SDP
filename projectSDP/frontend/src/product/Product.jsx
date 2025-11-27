@@ -1,3 +1,6 @@
+// Product Component - Halaman katalog produk dengan search, filter, dan sort
+// Features: Search produk, filter kategori, sort by price/name/rating, display rating dan stock
+
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { getProducts } from "../apiService/productApi";
 import { getCategories } from "../apiService/categoryApi";
@@ -13,6 +16,7 @@ import {
 import { Card, Button, Badge, Spinner } from "flowbite-react";
 
 const Product = () => {
+  // State management untuk products, categories, dan UI controls
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,12 +25,14 @@ const Product = () => {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("default");
-  const [productRatings, setProductRatings] = useState({});
+  const [productRatings, setProductRatings] = useState({}); // Cache rating produk
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fetch product reviews
+  // Fetch rating dan total reviews untuk satu produk
+  // @param productId - ID produk
+  // @returns Object dengan averageRating dan totalReviews
   const fetchProductReviews = async (productId) => {
     try {
       const response = await fetch(
@@ -45,7 +51,8 @@ const Product = () => {
     return { averageRating: 0, totalReviews: 0 };
   };
 
-  // Fetch all products reviews
+  // Fetch reviews untuk semua produk dan cache di state
+  // Dijalankan setelah products data loaded untuk display rating di card
   const fetchAllProductReviews = async (productsData) => {
     const ratings = {};
     for (const product of productsData) {
@@ -55,10 +62,12 @@ const Product = () => {
     setProductRatings(ratings);
   };
 
+  // Initial data fetch - products, categories, dan reviews
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        // Parallel fetch products dan categories untuk efficiency
         const [productsData, categoriesData] = await Promise.all([
           getProducts(),
           getCategories(),
@@ -66,7 +75,7 @@ const Product = () => {
         setProducts(productsData);
         setCategories(categoriesData);
 
-        // Fetch reviews untuk semua produk
+        // Fetch reviews untuk semua produk setelah products loaded
         await fetchAllProductReviews(productsData);
       } catch (err) {
         console.error("Gagal memuat data:", err);
@@ -77,6 +86,8 @@ const Product = () => {
     fetchData();
   }, []);
 
+  // Close dropdowns when clicking outside
+  // Event listener untuk menutup dropdown kategori dan sort saat click di luar
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -96,12 +107,16 @@ const Product = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Helper: Get nama kategori dari kategori_id
+  // Helper: Get nama kategori dari kategori_id
   const getCategoryName = (kategoriId) => {
     if (!kategoriId) return "Tidak ada kategori";
     const category = categories.find((cat) => cat.id === kategoriId);
     return category ? category.nama : "Tidak ada kategori";
   };
 
+  // Helper: Extract nama kategori dari berbagai field produk (kategori_nama, kategori_id, kategori)
+  // Compatibility untuk berbagai format data produk dari API
   const getProductCategoryName = (product) => {
     if (product.kategori_nama) return product.kategori_nama;
     if (product.kategori_id) return getCategoryName(product.kategori_id);
@@ -109,6 +124,9 @@ const Product = () => {
     return "Tidak ada kategori";
   };
 
+  // Helper: Determine stock status dengan color coding
+  // @param stock - Jumlah stok produk
+  // @returns Object dengan text, color className, dan background className
   const getStockStatus = (stock) => {
     if (stock > 10)
       return {
@@ -125,7 +143,10 @@ const Product = () => {
     return { text: "Stok Habis", color: "text-red-400", bg: "bg-red-500/20" };
   };
 
-  // Fungsi untuk render rating stars
+  // Render rating stars component
+  // @param rating - Rating value (0-5)
+  // @param size - Size variant ("sm" atau "md")
+  // @returns React component dengan 5 stars (filled atau empty)
   const renderRatingStars = (rating, size = "sm") => {
     const starSize = size === "sm" ? 12 : 14;
     return (
@@ -136,8 +157,8 @@ const Product = () => {
             size={starSize}
             className={
               star <= rating
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-gray-400"
+                ? "text-yellow-400 fill-yellow-400" // Filled star untuk rating
+                : "text-gray-400" // Empty star
             }
           />
         ))}
@@ -145,21 +166,28 @@ const Product = () => {
     );
   };
 
+  // Memoized filtered dan sorted products
+  // Dependency: products, searchTerm, selectedCategory, sortBy, productRatings
+  // Filter: active products, category, search term
+  // Sort: price (low/high), name, rating
   const filteredAndSortedProducts = useMemo(() => {
-    let result = products.filter((p) => p.active);
+    let result = products.filter((p) => p.active); // Hanya tampilkan produk aktif
 
+    // Filter by category
     if (selectedCategory !== "Semua") {
       result = result.filter(
         (p) => getProductCategoryName(p) === selectedCategory
       );
     }
 
+    // Filter by search term (case insensitive)
     if (searchTerm) {
       result = result.filter((p) =>
         p.nama.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
+    // Sort by selected criteria
     switch (sortBy) {
       case "price-low":
         result = [...result].sort((a, b) => a.harga - b.harga);
@@ -171,6 +199,7 @@ const Product = () => {
         result = [...result].sort((a, b) => a.nama.localeCompare(b.nama));
         break;
       case "rating":
+        // Sort by average rating descending
         result = [...result].sort((a, b) => {
           const ratingA = productRatings[a.id]?.averageRating || 0;
           const ratingB = productRatings[b.id]?.averageRating || 0;
@@ -191,12 +220,13 @@ const Product = () => {
     productRatings,
   ]);
 
+  // Memoized list kategori unik dari produk aktif untuk filter dropdown
   const availableCategories = useMemo(() => {
     const categoryNames = products
       .filter((p) => p.active)
       .map((p) => getProductCategoryName(p))
-      .filter(Boolean);
-    return [...new Set(categoryNames)].sort();
+      .filter(Boolean); // Remove null/undefined
+    return [...new Set(categoryNames)].sort(); // Unique dan sorted
   }, [products, categories]);
 
   const clearFilters = () => {
