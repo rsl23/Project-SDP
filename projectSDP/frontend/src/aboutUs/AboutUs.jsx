@@ -11,6 +11,8 @@ import whatsappIcon from "../assets/whatsapp.png";
 import tokopediaIcon from "../assets/tokopedia.jpeg";
 import shopeeIcon from "../assets/shopee.png";
 import instagramIcon from "../assets/instagram.svg";
+import tiktokIcon from "../assets/tiktokLogo.png";
+import lazadaIcon from "../assets/lazadaLogo.webp";
 
 const AboutUs = () => {
   const [galleryImages, setGalleryImages] = useState([]);
@@ -206,7 +208,7 @@ const AboutUs = () => {
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             <a
-              href="https://wa.me/6281234567890"
+              href="https://wa.me/6281333777968"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
@@ -245,6 +247,19 @@ const AboutUs = () => {
               />
             </a>
             <a
+              href="https://www.lazada.co.id/shop/berkat-jaya-motor-surabaya-1586404555/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              aria-label="TikTok"
+            >
+              <img
+                src={lazadaIcon}
+                alt="Lazada"
+                className="w-16 h-16 object-contain"
+              />
+            </a>
+            <a
               href="https://www.instagram.com/bjm_sby/?hl=en"
               target="_blank"
               rel="noopener noreferrer"
@@ -253,6 +268,19 @@ const AboutUs = () => {
             >
               <img
                 src={instagramIcon}
+                alt="Instagram"
+                className="w-16 h-16 object-contain"
+              />
+            </a>
+            <a
+              href="https://www.tiktok.com/@berkatjayamotorofficial?_r=1&_t=ZS-91rXtB7Qqyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              aria-label="TikTok"
+            >
+              <img
+                src={tiktokIcon}
                 alt="Instagram"
                 className="w-16 h-16 object-contain"
               />
