@@ -58,15 +58,15 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">
+      <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-xl p-6 w-full max-w-md border border-white/20 shadow-2xl">
+        <h3 className="text-xl font-bold text-white mb-4">
           Beri Review {product.nama}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Rating Stars */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Rating *
             </label>
             <div className="flex gap-1">
@@ -75,13 +75,13 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className="text-2xl focus:outline-none"
+                  className="text-2xl focus:outline-none hover:scale-110 transition-transform"
                 >
                   <Star
                     className={
                       star <= rating
                         ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                        : "text-gray-400"
                     }
                     size={32}
                   />
@@ -92,31 +92,34 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
 
           {/* Comment */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Komentar (opsional)
             </label>
             <textarea
               value={komentar}
               onChange={(e) => setKomentar(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-white placeholder-gray-400"
               placeholder="Bagaimana pengalaman Anda dengan produk ini?"
             />
           </div>
 
           {/* Buttons */}
           <div className="flex gap-3 pt-2">
-            <Button color="gray" onClick={onClose} className="flex-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium text-white transition-all border border-white/20"
+            >
               Batal
-            </Button>
-            <Button
-              gradientDuoTone="purpleToBlue"
+            </button>
+            <button
               type="submit"
               disabled={loading}
-              className="flex-1"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 rounded-lg font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Mengirim..." : "Kirim Review"}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
