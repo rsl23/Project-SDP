@@ -88,9 +88,9 @@ const AboutUs = () => {
             lainnya.
           </p>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200">
+          {/* Info Cards - 2 columns centered */}
+          <div className="flex justify-center gap-6 mt-10">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200 w-full md:w-80">
               <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Phone className="text-white" size={28} />
               </div>
@@ -102,22 +102,12 @@ const AboutUs = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200 w-full md:w-80">
               <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Clock className="text-white" size={28} />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-lg">Order</h3>
               <p className="text-gray-600 text-sm">24 jam / hari</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200">
-              <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Truck className="text-white" size={28} />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2 text-lg">
-                Pengiriman
-              </h3>
-              <p className="text-gray-600 text-sm">Senin - Sabtu</p>
             </div>
           </div>
         </div>
