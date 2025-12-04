@@ -88,17 +88,19 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="">
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Dashboard
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Selamat datang di Admin Panel BJM Parts
           </p>
         </div>
-        <div className="">
-          <Link to="/">
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+        <div className="w-full sm:w-auto">
+          <Link to="/" className="block">
+            <button className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm sm:text-base">
               Ke Halaman Home
             </button>
           </Link>
@@ -106,25 +108,25 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+              className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium">
                     {stat.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">
+                  <p className="text-lg sm:text-2xl font-bold text-gray-800 mt-1">
                     {stat.value}
                   </p>
                 </div>
-                <div className={`${stat.bgLight} p-3 rounded-lg`}>
-                  <Icon className={stat.textColor} size={24} />
+                <div className={`${stat.bgLight} p-2 sm:p-3 rounded-lg`}>
+                  <Icon className={stat.textColor} size={20} />
                 </div>
               </div>
             </div>
@@ -133,19 +135,25 @@ const AdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           <Link to="/admin/products" className="block">
-            <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition text-center">
-              <Package className="mx-auto mb-2 text-indigo-600" size={32} />
-              <span className="text-gray-700 font-medium">Tambah Produk</span>
+            <button className="w-full p-3 sm:p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition text-center">
+              <Package className="mx-auto mb-2 text-indigo-600" size={28} />
+              <span className="text-sm sm:text-base text-gray-700 font-medium">
+                Tambah Produk
+              </span>
             </button>
           </Link>
           <Link to="/admin/users" className="block">
-            <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-center">
-              <Users className="mx-auto mb-2 text-green-600" size={32} />
-              <span className="text-gray-700 font-medium">Kelola Users</span>
+            <button className="w-full p-3 sm:p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-center">
+              <Users className="mx-auto mb-2 text-green-600" size={28} />
+              <span className="text-sm sm:text-base text-gray-700 font-medium">
+                Kelola Users
+              </span>
             </button>
           </Link>
           <Link to="/admin/orders" className="block">

@@ -63,10 +63,25 @@ const AboutUs = () => {
           className="w-full h-full object-cover opacity-40"
         />
         {/* Gradient overlay untuk readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-950/80 flex items-center justify-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white text-center px-4">
-            Berkat Jaya Motor Sby
-          </h1>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-950/80 flex items-center justify-center flex-col space-y-2 md:space-y-4 p-4">
+          <div className="">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white text-center px-2">
+              Berkat Jaya Motor Sby
+            </h1>
+          </div>
+          <div className="font-semibold md:font-bold text-xs sm:text-sm md:text-base lg:text-lg text-center">
+            <p className="leading-relaxed">
+              BJM 1 : Jl. Bulak Setro 1B-1 No.15, Bulak, Kec. Bulak, Surabaya,
+              Jawa Timur | Telp : 0813-3377-7968
+            </p>
+          </div>
+          <div className="font-semibold md:font-bold text-xs sm:text-sm md:text-base lg:text-lg text-center">
+            <p className="leading-relaxed">
+              BJM 2 : Jl. Raya Panjang Jiwo Permai Blok 1B No. 15, Panjang Jiwo,
+              Kec. Tenggilis Mejoyo, Surabaya, Jawa Timur | Telp :
+              0812-3396-5551{" "}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -79,35 +94,42 @@ const AboutUs = () => {
           <p className="text-lg text-gray-700 leading-relaxed mb-6 text-center max-w-3xl mx-auto">
             Berkat Jaya Motor Sby adalah{" "}
             <span className="font-bold text-purple-600">
-              Supplier & Distributor aksesoris sepeda motor terbesar di Surabaya
-            </span>
+              Supplier & Distributor aksesoris kendaraan terbesar dan termurah
+              di Surabaya.
+            </span>{" "}
+            Kami telah melayani ribuan pelanggan dengan menyediakan produk
+            berkualitas tinggi dan layanan terbaik.
           </p>
           <p className="text-base text-gray-600 leading-relaxed text-center max-w-3xl mx-auto">
-            Menjual berbagai macam variasi & aksesoris motor, seperti velg,
-            shock, spion, lampu LED, lampu alis dan berbagai macam variasi motor
-            lainnya.
+            Menjual berbagai macam variasi & aksesoris kendaraan, seperti velg,
+            shock, spion, lampu LED, lampu alis dan berbagai macam variasi
+            kenadaraan lainnya.
           </p>
 
           {/* Info Cards - 2 columns centered */}
-          <div className="flex justify-center gap-6 mt-10">
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200 w-full md:w-80">
-              <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Phone className="text-white" size={28} />
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-8 sm:mt-10">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 sm:p-6 text-center border-2 border-purple-200 w-full sm:w-64 md:w-80">
+              <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                <Phone className="text-white" size={24} />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2 text-lg">Chat</h3>
-              <p className="text-gray-600 text-sm">
+              <h3 className="font-bold text-gray-900 mb-2 text-base sm:text-lg">
+                Chat
+              </h3>
+              <p className="text-gray-600 text-xs sm:text-sm">
                 Setiap hari
                 <br />
                 jam 08.00 - 21.00
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 text-center border-2 border-purple-200 w-full md:w-80">
-              <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Clock className="text-white" size={28} />
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 sm:p-6 text-center border-2 border-purple-200 w-full sm:w-64 md:w-80">
+              <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                <Clock className="text-white" size={24} />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2 text-lg">Order</h3>
-              <p className="text-gray-600 text-sm">24 jam / hari</p>
+              <h3 className="font-bold text-gray-900 mb-2 text-base sm:text-lg">
+                Order
+              </h3>
+              <p className="text-gray-600 text-xs sm:text-sm">24 jam / hari</p>
             </div>
           </div>
         </div>
@@ -119,7 +141,7 @@ const AboutUs = () => {
           </h3>
           <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
             Lihat langsung suasana toko, produk berkualitas, dan aktivitas tim
-            kami yang siap melayani kebutuhan aksesoris motor Anda
+            kami yang siap melayani kebutuhan aksesoris kendaraan Anda
           </p>
 
           {/* Gallery Grid */}
@@ -170,8 +192,7 @@ const AboutUs = () => {
               </div>
               <div className="text-gray-500 max-w-md mx-auto">
                 Gallery akan muncul setelah admin menambahkan gambar melalui
-                dashboard. Silakan hubungi admin untuk menambahkan foto toko,
-                produk, dan aktivitas.
+                dashboard.
               </div>
             </div>
           )}
@@ -196,70 +217,70 @@ const AboutUs = () => {
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
             Hubungi Kami
           </h3>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap justify-center gap-3 sm:gap-6">
             <a
               href="https://wa.me/6281333777968"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200 flex items-center justify-center"
               aria-label="WhatsApp"
             >
               <img
                 src={whatsappIcon}
                 alt="WhatsApp"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </a>
             <a
               href="https://tokopedia.link/aBNmS4svbXb"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200 flex items-center justify-center"
               aria-label="Tokopedia"
             >
               <img
                 src={tokopediaIcon}
                 alt="Tokopedia"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </a>
             <a
               href="https://shopee.co.id/berkatjayamotor777?is_from_login=true"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200 flex items-center justify-center"
               aria-label="Shopee"
             >
               <img
                 src={shopeeIcon}
                 alt="Shopee"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </a>
             <a
               href="https://www.lazada.co.id/shop/berkat-jaya-motor-surabaya-1586404555/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200 flex items-center justify-center"
               aria-label="TikTok"
             >
               <img
                 src={lazadaIcon}
                 alt="Lazada"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </a>
             <a
               href="https://www.instagram.com/bjm_sby/?hl=en"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200"
+              className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-110 transition-transform shadow-lg border-2 border-purple-200 flex items-center justify-center"
               aria-label="Instagram"
             >
               <img
                 src={instagramIcon}
                 alt="Instagram"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </a>
             <a

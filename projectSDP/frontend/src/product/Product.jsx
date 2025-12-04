@@ -464,7 +464,7 @@ const Product = () => {
       {/* Products Grid - z-index lebih rendah */}
       {filteredAndSortedProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredAndSortedProducts.map((p) => {
               const stockStatus = getStockStatus(p.stok);
               const productRating = productRatings[p.id] || {
@@ -491,14 +491,17 @@ const Product = () => {
                     </span>
                   </div>
 
-                  <h5 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
+                  <h5 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors text-sm sm:text-base">
                     {p.nama}
                   </h5>
 
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-transparent bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text">
+                  <div className="mb-2">
+                    <span className="text-lg sm:text-2xl font-bold text-transparent bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text">
                       Rp {p.harga.toLocaleString("id-ID")}
                     </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       {renderRatingStars(productRating.averageRating)}
                       <span className="text-xs text-gray-300">
@@ -508,13 +511,15 @@ const Product = () => {
                       </span>
                     </div>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      ({productRating.totalReviews} ulasan)
+                    </span>
+                  </div>
 
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>Stok: {p.stok}</span>
-                    <div className="flex items-center gap-1">
-                      <span>({productRating.totalReviews} ulasan)</span>
-                      <ShoppingCart size={14} />
-                    </div>
+                    <ShoppingCart size={14} />
                   </div>
                 </Card>
               );

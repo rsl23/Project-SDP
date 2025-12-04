@@ -5,13 +5,13 @@ import {
   addProduct,
   updateProduct,
   deleteProduct,
-  updateProductStock
+  updateProductStock,
 } from "../../apiService/productApi";
 import {
   getCategories,
   addCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
 } from "../../apiService/categoryApi";
 
 const AdminProducts = () => {
@@ -233,7 +233,8 @@ const AdminProducts = () => {
 
   // Fungsi untuk menghapus kategori
   const handleDeleteCategory = async (category) => {
-    if (!window.confirm(`Yakin ingin menghapus kategori "${category.nama}"?`)) return;
+    if (!window.confirm(`Yakin ingin menghapus kategori "${category.nama}"?`))
+      return;
 
     try {
       await deleteCategory(category.id);
@@ -258,7 +259,9 @@ const AdminProducts = () => {
     }
 
     try {
-      await updateCategory(editingCategory.id, { nama: editCategoryName.trim() });
+      await updateCategory(editingCategory.id, {
+        nama: editCategoryName.trim(),
+      });
       await fetchCategories(); // Refresh daftar kategori
       setEditingCategory(null);
       setEditCategoryName("");
@@ -280,24 +283,28 @@ const AdminProducts = () => {
 
   // Helper function untuk mendapatkan nama kategori dari ID
   const getCategoryName = (kategoriId) => {
-    const category = categories.find(cat => cat.id === kategoriId);
+    const category = categories.find((cat) => cat.id === kategoriId);
     return category ? category.nama : "Tidak ada kategori";
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Kelola Produk</h1>
-          <p className="text-gray-600 mt-1">Tambah, edit, atau hapus produk</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Kelola Produk
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Tambah, edit, atau hapus produk
+          </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm sm:text-base"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Kelola Kategori
           </button>
           <button
@@ -305,27 +312,27 @@ const AdminProducts = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm sm:text-base"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Tambah Produk
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white rounded-lg shadow-md p-3 sm:p-4">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={20}
+            size={18}
           />
           <input
             type="text"
             placeholder="Cari produk..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm sm:text-base"
           />
         </div>
       </div>
@@ -338,25 +345,25 @@ const AdminProducts = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[640px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nama Produk
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Kategori
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Harga
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stok
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                   </th>
                 </tr>
@@ -364,46 +371,49 @@ const AdminProducts = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
                         {product.nama}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
                       <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                         {getCategoryName(product.kategori_id)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                       Rp {product.harga.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                       {product.stok}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
                       <button
                         onClick={() => handleToggleActive(product)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${product.active
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                          }`}
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold transition ${
+                          product.active
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                        }`}
                       >
                         {product.active ? "Active" : "Tidak Active"}
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -416,8 +426,8 @@ const AdminProducts = () => {
       {/* Modal Tambah/Edit Produk */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md overflow-y-auto max-h-full">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
               {editMode ? "Edit Produk" : "Tambah Produk Baru"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -632,7 +642,9 @@ const AdminProducts = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Kelola Kategori</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Kelola Kategori
+              </h2>
               <button
                 onClick={() => {
                   setShowCategoryModal(false);
@@ -647,7 +659,9 @@ const AdminProducts = () => {
 
             {/* Form Tambah Kategori Baru */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Tambah Kategori Baru</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Tambah Kategori Baru
+              </h3>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -655,7 +669,7 @@ const AdminProducts = () => {
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="Masukkan nama kategori baru"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
                 />
                 <button
                   onClick={handleAddCategory}
@@ -668,7 +682,9 @@ const AdminProducts = () => {
 
             {/* Daftar Kategori */}
             <div className="flex-1 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Daftar Kategori</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Daftar Kategori
+              </h3>
               <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
                 {categories.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
@@ -685,9 +701,13 @@ const AdminProducts = () => {
                           <input
                             type="text"
                             value={editCategoryName}
-                            onChange={(e) => setEditCategoryName(e.target.value)}
+                            onChange={(e) =>
+                              setEditCategoryName(e.target.value)
+                            }
                             className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onKeyPress={(e) => e.key === 'Enter' && handleUpdateCategory()}
+                            onKeyPress={(e) =>
+                              e.key === "Enter" && handleUpdateCategory()
+                            }
                           />
                           <button
                             onClick={handleUpdateCategory}
@@ -704,7 +724,9 @@ const AdminProducts = () => {
                         </div>
                       ) : (
                         <>
-                          <span className="text-gray-800 flex-1">{category.nama}</span>
+                          <span className="text-gray-800 flex-1">
+                            {category.nama}
+                          </span>
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEditCategory(category)}
