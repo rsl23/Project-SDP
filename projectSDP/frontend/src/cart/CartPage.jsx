@@ -411,10 +411,10 @@ const CartPage = () => {
                       Rp {calculateTotal().toLocaleString("id-ID")}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-gray-300">
+                  {/* <div className="flex justify-between items-center text-gray-300">
                     <span>Pengiriman:</span>
                     <span className="text-green-400 font-semibold">Gratis</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <hr className="border-white/20 my-6" />
@@ -435,20 +435,20 @@ const CartPage = () => {
                 </button>
 
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center gap-3 text-sm text-gray-300">
+                  {/* <div className="flex items-center gap-3 text-sm text-gray-300">
                     <Truck size={16} className="text-green-400" />
                     <span>
                       Gratis pengiriman untuk order di atas Rp 500.000
                     </span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-3 text-sm text-gray-300">
                     <Shield size={16} className="text-blue-400" />
                     <span>Garansi produk 100% original</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-300">
+                  {/* <div className="flex items-center gap-3 text-sm text-gray-300">
                     <Package size={16} className="text-yellow-400" />
-                    <span>Pengiriman 1-3 hari kerja</span>
-                  </div>
+                    <span>Pengiriman 1-3 hari kerja khusus</span>
+                  </div> */}
                 </div>
               </div>
             </div>

@@ -519,14 +519,14 @@ const ProductDetail = () => {
               </div>
 
               {/* Shipping Info */}
-              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
+              {/* <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <Truck size={20} className="text-indigo-400" />
                   <span className="text-sm">
                     Gratis pengiriman untuk order di atas Rp 500.000
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
