@@ -2,20 +2,43 @@
 // Features: View users list, change user role, delete user account
 
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../firebase/config";
-import { Search, UserCheck, UserX, Shield, Trash2, AlertTriangle } from "lucide-react";
+import {
+  Search,
+  UserCheck,
+  UserX,
+  Shield,
+  Trash2,
+  AlertTriangle,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 // Confirmation Modal Component
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, type = "danger" }) => {
+const ConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  type = "danger",
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
-          <AlertTriangle className={type === "danger" ? "text-red-500" : "text-yellow-500"} size={24} />
+          <AlertTriangle
+            className={type === "danger" ? "text-red-500" : "text-yellow-500"}
+            size={24}
+          />
           <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         </div>
         <p className="text-gray-700 mb-6">{message}</p>
@@ -82,11 +105,13 @@ const AdminUsers = () => {
   // Toggle user role antara 'user' dan 'admin'
   const handleToggleRole = async (userId, currentRole, userName) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
-    
+
     setConfirmModal({
       isOpen: true,
       title: `Ubah Role ${userName}`,
-      message: `Apakah Anda yakin ingin mengubah role ${userName} dari "${currentRole || "user"}" menjadi "${newRole}"?`,
+      message: `Apakah Anda yakin ingin mengubah role ${userName} dari "${
+        currentRole || "user"
+      }" menjadi "${newRole}"?`,
       type: "warning",
       onConfirm: async () => {
         try {
@@ -124,7 +149,9 @@ const AdminUsers = () => {
           await deleteDoc(userRef);
 
           // Update local state
-          setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+          setUsers((prevUsers) =>
+            prevUsers.filter((user) => user.id !== userId)
+          );
 
           toast.success(`Akun ${userName} berhasil dihapus`);
         } catch (error) {
@@ -251,20 +278,28 @@ const AdminUsers = () => {
                       <div className="flex gap-2">
                         {/* Toggle Role Button */}
                         <button
-                          onClick={() => handleToggleRole(user.id, user.role, user.name)}
+                          onClick={() =>
+                            handleToggleRole(user.id, user.role, user.name)
+                          }
                           className={`p-2 rounded-lg transition-all ${
                             user.role === "admin"
                               ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                               : "bg-purple-100 hover:bg-purple-200 text-purple-700"
                           }`}
-                          title={user.role === "admin" ? "Ubah ke User" : "Jadikan Admin"}
+                          title={
+                            user.role === "admin"
+                              ? "Ubah ke User"
+                              : "Jadikan Admin"
+                          }
                         >
                           <Shield size={18} />
                         </button>
 
                         {/* Delete Button */}
                         <button
-                          onClick={() => handleDeleteUser(user.id, user.name, user.email)}
+                          onClick={() =>
+                            handleDeleteUser(user.id, user.name, user.email)
+                          }
                           className="p-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all"
                           title="Hapus User"
                         >
