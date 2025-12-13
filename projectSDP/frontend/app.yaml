@@ -2,10 +2,15 @@ runtime: nodejs20
 service: default
 
 handlers:
-  - url: /
+  # 1. Handler untuk file aset/statis (JS, CSS, Gambar, Font, dll)
+  # Ini memastikan browser bisa mendownload file styling dan logic.
+  - url: /(.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|woff|woff2|ttf|map))$
+    static_files: dist/\1
+    upload: dist/.*\.(js|css|png|jpg|jpeg|gif|ico|json|svg|woff|woff2|ttf|map)$
+
+  # 2. Handler "Catch-all" (SPA Routing)
+  # Jika URL bukan file aset di atas (misal: /aboutus, /login),
+  # berikan index.html dan biarkan React Router yang menangani tampilannya.
+  - url: .*
     static_files: dist/index.html
     upload: dist/index.html
-
-  - url: /(.*)
-    static_files: dist/\1
-    upload: dist/(.*)
