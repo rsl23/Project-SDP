@@ -13,7 +13,7 @@ src/server/
 
 ## 🛣️ API Endpoints
 
-### **Base URL:** `http://localhost:3000`
+### **Base URL:** `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com`
 
 | Method | Endpoint            | Description      | Request Body                    | Response          |
 | ------ | ------------------- | ---------------- | ------------------------------- | ----------------- |
@@ -33,7 +33,7 @@ src/server/
 **Request:**
 
 ```bash
-GET http://localhost:3000/api/products
+GET https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products
 ```
 
 **Response (200 OK):**
@@ -75,7 +75,7 @@ GET http://localhost:3000/api/products
 **Request:**
 
 ```bash
-POST http://localhost:3000/api/products
+POST https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products
 Content-Type: application/json
 
 {
@@ -121,7 +121,7 @@ Content-Type: application/json
 **Request:**
 
 ```bash
-PUT http://localhost:3000/api/products/abc123
+PUT https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products/abc123
 Content-Type: application/json
 
 {
@@ -177,7 +177,7 @@ Content-Type: application/json
 **Request:**
 
 ```bash
-DELETE http://localhost:3000/api/products/abc123
+DELETE https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products/abc123
 ```
 
 **Response (200 OK):**
@@ -283,7 +283,7 @@ DELETE http://localhost:3000/api/products/abc123
    Should see:
 
    ```
-   🚀 Server berjalan di http://localhost:3000
+   🚀 Server berjalan di https://backend-dot-storied-courier-479504-q5.et.r.appspot.com
    ```
 
 2. **Check port availability:**
@@ -298,7 +298,7 @@ DELETE http://localhost:3000/api/products/abc123
 3. **Verify API URL in frontend:**
    Check `src/apiService/productApi.js`:
    ```javascript
-   const API_URL = "http://localhost:3000/api/products";
+   const API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products";
    ```
 
 ---
@@ -401,7 +401,7 @@ Test endpoints directly:
 **Example: Update Product**
 
 ```
-PUT http://localhost:3000/api/products/abc123
+PUT https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products/abc123
 Headers:
   Content-Type: application/json
 Body:
@@ -416,7 +416,7 @@ Body:
 **Example: Delete Product**
 
 ```
-DELETE http://localhost:3000/api/products/abc123
+DELETE https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products/abc123
 ```
 
 ### **Method 4: Firestore Console**

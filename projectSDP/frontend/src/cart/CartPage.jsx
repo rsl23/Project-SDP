@@ -162,7 +162,7 @@ const CartPage = () => {
       console.log("💰 Total:", total);
 
       console.log("📤 Sending order to backend...");
-      const res = await fetch("http://localhost:3000/api/orders", {
+      const res = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

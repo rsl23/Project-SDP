@@ -1,7 +1,7 @@
 // API Service untuk Review endpoints
 // Handle operasi reviews produk (submit, get user reviews, get product reviews)
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api";
 
 // Mengirim review baru untuk produk
 // @param reviewData - Object dengan userId, produk_id, rating (1-5), dan review_text

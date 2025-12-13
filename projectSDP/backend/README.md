@@ -19,7 +19,7 @@
 
 Backend BJM Parts adalah REST API server yang dibangun dengan Express.js untuk melayani aplikasi e-commerce toko aksesoris sepeda motor. Server ini menangani semua operasi CRUD untuk produk, kategori, pesanan, keranjang, review, dan galeri, serta mengintegrasikan dengan Firebase Admin SDK untuk autentikasi dan database Firestore.
 
-**Base URL:** `http://localhost:3000`
+**Base URL:** `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com`
 
 ---
 
@@ -151,7 +151,7 @@ Edit `create-admin.js` terlebih dahulu untuk mengatur email dan password admin.
 npm run dev
 ```
 
-Server akan berjalan di: `http://localhost:3000`
+Server akan berjalan di: `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com`
 
 5. **Menjalankan production server:**
 
@@ -1285,7 +1285,7 @@ Gunakan tools seperti:
 Example curl request:
 
 ```bash
-curl -X GET http://localhost:3000/api/products
+curl -X GET https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products
 ```
 
 ### Database Queries

@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-const API_URL = "http://localhost:3000/api/orders";
+const API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders";
 
 // Mengambil semua orders milik user tertentu
 // @param userId - ID user dari Firebase Auth

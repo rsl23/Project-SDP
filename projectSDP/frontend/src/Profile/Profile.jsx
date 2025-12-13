@@ -200,7 +200,7 @@ const Profile = () => {
   const fetchUserReviews = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/reviews?userId=${userId}`
+        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews?userId=${userId}`
       );
       if (response.ok) {
         const userReviews = await response.json();
@@ -224,7 +224,7 @@ const Profile = () => {
 
   const handleSubmitReview = async (reviewData) => {
     try {
-      const response = await fetch("http://localhost:3000/api/reviews", {
+      const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

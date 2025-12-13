@@ -19,7 +19,7 @@ npm run dev:full
 
 Ini akan menjalankan:
 
-- ✅ Backend server di `http://localhost:3000`
+- ✅ Backend server di `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com`
 - ✅ Frontend dev server di `http://localhost:5173`
 
 ---
@@ -166,7 +166,7 @@ taskkill /PID <PID> /F
 
 **Cek:**
 
-1. ✅ Backend server running? (`http://localhost:3000/api/products`)
+1. ✅ Backend server running? (`https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products`)
 2. ✅ Firestore sudah ada data?
 3. ✅ Firebase rules allow read?
 
@@ -260,7 +260,7 @@ projectSDP/
 
 5. **Test API:**
 
-   - Backend: http://localhost:3000/api/products
+   - Backend: https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products
    - Frontend: http://localhost:5173
 
 6. **Make changes & test**

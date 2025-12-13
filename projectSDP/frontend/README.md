@@ -648,7 +648,7 @@ createReview(data); // POST /api/reviews
 deleteReview(id); // DELETE /api/reviews/:id
 ```
 
-**Base URL:** `http://localhost:3000`
+**Base URL:** `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com`
 
 **Authentication:**
 
@@ -927,7 +927,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
 VITE_FIREBASE_APP_ID=1:123456789:web:abc123def456
 
 # Backend API URL (optional, default localhost:3000)
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=https://backend-dot-storied-courier-479504-q5.et.r.appspot.com
 ```
 
 **⚠️ Security Note:** Jangan commit file `.env` ke Git!

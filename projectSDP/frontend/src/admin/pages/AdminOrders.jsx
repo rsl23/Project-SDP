@@ -106,7 +106,7 @@ const AdminOrders = () => {
         // Konfirmasi stok - stok tetap berkurang
         console.log(`🔒 Confirming stock for order ${orderId}`);
         const confirmResponse = await fetch(
-          `http://localhost:3000/api/orders/${orderId}/confirm-stock`,
+          `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders/${orderId}/confirm-stock`,
           {
             method: "POST",
           }
@@ -124,7 +124,7 @@ const AdminOrders = () => {
         // Kembalikan stok - stok dikembalikan
         console.log(`🔄 Returning stock for order ${orderId}`);
         const returnResponse = await fetch(
-          `http://localhost:3000/api/orders/${orderId}/return-stock`,
+          `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders/${orderId}/return-stock`,
           {
             method: "POST",
           }

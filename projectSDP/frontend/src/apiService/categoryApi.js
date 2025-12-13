@@ -1,7 +1,7 @@
 // API Service untuk Category endpoints
 // Centralized module untuk operasi CRUD kategori produk
 
-const CATEGORY_API_URL = "http://localhost:3000/api/categories";
+const CATEGORY_API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/categories";
 
 // Mengambil semua kategori yang tersedia
 // @returns Array kategori dengan id dan nama_kategori

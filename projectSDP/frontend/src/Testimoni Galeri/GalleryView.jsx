@@ -17,7 +17,7 @@ const GalleryView = () => {
     const fetchGalleryData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/api/gallery");
+        const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery");
 
         if (response.ok) {
           const galleryData = await response.json();

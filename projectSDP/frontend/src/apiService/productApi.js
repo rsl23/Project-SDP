@@ -2,7 +2,7 @@
 // Centralized module untuk semua operasi CRUD products dengan backend
 
 // Base URL untuk product API endpoints
-const API_URL = "http://localhost:3000/api/products";
+const API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products";
 
 // Function: GET /api/products
 // Mengambil semua produk dengan stok real-time dan data kategori

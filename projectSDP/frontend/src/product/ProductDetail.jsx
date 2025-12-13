@@ -48,7 +48,7 @@ const ProductDetail = () => {
     try {
       setReviewsLoading(true);
       const response = await fetch(
-        `http://localhost:3000/api/reviews/product/${productId}`
+        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews/product/${productId}`
       );
       if (response.ok) {
         const data = await response.json();

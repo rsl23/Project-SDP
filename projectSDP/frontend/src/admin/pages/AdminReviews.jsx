@@ -33,7 +33,7 @@ const AdminReviews = () => {
     const fetchReviews = async () => {
         try {
             setLoading(true);
-            const response = await fetch("http://localhost:3000/api/reviews");
+            const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews");
             if (response.ok) {
                 const data = await response.json();
                 setReviews(data);
@@ -48,7 +48,7 @@ const AdminReviews = () => {
     // Fetch products untuk filter
     const fetchProducts = async () => {
         try {
-            const response = await fetch("http://localhost:3000/api/products");
+            const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products");
             if (response.ok) {
                 const data = await response.json();
                 setProducts(data);
@@ -80,7 +80,7 @@ const AdminReviews = () => {
         if (!reviewToDelete) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/api/reviews/${reviewToDelete.id}`, {
+            const response = await fetch(`https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews/${reviewToDelete.id}`, {
                 method: "DELETE"
             });
 

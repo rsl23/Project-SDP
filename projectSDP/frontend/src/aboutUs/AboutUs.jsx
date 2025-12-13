@@ -28,7 +28,7 @@ const AboutUs = () => {
 
         // Fetch dari Express server gallery endpoint
         const galleryResponse = await fetch(
-          "http://localhost:3000/api/gallery"
+          "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery"
         );
         console.log("Gallery response status:", galleryResponse.status);
 
