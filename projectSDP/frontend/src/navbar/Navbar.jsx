@@ -119,7 +119,7 @@ const Navbar = ({ user }) => {
         <div className="navbar-container">
           <div className="navbar-logo">
             <Link to="/" onClick={closeMobileMenu}>
-              <img src="../src/assets/logo.jpeg" alt="BJM Logo" />
+              <img src="../src/assets/logo.jpg" alt="BJM Logo" />
             </Link>
           </div>
 
