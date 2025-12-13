@@ -15,12 +15,8 @@ import galleryRouter from "./api/gallery.js";
 // Inisialisasi Express app
 const app = express();
 
-// ============================================================================
-// MIDDLEWARE CONFIGURATION
-// ============================================================================
-
 // Enable CORS untuk akses dari frontend (Google App Engine)
-app.use(cors({ origin: "*" }));
+app.use(cors());
 
 // Parse JSON request body untuk semua request
 app.use(express.json());
