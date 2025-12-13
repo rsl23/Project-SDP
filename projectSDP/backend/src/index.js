@@ -470,6 +470,7 @@ app.get("/api/cart", async (req, res) => {
       .get();
 
     const cartItems = [];
+    console.log(snapshot.docs);
 
     // Iterasi setiap cart item untuk join dengan data produk dan hitung stok
     // Iterasi setiap cart item untuk join dengan data produk dan hitung stok
@@ -481,6 +482,8 @@ app.get("/api/cart", async (req, res) => {
         .doc(data.produk_id)
         .get();
       const produkData = produkDoc.exists ? produkDoc.data() : null;
+      console.log(produkData);
+
       // Hitung stok real-time dari tabel stock
       const stockSnap = await db
         .collection("stock")
@@ -512,7 +515,10 @@ app.get("/api/cart", async (req, res) => {
 
       const stokAkhir = totalMasuk - totalKeluar;
       console.log(`Ini stok akhir ${stokAkhir}`);
-      produkData.stok = stokAkhir; // Set stok real-time ke produk data
+      if (produkData) {
+        produkData.stok = stokAkhir;
+      }
+      // produkData.stok = stokAkhir; // Set stok real-time ke produk data
 
       // Push cart item dengan data produk dan stok
       cartItems.push({

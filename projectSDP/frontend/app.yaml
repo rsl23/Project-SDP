@@ -1,0 +1,7 @@
+runtime: nodejs20
+service: frontend_bjm
+
+handlers:
+  - url: /(.*)
+    static_files: build/\1
+    upload: build/.*

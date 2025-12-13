@@ -1,0 +1,5 @@
+runtime: nodejs20
+service: backend
+
+env_variables:
+  NODE_ENV: production
