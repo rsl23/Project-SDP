@@ -20,7 +20,8 @@ const app = express();
 // ============================================================================
 
 // Enable CORS untuk akses dari frontend (Google App Engine)
-app.use(cors({ origin: "https://storied-courier-479504-q5.et.r.appspot.com" }));
+app.use(cors({ origin: "https://storied-courier-479504-q5.et.r.appspot.com", methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  credentials: true }));
 
 // Parse JSON request body untuk semua request
 app.use(express.json());
