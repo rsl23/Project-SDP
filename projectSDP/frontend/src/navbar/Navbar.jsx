@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/config";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Menu, X } from "lucide-react";
+import logo from "../assets/logo.jpg";
 import "./Navbar.css";
 
 const Navbar = ({ user }) => {
@@ -119,7 +120,7 @@ const Navbar = ({ user }) => {
         <div className="navbar-container">
           <div className="navbar-logo">
             <Link to="/" onClick={closeMobileMenu}>
-              <img src="../src/assets/logo.jpg" alt="BJM Logo" />
+              <img src={logo} alt="BJM Logo" />
             </Link>
           </div>
 
