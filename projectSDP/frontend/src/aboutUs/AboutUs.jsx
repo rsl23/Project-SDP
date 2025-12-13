@@ -28,7 +28,7 @@ const AboutUs = () => {
 
         // Fetch dari Express server gallery endpoint
         const galleryResponse = await fetch(
-          "http://localhost:5000/api/gallery"
+          "http://localhost:3000/api/gallery"
         );
         console.log("Gallery response status:", galleryResponse.status);
 

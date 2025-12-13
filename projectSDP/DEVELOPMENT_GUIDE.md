@@ -5,7 +5,7 @@
 Project ini memiliki **2 bagian** yang harus dijalankan bersamaan:
 
 1. **Frontend** (React + Vite) - Port 5173
-2. **Backend** (Express + Firebase) - Port 5000
+2. **Backend** (Express + Firebase) - Port 3000
 
 ---
 
@@ -19,7 +19,7 @@ npm run dev:full
 
 Ini akan menjalankan:
 
-- ✅ Backend server di `http://localhost:5000`
+- ✅ Backend server di `http://localhost:3000`
 - ✅ Frontend dev server di `http://localhost:5173`
 
 ---
@@ -55,7 +55,7 @@ npm run dev
 
 ## 🔧 Server Endpoints
 
-### **Backend API (Port 5000)**
+### **Backend API (Port 3000)**
 
 | Method | Endpoint            | Deskripsi        |
 | ------ | ------------------- | ---------------- |
@@ -152,13 +152,13 @@ npm install
 node test-firebase-env.js
 ```
 
-### **Error: Port 5000 already in use**
+### **Error: Port 3000 already in use**
 
-**Solusi:** Kill process yang menggunakan port 5000
+**Solusi:** Kill process yang menggunakan port 3000
 
 ```powershell
 # Windows PowerShell
-netstat -ano | findstr :5000
+netstat -ano | findstr :3000
 taskkill /PID <PID> /F
 ```
 
@@ -166,7 +166,7 @@ taskkill /PID <PID> /F
 
 **Cek:**
 
-1. ✅ Backend server running? (`http://localhost:5000/api/products`)
+1. ✅ Backend server running? (`http://localhost:3000/api/products`)
 2. ✅ Firestore sudah ada data?
 3. ✅ Firebase rules allow read?
 
@@ -219,7 +219,7 @@ projectSDP/
 
 1. Set environment variables (dari `.env`)
 2. Start command: `node src/server/index.js`
-3. Port: 5000 (atau dari `process.env.PORT`)
+3. Port: 3000 (atau dari `process.env.PORT`)
 
 ---
 
@@ -260,7 +260,7 @@ projectSDP/
 
 5. **Test API:**
 
-   - Backend: http://localhost:5000/api/products
+   - Backend: http://localhost:3000/api/products
    - Frontend: http://localhost:5173
 
 6. **Make changes & test**

@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import { db } from "./firebase.js";
-import { img, u } from "framer-motion/client";
 import admin from "firebase-admin";
 
 // Inisialisasi Express app dan middleware
@@ -1608,8 +1607,8 @@ app.delete("/api/gallery/:id", async (req, res) => {
   }
 });
 
-// Start Express server pada PORT 5000
-const PORT = 5000;
+// Start Express server pada PORT 3000
+const PORT = 8080;
 app.listen(PORT, () => {
   console.log(`\nServer berjalan di http://localhost:${PORT}`);
 });

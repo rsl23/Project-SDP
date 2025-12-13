@@ -82,7 +82,7 @@ const GalleryPage = () => {
   const fetchGallery = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/gallery");
+      const response = await fetch("http://localhost:3000/api/gallery");
 
       if (response.ok) {
         const data = await response.json();
@@ -157,7 +157,7 @@ const GalleryPage = () => {
         description: formData.description || "",
       };
 
-      const response = await fetch("http://localhost:5000/api/gallery", {
+      const response = await fetch("http://localhost:3000/api/gallery", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +202,7 @@ const GalleryPage = () => {
       async () => {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/gallery/${id}`,
+            `http://localhost:3000/api/gallery/${id}`,
             {
               method: "DELETE",
             }
@@ -225,7 +225,7 @@ const GalleryPage = () => {
   // Toggle active status - FIXED URL
   const handleToggleActive = async (id, currentActive) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/gallery/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/gallery/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

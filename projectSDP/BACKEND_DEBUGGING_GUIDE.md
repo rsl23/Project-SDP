@@ -13,7 +13,7 @@ src/server/
 
 ## 🛣️ API Endpoints
 
-### **Base URL:** `http://localhost:5000`
+### **Base URL:** `http://localhost:3000`
 
 | Method | Endpoint            | Description      | Request Body                    | Response          |
 | ------ | ------------------- | ---------------- | ------------------------------- | ----------------- |
@@ -33,7 +33,7 @@ src/server/
 **Request:**
 
 ```bash
-GET http://localhost:5000/api/products
+GET http://localhost:3000/api/products
 ```
 
 **Response (200 OK):**
@@ -44,7 +44,7 @@ GET http://localhost:5000/api/products
     "id": "abc123",
     "nama": "Spion Kanan",
     "kategori": "Spion",
-    "harga": 150000,
+    "harga": 130000,
     "stok": 20
   },
   ...
@@ -75,13 +75,13 @@ GET http://localhost:5000/api/products
 **Request:**
 
 ```bash
-POST http://localhost:5000/api/products
+POST http://localhost:3000/api/products
 Content-Type: application/json
 
 {
   "nama": "Spion Kiri",
   "kategori": "Spion",
-  "harga": 150000,
+  "harga": 130000,
   "stok": 15
 }
 ```
@@ -93,7 +93,7 @@ Content-Type: application/json
   "id": "xyz789",
   "nama": "Spion Kiri",
   "kategori": "Spion",
-  "harga": 150000,
+  "harga": 130000,
   "stok": 15
 }
 ```
@@ -121,7 +121,7 @@ Content-Type: application/json
 **Request:**
 
 ```bash
-PUT http://localhost:5000/api/products/abc123
+PUT http://localhost:3000/api/products/abc123
 Content-Type: application/json
 
 {
@@ -177,7 +177,7 @@ Content-Type: application/json
 **Request:**
 
 ```bash
-DELETE http://localhost:5000/api/products/abc123
+DELETE http://localhost:3000/api/products/abc123
 ```
 
 **Response (200 OK):**
@@ -270,7 +270,7 @@ DELETE http://localhost:5000/api/products/abc123
 
 - ❌ Backend server not running
 - ❌ Wrong API URL
-- ❌ Port 5000 already in use
+- ❌ Port 3000 already in use
 
 **Solution:**
 
@@ -283,14 +283,14 @@ DELETE http://localhost:5000/api/products/abc123
    Should see:
 
    ```
-   🚀 Server berjalan di http://localhost:5000
+   🚀 Server berjalan di http://localhost:3000
    ```
 
 2. **Check port availability:**
 
    ```bash
    # Windows PowerShell
-   netstat -ano | findstr :5000
+   netstat -ano | findstr :3000
 
    # If port is used, kill process or change port
    ```
@@ -298,7 +298,7 @@ DELETE http://localhost:5000/api/products/abc123
 3. **Verify API URL in frontend:**
    Check `src/apiService/productApi.js`:
    ```javascript
-   const API_URL = "http://localhost:5000/api/products";
+   const API_URL = "http://localhost:3000/api/products";
    ```
 
 ---
@@ -401,7 +401,7 @@ Test endpoints directly:
 **Example: Update Product**
 
 ```
-PUT http://localhost:5000/api/products/abc123
+PUT http://localhost:3000/api/products/abc123
 Headers:
   Content-Type: application/json
 Body:
@@ -416,7 +416,7 @@ Body:
 **Example: Delete Product**
 
 ```
-DELETE http://localhost:5000/api/products/abc123
+DELETE http://localhost:3000/api/products/abc123
 ```
 
 ### **Method 4: Firestore Console**
@@ -501,7 +501,7 @@ DELETE http://localhost:5000/api/products/abc123
 ### **Port Configuration:**
 
 ```javascript
-const PORT = 5000;
+const PORT = 3000;
 ```
 
 Change if port is already in use.

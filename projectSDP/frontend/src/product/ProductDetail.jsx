@@ -48,7 +48,7 @@ const ProductDetail = () => {
     try {
       setReviewsLoading(true);
       const response = await fetch(
-        `http://localhost:5000/api/reviews/product/${productId}`
+        `http://localhost:3000/api/reviews/product/${productId}`
       );
       if (response.ok) {
         const data = await response.json();

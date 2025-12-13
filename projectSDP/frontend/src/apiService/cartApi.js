@@ -3,7 +3,7 @@
 
 import { auth } from "../firebase/config";
 
-const API_URL = "http://localhost:5000/api/cart";
+const API_URL = "http://localhost:3000/api/cart";
 
 // Helper function untuk mendapatkan user yang sedang login
 const getCurrentUser = () => {

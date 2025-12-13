@@ -1,7 +1,11 @@
 runtime: nodejs20
-service: frontend_bjm
+service: default
 
 handlers:
+  - url: /
+    static_files: dist/index.html
+    upload: dist/index.html
+
   - url: /(.*)
-    static_files: build/\1
-    upload: build/.*
+    static_files: dist/\1
+    upload: dist/(.*)

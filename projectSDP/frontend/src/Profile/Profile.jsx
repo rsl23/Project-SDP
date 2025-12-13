@@ -200,7 +200,7 @@ const Profile = () => {
   const fetchUserReviews = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reviews?userId=${userId}`
+        `http://localhost:3000/api/reviews?userId=${userId}`
       );
       if (response.ok) {
         const userReviews = await response.json();
@@ -224,7 +224,7 @@ const Profile = () => {
 
   const handleSubmitReview = async (reviewData) => {
     try {
-      const response = await fetch("http://localhost:5000/api/reviews", {
+      const response = await fetch("http://localhost:3000/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

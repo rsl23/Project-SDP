@@ -19,7 +19,7 @@
 
 Backend BJM Parts adalah REST API server yang dibangun dengan Express.js untuk melayani aplikasi e-commerce toko aksesoris sepeda motor. Server ini menangani semua operasi CRUD untuk produk, kategori, pesanan, keranjang, review, dan galeri, serta mengintegrasikan dengan Firebase Admin SDK untuk autentikasi dan database Firestore.
 
-**Base URL:** `http://localhost:5000`
+**Base URL:** `http://localhost:3000`
 
 ---
 
@@ -128,7 +128,7 @@ FIREBASE_CLIENT_ID=your_client_id
 FIREBASE_CLIENT_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40your-project.iam.gserviceaccount.com
 
 # Server Configuration
-PORT=5000
+PORT=3000
 ```
 
 **⚠️ Important Notes:**
@@ -151,7 +151,7 @@ Edit `create-admin.js` terlebih dahulu untuk mengatur email dan password admin.
 npm run dev
 ```
 
-Server akan berjalan di: `http://localhost:5000`
+Server akan berjalan di: `http://localhost:3000`
 
 5. **Menjalankan production server:**
 
@@ -178,7 +178,7 @@ Mendapatkan semua produk dengan stok terkini.
     "nama": "Velg Racing",
     "kategori_id": "cat123",
     "kategori_nama": "Velg",
-    "harga": 500000,
+    "harga": 300000,
     "stok": 10,
     "img_url": "https://...",
     "deskripsi": "Velg racing ukuran 17",
@@ -208,7 +208,7 @@ Membuat produk baru dengan stok awal.
 {
   "nama": "Velg Racing",
   "kategori_id": "cat123",
-  "harga": 500000,
+  "harga": 300000,
   "img_url": "https://...",
   "deskripsi": "Velg racing ukuran 17",
   "link_tokopedia": "https://...",
@@ -244,7 +244,7 @@ Update data produk (tanpa stok).
 ```json
 {
   "nama": "Velg Racing Updated",
-  "harga": 550000,
+  "harga": 530000,
   "deskripsi": "Deskripsi baru"
 }
 ```
@@ -391,7 +391,7 @@ Authorization: Bearer <firebase_id_token>
     "produk": {
       "id": "prod123",
       "nama": "Velg Racing",
-      "harga": 500000,
+      "harga": 300000,
       "img_url": "https://...",
       "stok": 10,
       "kategori_nama": "Velg"
@@ -498,7 +498,7 @@ Membuat order baru dari keranjang.
     {
       "produk_id": "prod123",
       "jumlah": 2,
-      "harga": 500000
+      "harga": 300000
     }
   ],
   "total": 1000000
@@ -595,7 +595,7 @@ Mendapatkan daftar order.
         "produk_id": "prod123",
         "produk_nama": "Velg Racing",
         "jumlah": 2,
-        "harga": 500000,
+        "harga": 300000,
         "subtotal": 1000000
       }
     ],
@@ -1285,7 +1285,7 @@ Gunakan tools seperti:
 Example curl request:
 
 ```bash
-curl -X GET http://localhost:5000/api/products
+curl -X GET http://localhost:3000/api/products
 ```
 
 ### Database Queries
