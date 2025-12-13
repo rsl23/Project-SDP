@@ -1,20 +1,7 @@
-// ============================================================================
-// BACKEND INDEX.JS - Entry Point untuk Express Server
-// ============================================================================
-// File ini adalah entry point utama untuk Express server.
-// Semua API endpoints sudah dipisahkan ke folder /api untuk modularitas:
-// - /api/products.js  - Manajemen produk dan stok
-// - /api/stock.js     - Riwayat stok (masuk/keluar)
-// - /api/cart.js      - Keranjang belanja user
-// - /api/orders.js    - Manajemen pesanan dan checkout
-// - /api/categories.js - Kategori produk
-// - /api/reviews.js   - Review dan rating produk
-// - /api/gallery.js   - Galeri gambar
-// ============================================================================
-
 // Import dependencies untuk Express server
 import express from "express";
 import cors from "cors";
+import path from "path";
 
 // Import semua router dari folder /api
 import productsRouter from "./api/products.js";
@@ -70,17 +57,19 @@ app.use("/api/reviews", reviewsRouter);
 // Endpoints: GET /, POST /, PUT /:id, DELETE /:id
 app.use("/api/gallery", galleryRouter);
 
-// ============================================================================
-// SERVER START
-// ============================================================================
+app.use(express.static(path.join(__dirname, "dist")));
 
+// Catch-all React Router
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
 // Port dari environment variable atau default 8080
 const PORT = process.env.PORT || 8080;
 
 // Start server dan listen pada port yang ditentukan
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📚 API Documentation:`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API Documentation:`);
   console.log(`   - Products: /api/products`);
   console.log(`   - Stock:    /api/stock`);
   console.log(`   - Cart:     /api/cart`);
