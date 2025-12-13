@@ -6,7 +6,7 @@ import admin from "firebase-admin";
 
 // Inisialisasi Express app dan middleware
 const app = express();
-app.use(cors()); // Enable CORS untuk akses dari frontend
+app.use(cors({ origin: "https://storied-courier-479504-q5.et.r.appspot.com" })); // Enable CORS untuk akses dari frontend
 app.use(express.json()); // Parse JSON request body
 
 // Endpoint: GET /api/products
