@@ -288,162 +288,260 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 md:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
             Kelola Produk
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
+          <p className="text-xs md:text-sm text-gray-600 mt-1">
             Tambah, edit, atau hapus produk
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm sm:text-base"
+            className="flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs md:text-sm lg:text-base w-full sm:w-auto"
           >
-            <Plus size={18} />
-            Kelola Kategori
+            <Plus size={16} />
+            <span>Kelola Kategori</span>
           </button>
           <button
             onClick={() => {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm sm:text-base"
+            className="flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs md:text-sm lg:text-base w-full sm:w-auto mt-2 sm:mt-0"
           >
-            <Plus size={18} />
-            Tambah Produk
+            <Plus size={16} />
+            <span>Tambah Produk</span>
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow-md p-3 sm:p-4">
+      <div className="bg-white rounded-lg shadow-sm md:shadow-md p-3 md:p-4">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={18}
+            size={16}
           />
           <input
             type="text"
             placeholder="Cari produk..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm sm:text-base"
+            className="w-full pl-9 md:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
           />
         </div>
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm md:shadow-md overflow-hidden">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div className="flex justify-center items-center h-48 md:h-64">
+            <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 md:h-64 p-4">
+            <div className="text-gray-400 mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-12 w-12 md:h-16 md:w-16"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-500 text-center text-sm md:text-base">
+              {searchTerm ? "Produk tidak ditemukan" : "Belum ada produk"}
+            </p>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="mt-2 text-indigo-600 text-sm hover:text-indigo-800"
+              >
+                Reset pencarian
+              </button>
+            )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px]">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nama Produk
-                  </th>
-                  <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kategori
-                  </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Harga
-                  </th>
-                  <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stok
-                  </th>
-                  <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
-                      <div className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
-                        {product.nama}
+          <div className="overflow-x-auto -mx-3 md:mx-0">
+            <div className="min-w-full inline-block align-middle">
+              {/* Mobile View - Card Layout */}
+              <div className="md:hidden">
+                <div className="divide-y divide-gray-200">
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                            {product.nama}
+                          </h3>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="text-xs text-gray-600">
+                              Rp {product.harga.toLocaleString("id-ID")}
+                            </span>
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                              {getCategoryName(product.kategori_id)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs text-gray-500">
+                                Stok: {product.stok}
+                              </span>
+                              <button
+                                onClick={() => handleToggleActive(product)}
+                                className={`px-2 py-1 rounded-full text-xs font-semibold transition ${product.active
+                                  ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                  : "bg-red-100 text-red-800 hover:bg-red-200"
+                                  }`}
+                              >
+                                {product.active ? "Active" : "Non-Active"}
+                              </button>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(product)}
+                                className="text-indigo-600 hover:text-indigo-900 p-1"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                className="text-red-600 hover:text-red-900 p-1"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </td>
-                    <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {getCategoryName(product.kategori_id)}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
-                      Rp {product.harga.toLocaleString("id-ID")}
-                    </td>
-                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
-                      {product.stok}
-                    </td>
-                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
-                      <button
-                        onClick={() => handleToggleActive(product)}
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold transition ${
-                          product.active
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop View - Table Layout */}
+              <table className="hidden md:table w-full min-w-[640px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nama Produk
+                    </th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Kategori
+                    </th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Harga
+                    </th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stok
+                    </th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 md:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredProducts.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {product.nama}
+                        </div>
+                      </td>
+                      <td className="px-4 md:px-6 py-4">
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {getCategoryName(product.kategori_id)}
+                        </span>
+                      </td>
+                      <td className="px-4 md:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                        Rp {product.harga.toLocaleString("id-ID")}
+                      </td>
+                      <td className="px-4 md:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                        {product.stok}
+                      </td>
+                      <td className="px-4 md:px-6 py-4">
+                        <button
+                          onClick={() => handleToggleActive(product)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition ${product.active
                             ? "bg-green-100 text-green-800 hover:bg-green-200"
                             : "bg-red-100 text-red-800 hover:bg-red-200"
-                        }`}
-                      >
-                        {product.active ? "Active" : "Tidak Active"}
-                      </button>
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                            }`}
                         >
-                          <Edit2 size={16} />
+                          {product.active ? "Active" : "Non-Active"}
                         </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-4 md:px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="text-indigo-600 hover:text-indigo-900 p-1"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="text-red-600 hover:text-red-900 p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
 
       {/* Modal Tambah/Edit Produk */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-              {editMode ? "Edit Produk" : "Tambah Produk Baru"}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+                {editMode ? "Edit Produk" : "Tambah Produk Baru"}
+              </h2>
+              <button
+                onClick={() => {
+                  resetForm();
+                  setShowModal(false);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-4 space-y-4">
               {/* Upload Image */}
               <div>
-                <div className="relative flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-indigo-400 transition bg-gray-50 h-40">
+                <div className="relative flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-indigo-400 transition bg-gray-50 h-32 sm:h-40">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
-                  <div className="flex flex-col items-center text-gray-500 pointer-events-none">
+                  <div className="flex flex-col items-center text-gray-500 pointer-events-none text-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 mb-2 text-gray-400"
+                      className="h-8 w-8 sm:h-10 sm:w-10 mb-2 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -455,7 +553,7 @@ const AdminProducts = () => {
                         d="M3 15a4 4 0 004 4h10a4 4 0 004-4m-8-9v10m0 0l-3-3m3 3l3-3"
                       />
                     </svg>
-                    <p className="text-sm font-medium">
+                    <p className="text-xs sm:text-sm font-medium">
                       Klik untuk upload gambar
                     </p>
                     <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
@@ -464,10 +562,10 @@ const AdminProducts = () => {
 
                 {formData.img_url && (
                   <div className="flex items-center gap-2 mt-2">
-                    <div className="bg-indigo-100 p-2 rounded-full">
+                    <div className="bg-indigo-100 p-1 sm:p-2 rounded-full">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-indigo-500"
+                        className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -480,7 +578,7 @@ const AdminProducts = () => {
                         />
                       </svg>
                     </div>
-                    <p className="text-sm font-medium text-gray-800 truncate max-w-[200px]">
+                    <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">
                       {formData.img_name}
                     </p>
                   </div>
@@ -498,7 +596,7 @@ const AdminProducts = () => {
                   value={formData.nama}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 />
               </div>
 
@@ -511,9 +609,9 @@ const AdminProducts = () => {
                   name="deskripsi"
                   value={formData.deskripsi}
                   onChange={handleInputChange}
-                  rows={4}
+                  rows={3}
                   placeholder="Masukkan deskripsi produk (opsional)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 resize-y"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm resize-y"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.deskripsi.length} karakter
@@ -539,7 +637,7 @@ const AdminProducts = () => {
                   value={formData.kategori_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 >
                   <option value="">Pilih Kategori</option>
                   {categories.map((category) => (
@@ -562,7 +660,7 @@ const AdminProducts = () => {
                   onChange={handleInputChange}
                   required
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 />
               </div>
 
@@ -578,7 +676,7 @@ const AdminProducts = () => {
                   onChange={handleInputChange}
                   required
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 />
               </div>
 
@@ -593,7 +691,7 @@ const AdminProducts = () => {
                   value={formData.link_tokopedia}
                   onChange={handleInputChange}
                   placeholder="https://tokopedia.link/..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 />
               </div>
 
@@ -608,7 +706,7 @@ const AdminProducts = () => {
                   value={formData.link_shopee}
                   onChange={handleInputChange}
                   placeholder="https://shopee.co.id/..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
                 />
               </div>
 
@@ -620,14 +718,14 @@ const AdminProducts = () => {
                     resetForm();
                     setShowModal(false);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm"
                 >
                   {editMode ? "Update" : "Tambah"}
                 </button>
@@ -639,10 +737,10 @@ const AdminProducts = () => {
 
       {/* Modal Kelola Kategori */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-4">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                 Kelola Kategori
               </h2>
               <button
@@ -653,13 +751,13 @@ const AdminProducts = () => {
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Form Tambah Kategori Baru */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">
                 Tambah Kategori Baru
               </h3>
               <div className="flex gap-2">
@@ -668,12 +766,12 @@ const AdminProducts = () => {
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="Masukkan nama kategori baru"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 text-sm"
                   onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
                 />
                 <button
                   onClick={handleAddCategory}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm whitespace-nowrap"
                 >
                   Tambah
                 </button>
@@ -681,13 +779,13 @@ const AdminProducts = () => {
             </div>
 
             {/* Daftar Kategori */}
-            <div className="flex-1 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            <div className="flex-1 overflow-hidden p-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">
                 Daftar Kategori
               </h3>
-              <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+              <div className="max-h-48 sm:max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
                 {categories.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">
+                  <div className="p-4 text-center text-gray-500 text-sm">
                     Belum ada kategori
                   </div>
                 ) : (
@@ -704,27 +802,27 @@ const AdminProducts = () => {
                             onChange={(e) =>
                               setEditCategoryName(e.target.value)
                             }
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
                             onKeyPress={(e) =>
                               e.key === "Enter" && handleUpdateCategory()
                             }
                           />
                           <button
                             onClick={handleUpdateCategory}
-                            className="px-2 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                            className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 whitespace-nowrap"
                           >
                             ✓
                           </button>
                           <button
                             onClick={cancelEditCategory}
-                            className="px-2 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                            className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 whitespace-nowrap"
                           >
                             ✗
                           </button>
                         </div>
                       ) : (
                         <>
-                          <span className="text-gray-800 flex-1">
+                          <span className="text-gray-800 flex-1 text-sm truncate">
                             {category.nama}
                           </span>
                           <div className="flex gap-2">
@@ -733,14 +831,14 @@ const AdminProducts = () => {
                               className="text-blue-600 hover:text-blue-800 p-1"
                               title="Edit kategori"
                             >
-                              <Edit2 size={16} />
+                              <Edit2 size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteCategory(category)}
                               className="text-red-600 hover:text-red-800 p-1"
                               title="Hapus kategori"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </>
@@ -749,19 +847,19 @@ const AdminProducts = () => {
                   ))
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-xs text-gray-500 mt-2">
                 Total: {categories.length} kategori
               </p>
             </div>
 
-            <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-200">
               <button
                 onClick={() => {
                   setShowCategoryModal(false);
                   setEditingCategory(null);
                   setEditCategoryName("");
                 }}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm"
               >
                 Tutup
               </button>

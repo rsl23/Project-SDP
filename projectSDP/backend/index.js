@@ -237,8 +237,7 @@ app.put("/api/products/:id/stock", async (req, res) => {
     });
 
     console.log(
-      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${
-        totalMasuk - totalKeluar
+      `📊 Current - Masuk: ${totalMasuk}, Keluar: ${totalKeluar}, Stok Akhir: ${totalMasuk - totalKeluar
       }`
     );
 
@@ -266,9 +265,8 @@ app.put("/api/products/:id/stock", async (req, res) => {
         // Validasi tidak boleh negatif
         if (newStokAwal < 0) {
           return res.status(400).json({
-            error: `Tidak dapat mengurangi stok. Stok minimum: ${
-              stokAkhirSekarang + stokAwalDoc.data.jumlah
-            }`,
+            error: `Tidak dapat mengurangi stok. Stok minimum: ${stokAkhirSekarang + stokAwalDoc.data.jumlah
+              }`,
           });
         }
 
@@ -527,11 +525,11 @@ app.get("/api/cart", async (req, res) => {
         createdAt: data.createdAt,
         produk: produkData
           ? {
-              nama: produkData.nama,
-              harga: produkData.harga,
-              img_url: produkData.img_url,
-              stok: produkData.stok,
-            }
+            nama: produkData.nama,
+            harga: produkData.harga,
+            img_url: produkData.img_url,
+            stok: produkData.stok,
+          }
           : null,
       });
     }
@@ -1361,9 +1359,9 @@ app.get("/api/reviews", async (req, res) => {
         user: userData,
         product: productData
           ? {
-              nama: productData.nama,
-              img_url: productData.img_url,
-            }
+            nama: productData.nama,
+            img_url: productData.img_url,
+          }
           : null,
       });
     }

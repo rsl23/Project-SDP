@@ -15,15 +15,14 @@ import {
   LogOut,
   Menu,
   X,
-  Images, // Icon untuk gallery management
+  Images,
 } from "lucide-react";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Sidebar collapse state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Handle logout - sign out dari Firebase dan redirect ke login
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -33,7 +32,6 @@ const AdminLayout = () => {
     }
   };
 
-  // Menu items untuk sidebar navigation
   const menuItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/products", icon: Package, label: "Produk" },
@@ -43,8 +41,6 @@ const AdminLayout = () => {
     { path: "/admin/users", icon: Users, label: "Users" },
   ];
 
-  // Helper: Check apakah route sedang aktif
-  // Exact match untuk /admin, startsWith untuk sub-routes
   const isActive = (path) => {
     if (path === "/admin") {
       return location.pathname === "/admin";
@@ -53,16 +49,25 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar - Collapsible dengan transition */}
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      {/* Sidebar */}
       <aside
-        className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-indigo-900 to-purple-900 text-white transition-all duration-300 flex flex-col`}
+        className={`
+          fixed md:static z-40 h-full
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          ${sidebarOpen ? "md:w-64" : "md:w-20"}
+          w-64
+          bg-gradient-to-b from-indigo-900 to-purple-900
+          text-white transition-all duration-300 flex flex-col
+        `}
       >
-        {/* Header dengan toggle button */}
+        {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-indigo-700">
-          {sidebarOpen && <h1 className="text-xl font-bold">Admin Panel</h1>}
+          {sidebarOpen && (
+            <h1 className="text-lg md:text-xl font-bold truncate">
+              Admin Panel
+            </h1>
+          )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-indigo-800 rounded-lg transition"
@@ -71,7 +76,7 @@ const AdminLayout = () => {
           </button>
         </div>
 
-        {/* Menu Items dengan active state highlighting */}
+        {/* Menu */}
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -81,20 +86,26 @@ const AdminLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                  active
-                    ? "bg-indigo-700 text-white" // Active state styling
-                    : "hover:bg-indigo-800 text-gray-300"
-                }`}
+                onClick={() => setSidebarOpen(false)}
+                className={`
+                  flex items-center gap-3 p-3 rounded-lg transition
+                  ${active
+                    ? "bg-indigo-700 text-white"
+                    : "hover:bg-indigo-800 text-gray-300"}
+                `}
               >
                 <Icon size={20} />
-                {sidebarOpen && <span>{item.label}</span>}
+                {sidebarOpen && (
+                  <span className="text-sm md:text-base">
+                    {item.label}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Logout Button */}
+        {/* Logout */}
         <div className="p-4 border-t border-indigo-700">
           <button
             onClick={handleLogout}
@@ -106,25 +117,42 @@ const AdminLayout = () => {
         </div>
       </aside>
 
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+        />
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm p-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            BJM Parts - Admin Dashboard
-          </h2>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
+        <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
+            <h2 className="text-lg md:text-2xl font-semibold text-gray-800 truncate">
+              BJM Parts - Admin
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden md:block text-sm text-gray-600 truncate max-w-[180px]">
               {auth.currentUser?.email}
             </span>
-            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
               {auth.currentUser?.email?.[0].toUpperCase()}
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <Outlet />
         </main>
       </div>

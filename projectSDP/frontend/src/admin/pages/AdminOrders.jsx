@@ -146,12 +146,6 @@ const AdminOrders = () => {
           console.log(`✅ Stock returned for order ${orderId}`);
         }
       }
-
-      alert(
-        `Status order berhasil diubah menjadi ${
-          status === "accepted" ? "Diterima" : "Ditolak"
-        }`
-      );
     } catch (err) {
       console.error("❌ Gagal update status:", err);
 
@@ -224,106 +218,102 @@ const AdminOrders = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">Memuat pesanan...</p>
+          <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-3 md:mt-4 text-gray-600 text-sm md:text-base">Memuat pesanan...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-3 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2">
             Kelola Pesanan
           </h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            Kelola pesanan dan stok akan otomatis disesuaikan saat
-            menerima/menolak pesanan
+          <p className="text-xs sm:text-sm md:text-base text-gray-600">
+            Kelola pesanan dan stok akan otomatis disesuaikan saat menerima/menolak pesanan
           </p>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-4 sm:mb-6 bg-white rounded-lg shadow-md p-3 sm:p-4">
+        <div className="mb-3 sm:mb-4 md:mb-6 bg-white rounded-lg shadow-sm md:shadow-md p-3 md:p-4">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={18}
+              size={16}
             />
             <input
               type="text"
               placeholder="Cari berdasarkan ID order atau Nama User..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm sm:text-base"
+              className="w-full pl-9 md:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm md:text-base"
             />
           </div>
         </div>
 
         {/* Filter Status */}
-        <div className="mb-4 sm:mb-6 flex flex-wrap gap-2 sm:gap-3">
+        <div className="mb-4 sm:mb-6 flex flex-wrap gap-2">
           {["pending", "all", "accepted", "rejected"].map((status) => (
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                selectedStatus === status
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
-              }`}
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${selectedStatus === status
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                }`}
             >
               {getStatusIcon(status)}
               {status === "all"
                 ? "Semua"
                 : status === "pending"
-                ? "Menunggu"
-                : status === "accepted"
-                ? "Diterima"
-                : "Ditolak"}
+                  ? "Menunggu"
+                  : status === "accepted"
+                    ? "Diterima"
+                    : "Ditolak"}
             </button>
           ))}
         </div>
 
         {searchTerm && (
-          <p className="text-sm text-gray-600 mb-4">
-            Menampilkan{" "}
-            <span className="font-semibold">{filteredOrders.length}</span> hasil
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 md:mb-4">
+            Menampilkan <span className="font-semibold">{filteredOrders.length}</span> hasil
             untuk "{searchTerm}"
           </p>
         )}
 
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12 sm:py-16 bg-white rounded-2xl shadow-sm">
-            <Package className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
+          <div className="text-center py-8 sm:py-12 md:py-16 bg-white rounded-xl md:rounded-2xl shadow-sm">
+            <Package className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600 mb-1 sm:mb-2">
               {selectedStatus === "all"
                 ? "Belum ada pesanan"
                 : `Tidak ada pesanan ${selectedStatus}`}
             </h3>
-            <p className="text-sm sm:text-base text-gray-500 px-4">
+            <p className="text-xs sm:text-sm md:text-base text-gray-500 px-4">
               {selectedStatus === "all"
                 ? "Pesanan dari pelanggan akan muncul di sini"
-                : `Tidak ada pesanan dengan status ${
-                    selectedStatus === "pending" ? "menunggu" : selectedStatus
-                  }`}
+                : `Tidak ada pesanan dengan status ${selectedStatus === "pending" ? "menunggu" : selectedStatus
+                }`}
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:gap-6">
+          <div className="grid gap-3 sm:gap-4 md:gap-6">
             {filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                className="bg-white rounded-xl md:rounded-2xl shadow-sm md:shadow-lg hover:shadow-lg md:hover:shadow-xl transition-all duration-300 overflow-hidden"
               >
                 {/* Order Header */}
-                <div className="p-4 sm:p-6 border-b border-gray-100">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                     <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3">
                         <span
-                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${getStatusColor(
+                          className={`inline-flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium border ${getStatusColor(
                             order.status
                           )}`}
                         >
@@ -331,32 +321,31 @@ const AdminOrders = () => {
                           {order.status === "pending"
                             ? "Menunggu Konfirmasi"
                             : order.status === "accepted"
-                            ? "Pesanan Diterima"
-                            : "Pesanan Ditolak"}
+                              ? "Pesanan Diterima"
+                              : "Pesanan Ditolak"}
                         </span>
-                        <span className="text-xs sm:text-sm text-gray-500 font-mono">
+                        <span className="text-xs text-gray-500 font-mono">
                           #{order.id}
                         </span>
-                        <span className="text-xs sm:text-sm text-gray-500">
+                        <span className="text-xs text-gray-500">
                           {formatDate(order.createdAt)}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <User className="w-4 h-4" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-600">
+                          <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="text-xs sm:text-sm truncate">
-                            User:{" "}
-                            {users[order.userId]?.name || "Tidak diketahui"}
+                            User: {users[order.userId]?.name || "Tidak diketahui"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Package className="w-4 h-4" />
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-600">
+                          <Package className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="text-xs sm:text-sm">
                             {order.items?.length || 0} Items
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-600">
                           <span className="text-xs sm:text-sm font-semibold">
                             Rp {order.total?.toLocaleString("id-ID")}
                           </span>
@@ -365,7 +354,7 @@ const AdminOrders = () => {
                     </div>
 
                     {/* Action Buttons - HANYA untuk status pending */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mt-3 sm:mt-0">
                       {order.status === "pending" ? (
                         <>
                           <button
@@ -373,16 +362,15 @@ const AdminOrders = () => {
                               handleStatusChange(order.id, "accepted")
                             }
                             disabled={processingOrder === order.id}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${
-                              processingOrder === order.id
-                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                : "bg-green-500 text-white hover:bg-green-600"
-                            }`}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order.id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-green-500 text-white hover:bg-green-600"
+                              }`}
                           >
                             {processingOrder === order.id ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
                             ) : (
-                              <CheckCircle className="w-4 h-4" />
+                              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                             {processingOrder === order.id
                               ? "Memproses..."
@@ -393,16 +381,15 @@ const AdminOrders = () => {
                               handleStatusChange(order.id, "rejected")
                             }
                             disabled={processingOrder === order.id}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${
-                              processingOrder === order.id
-                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                : "bg-red-500 text-white hover:bg-red-600"
-                            }`}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order.id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-600"
+                              }`}
                           >
                             {processingOrder === order.id ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
                             ) : (
-                              <XCircle className="w-4 h-4" />
+                              <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                             {processingOrder === order.id
                               ? "Memproses..."
@@ -412,18 +399,17 @@ const AdminOrders = () => {
                       ) : (
                         // Untuk status accepted atau rejected, tampilkan indikator saja
                         <div
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                            order.status === "accepted"
-                              ? "bg-green-100 text-green-700 border-green-200"
-                              : "bg-red-100 text-red-700 border-red-200"
-                          }`}
+                          className={`flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm ${order.status === "accepted"
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-red-100 text-red-700 border-red-200"
+                            }`}
                         >
                           {getStatusIcon(order.status)}
                           {order.status === "accepted"
                             ? "Pesanan Telah Diterima"
                             : "Pesanan Telah Ditolak"}
                           {order.status === "rejected" && (
-                            <span className="text-xs">
+                            <span className="hidden sm:inline text-xs">
                               (Stok telah dikembalikan)
                             </span>
                           )}
@@ -434,39 +420,39 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Order Items */}
-                <div className="p-4 sm:p-6">
-                  <h4 className="font-semibold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">
+                <div className="p-3 sm:p-4 md:p-6">
+                  <h4 className="font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4 text-sm sm:text-base">
                     Items Pesanan
                   </h4>
                   <div className="grid gap-2 sm:gap-3">
                     {order.items?.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all"
+                        className="flex items-center gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl hover:bg-gray-100 transition-all"
                       >
                         <img
                           src={item.produk?.img_url}
                           alt={item.produk?.nama}
-                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover shadow-sm flex-shrink-0"
+                          className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg object-cover shadow-sm flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-800 truncate text-xs sm:text-sm">
                             {item.produk?.nama}
                           </p>
-                          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-4 mt-1">
-                            <p className="text-xs sm:text-sm text-gray-600">
+                          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-2 md:gap-4 mt-1">
+                            <p className="text-xs text-gray-600">
                               Harga:{" "}
                               <span className="font-semibold">
                                 Rp {item.produk?.harga?.toLocaleString("id-ID")}
                               </span>
                             </p>
-                            <p className="text-xs sm:text-sm text-gray-600">
+                            <p className="text-xs text-gray-600">
                               Jumlah:{" "}
                               <span className="font-semibold">
                                 {item.jumlah}
                               </span>
                             </p>
-                            <p className="text-xs sm:text-sm text-gray-600">
+                            <p className="text-xs text-gray-600">
                               Subtotal:{" "}
                               <span className="font-semibold text-green-600">
                                 Rp{" "}
@@ -488,30 +474,30 @@ const AdminOrders = () => {
 
         {/* Stats */}
         {orders.length > 0 && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-gray-800">
+          <div className="mt-6 md:mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-white rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
                 {orders.length}
               </div>
-              <div className="text-sm text-gray-600">Total Pesanan</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Pesanan</div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-yellow-600">
+            <div className="bg-white rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-600">
                 {orders.filter((o) => o.status === "pending").length}
               </div>
-              <div className="text-sm text-gray-600">Menunggu</div>
+              <div className="text-xs sm:text-sm text-gray-600">Menunggu</div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="bg-white rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
                 {orders.filter((o) => o.status === "accepted").length}
               </div>
-              <div className="text-sm text-gray-600">Diterima</div>
+              <div className="text-xs sm:text-sm text-gray-600">Diterima</div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-red-600">
+            <div className="bg-white rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">
                 {orders.filter((o) => o.status === "rejected").length}
               </div>
-              <div className="text-sm text-gray-600">Ditolak</div>
+              <div className="text-xs sm:text-sm text-gray-600">Ditolak</div>
             </div>
           </div>
         )}
