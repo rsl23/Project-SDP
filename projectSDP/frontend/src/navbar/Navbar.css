@@ -99,11 +99,9 @@
 
 /* Admin Link - Special Styling */
 .navbar-menu a.admin-link {
-  background: linear-gradient(
-    135deg,
-    rgba(204, 0, 102, 0.2),
-    rgba(138, 43, 226, 0.2)
-  );
+  background: linear-gradient(135deg,
+      rgba(204, 0, 102, 0.2),
+      rgba(138, 43, 226, 0.2));
   border: 2px solid #cc0066;
   color: #ff0077;
   font-weight: 700;
@@ -276,6 +274,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+
   /* Show Burger Menu */
   .burger-menu {
     display: block;
