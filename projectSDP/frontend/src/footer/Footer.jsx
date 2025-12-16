@@ -6,7 +6,7 @@ import tokopediaIcon from "../assets/tokopedia.jpeg";
 import shopeeIcon from "../assets/shopee.png";
 import instagramIcon from "../assets/instagram.svg";
 import tiktokIcon from "../assets/tiktokLogo.png";
-import lazadaIcon from "../assets/lazadaLogo.webp";
+import lazadaIcon from "../assets/lazadapng.png";
 
 const Footer = () => {
   return (
