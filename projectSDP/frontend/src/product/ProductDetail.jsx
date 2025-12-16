@@ -332,17 +332,15 @@ const ProductDetail = () => {
           <div className="flex justify-center">
             <div className="relative group">
               <div
-                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
-                  imageLoaded ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
+                  }`}
               ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full max-w-md h-96 object-cover rounded-2xl transition-all duration-500 ${
-                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                  } group-hover:scale-105`}
+                  className={`w-full max-w-md h-auto max-h-[500px] object-contain rounded-2xl transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                    } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -447,11 +445,10 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 text-lg ${
-                  product.stok === 0
-                    ? "bg-gray-600 cursor-not-allowed opacity-50"
-                    : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-2xl hover:scale-105"
-                }`}
+                className={`w-full px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3 text-lg ${product.stok === 0
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-2xl hover:scale-105"
+                  }`}
               >
                 <ShoppingCart size={24} />
                 {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
@@ -574,9 +571,8 @@ const ProductDetail = () => {
                   <span className="text-sm">{getRatingFilterLabel()}</span>
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${
-                      filterDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`transition-transform ${filterDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -588,11 +584,10 @@ const ProductDetail = () => {
                           setRatingFilter("all");
                           setFilterDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                          ratingFilter === "all"
-                            ? "bg-indigo-600 text-white"
-                            : "text-gray-300 hover:bg-white/10"
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${ratingFilter === "all"
+                          ? "bg-indigo-600 text-white"
+                          : "text-gray-300 hover:bg-white/10"
+                          }`}
                       >
                         Semua Rating ({totalReviews})
                       </button>
@@ -603,11 +598,10 @@ const ProductDetail = () => {
                             setRatingFilter(rating.toString());
                             setFilterDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between ${
-                            ratingFilter === rating.toString()
-                              ? "bg-indigo-600 text-white"
-                              : "text-gray-300 hover:bg-white/10"
-                          }`}
+                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString()
+                            ? "bg-indigo-600 text-white"
+                            : "text-gray-300 hover:bg-white/10"
+                            }`}
                         >
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
