@@ -250,7 +250,7 @@ const Product = () => {
       </div>
 
       {/* Filters Container */}
-      <div className="max-w-7xl mx-auto mb-4 sm:mb-6">
+      <div className="max-w-7xl mx-auto mb-4 sm:mb-6 relative z-50">
         <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-white/20">
           {/* Search Input - Full width on mobile */}
           <div className="mb-3 sm:mb-4">
@@ -275,7 +275,7 @@ const Product = () => {
             <div className="relative w-full sm:w-48" ref={categoryDropdownRef}>
               <button
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base relative z-50"
               >
                 <div className="flex items-center gap-2 truncate">
                   <Filter size={16} />
@@ -296,8 +296,8 @@ const Product = () => {
 
               <div
                 className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] max-h-60 overflow-y-auto ${categoryDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
                   }`}
               >
                 <div className="p-1 sm:p-2">
@@ -336,7 +336,7 @@ const Product = () => {
             <div className="relative w-full sm:w-48" ref={sortDropdownRef}>
               <button
                 onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base relative z-50"
               >
                 <div className="flex items-center gap-2">
                   <span className="truncate">{getSortLabel()}</span>
@@ -350,8 +350,8 @@ const Product = () => {
 
               <div
                 className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] ${sortDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
                   }`}
               >
                 <div className="p-1 sm:p-2">
@@ -449,7 +449,7 @@ const Product = () => {
 
       {/* Products Grid */}
       {filteredAndSortedProducts.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-1 sm:px-0">
+        <div className="max-w-7xl mx-auto px-1 sm:px-0 relative z-0">
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             {filteredAndSortedProducts.map((p) => {
               const stockStatus = getStockStatus(p.stok);
@@ -462,7 +462,7 @@ const Product = () => {
                 <div
                   key={p.id}
                   onClick={() => navigate(`/product/${p.id}`)}
-                  className="group cursor-pointer bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-sm sm:backdrop-blur-lg rounded-lg sm:rounded-xl border border-gray-700/50 hover:border-pink-500/50 transition-all duration-300 hover:scale-[1.02] active:scale-95 hover:shadow-lg hover:shadow-pink-500/10 overflow-hidden flex flex-col"
+                  className="group cursor-pointer bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-sm sm:backdrop-blur-lg rounded-lg sm:rounded-xl border border-gray-700/50 hover:border-pink-500/50 transition-all duration-300 hover:scale-[1.02] active:scale-95 hover:shadow-lg hover:shadow-pink-500/10 overflow-hidden flex flex-col relative z-0"
                 >
                   {/* Product Image */}
                   <div className="relative overflow-hidden aspect-square">

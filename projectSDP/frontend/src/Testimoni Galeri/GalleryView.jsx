@@ -168,7 +168,7 @@ const GalleryView = () => {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative z-50">
         <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 border border-white/20">
           {/* Search Box - Full width di mobile */}
           <div className="mb-4 sm:mb-0">
@@ -227,7 +227,7 @@ const GalleryView = () => {
             <div className="relative w-full sm:w-48" ref={sortDropdownRef}>
               <button
                 onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl text-white flex justify-between items-center hover:bg-white/10 transition-colors text-sm sm:text-base relative z-50"
               >
                 <div className="flex items-center gap-2">
                   <Filter size={16} />
@@ -305,14 +305,14 @@ const GalleryView = () => {
 
       {/* Gallery Content */}
       {filteredAndSortedImages.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-1 sm:px-0">
+        <div className="max-w-7xl mx-auto px-1 sm:px-0 relative z-0">
           {viewMode === "grid" ? (
             // Grid View - Responsive columns
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filteredAndSortedImages.map((image) => (
                 <div
                   key={image.id}
-                  className="group bg-white/5 backdrop-blur-sm sm:backdrop-blur-lg rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 hover:border-pink-500/50 transition-all duration-300 cursor-pointer"
+                  className="group bg-white/5 backdrop-blur-sm sm:backdrop-blur-lg rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 hover:border-pink-500/50 transition-all duration-300 cursor-pointer relative z-0"
                   onClick={() => openImageModal(image)}
                 >
                   <div className="relative overflow-hidden aspect-square">
@@ -350,11 +350,11 @@ const GalleryView = () => {
             </div>
           ) : (
             // List View - Responsive
-            <div className="bg-white/5 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/10 overflow-hidden">
+            <div className="bg-white/5 backdrop-blur-lg rounded-xl sm:rounded-2xl border border-white/10 overflow-hidden relative z-0">
               {filteredAndSortedImages.map((image) => (
                 <div
                   key={image.id}
-                  className="flex items-center gap-3 p-3 sm:p-4 border-b border-white/10 last:border-b-0 hover:bg-white/10 transition cursor-pointer group"
+                  className="flex items-center gap-3 p-3 sm:p-4 border-b border-white/10 last:border-b-0 hover:bg-white/10 transition cursor-pointer group relative z-0"
                   onClick={() => openImageModal(image)}
                 >
                   {/* Thumbnail */}
@@ -400,7 +400,7 @@ const GalleryView = () => {
         </div>
       ) : (
         // Empty State - Responsive
-        <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 md:py-16 px-4">
+        <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 md:py-16 px-4 relative z-0">
           <div className="bg-white/5 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 border border-white/10">
             <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-4 sm:mb-6 bg-white/10 rounded-full flex items-center justify-center">
               <Search size={24} className="sm:size-8 md:size-10 text-gray-400" />
@@ -429,7 +429,7 @@ const GalleryView = () => {
       {/* Image Modal - Responsive */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-2 sm:p-4 z-50"
+          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-2 sm:p-4 z-[99999]"
           onClick={closeImageModal}
         >
           <div
