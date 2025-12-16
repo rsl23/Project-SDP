@@ -38,12 +38,17 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
 
     setLoading(true);
     try {
-      await onReviewSubmit({
+      const reviewData = {
         produk_id: product.id,
         order_id: orderId,
         rating,
         komentar,
-      });
+      };
+
+      console.log("📝 Submitting review with data:", reviewData);
+      console.log("📦 Order ID:", orderId);
+
+      await onReviewSubmit(reviewData);
       setRating(0);
       setKomentar("");
       onClose();
@@ -205,7 +210,7 @@ const Profile = () => {
   const fetchUserReviews = async (userId) => {
     try {
       const response = await fetch(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews?userId=${userId}`
+        `http://localhost:8080/api/reviews?userId=${userId}`
       );
       if (response.ok) {
         const userReviews = await response.json();
@@ -224,19 +229,23 @@ const Profile = () => {
 
   const handleSubmitReview = async (reviewData) => {
     try {
-      const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...reviewData,
-            userId: user.uid,
-          }),
-        }
-      );
+      const payload = {
+        ...reviewData,
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        userPhotoURL: user.photoURL || null,
+      };
+
+      console.log("🚀 Sending review to backend:", payload);
+      console.log("📦 Order ID in payload:", payload.order_id);
+
+      const response = await fetch("http://localhost:8080/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -252,6 +261,13 @@ const Profile = () => {
   };
 
   const openReviewModal = (product, orderId) => {
+    console.log("🔓 Opening review modal for:", {
+      product,
+      orderId,
+      orderIdType: typeof orderId,
+      orderIdValue: orderId,
+    });
+
     setReviewModal({
       isOpen: true,
       product,
@@ -473,7 +489,9 @@ const Profile = () => {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-wide mb-2">
           Profil Saya
         </h1>
-        <p className="text-gray-300">Kelola informasi profil dan riwayat pesanan Anda</p>
+        <p className="text-gray-300">
+          Kelola informasi profil dan riwayat pesanan Anda
+        </p>
       </div>
 
       {/* Main Content Container */}
@@ -483,30 +501,33 @@ const Profile = () => {
           <div className="flex space-x-1 overflow-x-auto pb-2 scrollbar-hide">
             <button
               onClick={() => setActiveTab("profile")}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${activeTab === "profile"
+              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${
+                activeTab === "profile"
                   ? "bg-indigo-600 text-white"
                   : "bg-white/10 text-gray-300"
-                }`}
+              }`}
             >
               <User className="inline mr-2" size={14} />
               Profil
             </button>
             <button
               onClick={() => setActiveTab("security")}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${activeTab === "security"
+              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${
+                activeTab === "security"
                   ? "bg-indigo-600 text-white"
                   : "bg-white/10 text-gray-300"
-                }`}
+              }`}
             >
               <Lock className="inline mr-2" size={14} />
               Keamanan
             </button>
             <button
               onClick={() => setActiveTab("orders")}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${activeTab === "orders"
+              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm ${
+                activeTab === "orders"
                   ? "bg-indigo-600 text-white"
                   : "bg-white/10 text-gray-300"
-                }`}
+              }`}
             >
               <Package className="inline mr-2" size={14} />
               Pesanan
@@ -518,30 +539,33 @@ const Profile = () => {
         <div className="hidden lg:flex gap-4 mb-8 border-b border-white/20">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "profile"
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "profile"
                 ? "border-b-2 border-indigo-500 text-indigo-400"
                 : "text-gray-400 hover:text-white"
-              }`}
+            }`}
           >
             <User className="inline mr-2" size={18} />
             Profil
           </button>
           <button
             onClick={() => setActiveTab("security")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "security"
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "security"
                 ? "border-b-2 border-indigo-500 text-indigo-400"
                 : "text-gray-400 hover:text-white"
-              }`}
+            }`}
           >
             <Lock className="inline mr-2" size={18} />
             Keamanan
           </button>
           <button
             onClick={() => setActiveTab("orders")}
-            className={`pb-3 px-4 font-semibold transition-all ${activeTab === "orders"
+            className={`pb-3 px-4 font-semibold transition-all ${
+              activeTab === "orders"
                 ? "border-b-2 border-indigo-500 text-indigo-400"
                 : "text-gray-400 hover:text-white"
-              }`}
+            }`}
           >
             <Package className="inline mr-2" size={18} />
             Riwayat Pesanan
@@ -617,7 +641,10 @@ const Profile = () => {
               <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">
                 Ubah Password
               </h2>
-              <form onSubmit={handleUpdatePassword} className="space-y-4 sm:space-y-6">
+              <form
+                onSubmit={handleUpdatePassword}
+                className="space-y-4 sm:space-y-6"
+              >
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     <Lock className="inline mr-2" size={14} />
@@ -632,10 +659,11 @@ const Profile = () => {
                         setErrors({ ...errors, currentPassword: "" });
                       }
                     }}
-                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${errors.currentPassword
+                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                      errors.currentPassword
                         ? "ring-2 ring-red-500"
                         : "focus:ring-indigo-500"
-                      }`}
+                    }`}
                     placeholder="Masukkan password lama"
                   />
                   {errors.currentPassword && (
@@ -660,10 +688,11 @@ const Profile = () => {
                         setErrors({ ...errors, newPassword: "" });
                       }
                     }}
-                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${errors.newPassword
+                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                      errors.newPassword
                         ? "ring-2 ring-red-500"
                         : "focus:ring-indigo-500"
-                      }`}
+                    }`}
                     placeholder="Minimal 6 karakter"
                   />
                   {errors.newPassword && (
@@ -688,10 +717,11 @@ const Profile = () => {
                         setErrors({ ...errors, confirmPassword: "" });
                       }
                     }}
-                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${errors.confirmPassword
+                    className={`w-full px-3 sm:px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                      errors.confirmPassword
                         ? "ring-2 ring-red-500"
                         : "focus:ring-indigo-500"
-                      }`}
+                    }`}
                     placeholder="Ketik ulang password baru"
                   />
                   {errors.confirmPassword && (
@@ -823,7 +853,10 @@ const Profile = () => {
                                 <div className="flex-shrink-0">
                                   {hasUserReviewed(order.id, item.produk_id) ? (
                                     <div className="flex items-center gap-2 text-green-400">
-                                      <Star className="fill-green-400" size={14} />
+                                      <Star
+                                        className="fill-green-400"
+                                        size={14}
+                                      />
                                       <span className="text-xs sm:text-sm">
                                         Telah direview
                                       </span>
@@ -853,7 +886,9 @@ const Profile = () => {
 
                       {/* Order Footer */}
                       <div className="border-t border-white/20 pt-3 flex justify-between items-center">
-                        <span className="font-semibold text-sm sm:text-base">Total:</span>
+                        <span className="font-semibold text-sm sm:text-base">
+                          Total:
+                        </span>
                         <span className="text-lg sm:text-xl font-bold text-indigo-400">
                           Rp {(order.total || 0).toLocaleString("id-ID")}
                         </span>

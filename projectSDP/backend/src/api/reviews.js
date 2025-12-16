@@ -11,8 +11,15 @@ const router = express.Router();
 // Fungsi: Menambahkan review baru dengan validasi kepemilikan dan duplikat
 router.post("/", async (req, res) => {
   try {
-    const { userId, produk_id, rating, komentar, userName, userPhotoURL } =
-      req.body;
+    const {
+      userId,
+      produk_id,
+      order_id,
+      rating,
+      komentar,
+      userName,
+      userPhotoURL,
+    } = req.body;
 
     // Validasi field wajib
     if (!userId || !produk_id || !rating) {
@@ -69,6 +76,7 @@ router.post("/", async (req, res) => {
     const reviewRef = await db.collection("reviews").add({
       userId,
       produk_id,
+      order_id: order_id || null,
       rating: Number(rating),
       komentar: komentar || "",
       userName: userName || "Anonymous",
