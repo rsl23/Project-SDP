@@ -582,7 +582,7 @@ const ProductDetail = () => {
                       className="fixed inset-0 z-20"
                       onClick={() => setFilterDropdownOpen(false)}
                     />
-                    <div className="absolute top-full right-0 mt-1 md:mt-2 w-48 bg-gray-800 border border-white/20 rounded-lg shadow-lg z-30">
+                    <div className="absolute top-full left-0 right-auto md:right-0 mt-1 md:mt-2 w-48 bg-gray-800 border border-white/20 rounded-lg shadow-lg z-30">
                       <div className="p-1 md:p-2 space-y-0.5 md:space-y-1">
                         <button
                           onClick={() => {
