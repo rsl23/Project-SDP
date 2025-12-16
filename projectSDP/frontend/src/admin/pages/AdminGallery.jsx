@@ -84,7 +84,9 @@ const GalleryPage = () => {
   const fetchGallery = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8080/api/gallery");
+      const response = await fetch(
+        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery"
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -159,13 +161,16 @@ const GalleryPage = () => {
         description: formData.description || "",
       };
 
-      const response = await fetch("http://localhost:8080/api/gallery", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(galleryData),
-      });
+      const response = await fetch(
+        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(galleryData),
+        }
+      );
 
       if (response.status === 201) {
         setShowAddModal(false);
@@ -204,7 +209,7 @@ const GalleryPage = () => {
       async () => {
         try {
           const response = await fetch(
-            `http://localhost:8080/api/gallery/${id}`,
+            `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`,
             {
               method: "DELETE",
             }
@@ -229,13 +234,16 @@ const GalleryPage = () => {
     try {
       // console.log(!currentActive);
 
-      const response = await fetch(`http://localhost:8080/api/gallery/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ active: !currentActive }),
-      });
+      const response = await fetch(
+        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ active: !currentActive }),
+        }
+      );
 
       if (response.ok) {
         fetchGallery();
@@ -297,10 +305,11 @@ const GalleryPage = () => {
                 />
                 <div className="absolute top-2 right-2">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${item.active
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      item.active
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-red-100 text-red-800 border border-red-200"
-                      }`}
+                    }`}
                   >
                     {item.active ? "Aktif" : "Nonaktif"}
                   </span>
@@ -319,10 +328,11 @@ const GalleryPage = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleToggleActive(item.id, item.active)}
-                      className={`p-1.5 md:p-2 rounded-lg transition ${item.active
+                      className={`p-1.5 md:p-2 rounded-lg transition ${
+                        item.active
                           ? "text-yellow-600 hover:bg-yellow-50 border border-yellow-200"
                           : "text-green-600 hover:bg-green-50 border border-green-200"
-                        }`}
+                      }`}
                       title={item.active ? "Nonaktifkan" : "Aktifkan"}
                     >
                       {item.active ? (
@@ -349,7 +359,10 @@ const GalleryPage = () => {
       {/* Empty State */}
       {!loading && galleryItems.length === 0 && (
         <div className="text-center py-8 md:py-12 bg-white rounded-lg shadow-sm md:shadow border border-gray-200">
-          <ImageIcon size={48} className="mx-auto text-gray-400 mb-3 md:mb-4 md:w-16 md:h-16" />
+          <ImageIcon
+            size={48}
+            className="mx-auto text-gray-400 mb-3 md:mb-4 md:w-16 md:h-16"
+          />
           <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">
             Tidak ada gambar gallery
           </h3>
@@ -408,7 +421,10 @@ const GalleryPage = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center text-gray-500 pointer-events-none text-center">
-                        <Upload size={24} className="mb-2 text-gray-400 md:w-8 md:h-8" />
+                        <Upload
+                          size={24}
+                          className="mb-2 text-gray-400 md:w-8 md:h-8"
+                        />
                         <p className="text-xs md:text-sm font-medium">
                           Klik untuk upload gambar
                         </p>
@@ -496,12 +512,13 @@ const GalleryPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 p-4 md:p-6 transform transition-all">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <div
-                className={`p-1.5 md:p-2 rounded-full ${popupData.type === "success"
+                className={`p-1.5 md:p-2 rounded-full ${
+                  popupData.type === "success"
                     ? "bg-green-100 text-green-600"
                     : popupData.type === "error"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-blue-100 text-blue-600"
-                  }`}
+                    ? "bg-red-100 text-red-600"
+                    : "bg-blue-100 text-blue-600"
+                }`}
               >
                 {popupData.type === "success" ? (
                   <CheckCircle size={20} className="md:w-6 md:h-6" />
@@ -516,11 +533,14 @@ const GalleryPage = () => {
               </h3>
             </div>
 
-            <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{popupData.message}</p>
+            <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
+              {popupData.message}
+            </p>
 
             <div
-              className={`flex gap-3 ${popupData.showCancel ? "justify-between" : "justify-end"
-                }`}
+              className={`flex gap-3 ${
+                popupData.showCancel ? "justify-between" : "justify-end"
+              }`}
             >
               {popupData.showCancel && (
                 <button
@@ -537,12 +557,13 @@ const GalleryPage = () => {
                   }
                   closePopup();
                 }}
-                className={`flex-1 py-2 rounded-lg transition font-medium text-sm md:text-base ${popupData.type === "success"
+                className={`flex-1 py-2 rounded-lg transition font-medium text-sm md:text-base ${
+                  popupData.type === "success"
                     ? "bg-green-600 text-white hover:bg-green-700"
                     : popupData.type === "error"
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
+                    ? "bg-red-600 text-white hover:bg-red-700"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
               >
                 {popupData.type === "confirm" ? "Ya" : "OK"}
               </button>

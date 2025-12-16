@@ -210,7 +210,7 @@ const Profile = () => {
   const fetchUserReviews = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/reviews?userId=${userId}`
+        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews?userId=${userId}`
       );
       if (response.ok) {
         const userReviews = await response.json();
@@ -239,13 +239,16 @@ const Profile = () => {
       console.log("🚀 Sending review to backend:", payload);
       console.log("📦 Order ID in payload:", payload.order_id);
 
-      const response = await fetch("http://localhost:8080/api/reviews", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
