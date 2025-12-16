@@ -304,18 +304,16 @@ const Product = () => {
                 </div>
                 <ChevronDown
                   size={16}
-                  className={`transition-transform duration-300 ${
-                    categoryDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-300 ${categoryDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-[9999] max-h-80 overflow-y-auto ${
-                  categoryDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
-                }`}
+                className={`absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-[9999] max-h-80 overflow-y-auto ${categoryDropdownOpen
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
+                  }`}
               >
                 <div className="p-2">
                   <div
@@ -359,18 +357,16 @@ const Product = () => {
                 </div>
                 <ChevronDown
                   size={16}
-                  className={`transition-transform duration-300 ${
-                    sortDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-300 ${sortDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-[9999] ${
-                  sortDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
-                }`}
+                className={`absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-[9999] ${sortDropdownOpen
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
+                  }`}
               >
                 <div className="p-2">
                   <div
@@ -440,11 +436,11 @@ const Product = () => {
             {(searchTerm ||
               selectedCategory !== "Semua" ||
               sortBy !== "default") && (
-              <Button color="failure" onClick={clearFilters}>
-                <X size={18} className="mr-2" />
-                Reset
-              </Button>
-            )}
+                <Button color="failure" onClick={clearFilters}>
+                  <X size={18} className="mr-2" />
+                  Reset
+                </Button>
+              )}
           </div>
         </div>
 
@@ -463,7 +459,7 @@ const Product = () => {
 
       {/* Products Grid - z-index lebih rendah */}
       {filteredAndSortedProducts.length > 0 ? (
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredAndSortedProducts.map((p) => {
               const stockStatus = getStockStatus(p.stok);
@@ -473,77 +469,129 @@ const Product = () => {
               };
 
               return (
-                <Card
+                <div
                   key={p.id}
-                  className="group cursor-pointer bg-white/5 backdrop-blur-lg border-white/10 hover:border-pink-500/50 transition-all duration-500 hover:transform hover:scale-105"
                   onClick={() => navigate(`/product/${p.id}`)}
-                  imgSrc={p.img_url || "/placeholder-image.jpg"}
-                  imgAlt={p.nama}
+                  className="group cursor-pointer bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-xl rounded-xl border border-gray-700/50 hover:border-pink-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-500/10 overflow-hidden flex flex-col"
                 >
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
-                    <Badge color="pink" size="sm">
-                      {getProductCategoryName(p)}
-                    </Badge>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${stockStatus.bg} ${stockStatus.color}`}
-                    >
-                      {stockStatus.text}
-                    </span>
+                  {/* Product Image - Fixed height */}
+                  <div className="relative overflow-hidden h-40">
+                    <img
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      src={p.img_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop"}
+                      alt={p.nama}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop";
+                      }}
+                    />
+
+                    {/* Badges */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      <div className="px-2 py-1 bg-purple-600/90 backdrop-blur-md rounded-md border border-purple-400/30">
+                        <span className="text-xs font-semibold text-white">
+                          {getProductCategoryName(p)}
+                        </span>
+                      </div>
+                      {/* <div className={`px-2 py-1 ${stockStatus.bg} backdrop-blur-md rounded-md border border-white/10`}>
+                        <span className={`text-xs font-semibold ${stockStatus.color}`}>
+                          {stockStatus.text}
+                        </span>
+                      </div> */}
+                    </div>
+
+                    {/* Discount Badge */}
+                    {p.diskon && p.diskon > 0 && (
+                      <div className="absolute top-2 right-2">
+                        <div className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-md shadow">
+                          <span className="text-xs font-bold text-white">
+                            -{p.diskon}%
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <h5 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors text-sm sm:text-base">
-                    {p.nama}
-                  </h5>
+                  {/* Product Info */}
+                  <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                    {/* Product Name */}
+                    <h5 className="text-sm font-bold text-white line-clamp-2 group-hover:text-pink-300 transition-colors mb-2">
+                      {p.nama}
+                    </h5>
 
-                  <div className="mb-2">
-                    <span className="text-lg sm:text-2xl font-bold text-transparent bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text">
-                      Rp {p.harga.toLocaleString("id-ID")}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      {renderRatingStars(productRating.averageRating)}
-                      <span className="text-xs text-gray-300">
-                        {productRating.averageRating > 0
-                          ? productRating.averageRating.toFixed(1)
-                          : "0.0"}
+                    {/* Rating - Compact */}
+                    <div className="mb-2 flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {renderRatingStars(productRating.averageRating, "sm")}
+                        <span className="text-xs font-bold text-white">
+                          {productRating.averageRating > 0
+                            ? productRating.averageRating.toFixed(1)
+                            : "0.0"}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 ml-auto">
+                        ({productRating.totalReviews})
                       </span>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                      ({productRating.totalReviews} ulasan)
-                    </span>
-                  </div>
 
-                  <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span>Stok: {p.stok}</span>
-                    <ShoppingCart size={14} />
+                    {/* Price */}
+                    <div className="mb-3">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-base sm:text-lg font-bold text-transparent bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text">
+                          Rp {p.harga.toLocaleString("id-ID")}
+                        </span>
+                        {p.diskon && p.diskon > 0 && (
+                          <span className="text-xs text-gray-400 line-through">
+                            Rp{" "}
+                            {Math.round(
+                              (p.harga * 100) / (100 - p.diskon)
+                            ).toLocaleString("id-ID")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom Section */}
+                    <div className="mt-auto pt-3 border-t border-gray-700/50">
+                      <div className="flex items-center justify-between">
+                        <div className={`text-xs px-2 py-1 rounded ${stockStatus.bg}`}>
+                          <span className={`font-medium ${stockStatus.color}`}>
+                            Stok: {p.stok}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-400 group-hover:text-pink-400 transition-colors">
+                          <ShoppingCart size={12} />
+                          <span className="text-xs font-medium">Beli</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto text-center py-16 relative z-10">
-          <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-12 border border-white/10">
-            <div className="w-24 h-24 mx-auto mb-6 bg-white/10 rounded-full flex items-center justify-center">
-              <Search size={40} className="text-gray-400" />
+        <div className="max-w-2xl mx-auto text-center py-16">
+          <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-xl rounded-2xl p-8 sm:p-12 border border-gray-700/50">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
+              <Search size={24} className="sm:size-6 text-pink-400" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
               Produk Tidak Ditemukan
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-400 mb-6 text-sm">
               {searchTerm || selectedCategory !== "Semua"
                 ? "Coba ubah kata kunci pencarian atau filter kategori"
                 : "Belum ada produk yang tersedia saat ini"}
             </p>
             {(searchTerm || selectedCategory !== "Semua") && (
-              <Button gradientDuoTone="pinkToOrange" onClick={clearFilters}>
+              <button
+                onClick={clearFilters}
+                className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg shadow-pink-500/25 text-sm"
+              >
                 Tampilkan Semua Produk
-              </Button>
+              </button>
             )}
           </div>
         </div>
