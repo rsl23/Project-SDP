@@ -82,7 +82,7 @@ const GalleryPage = () => {
   const fetchGallery = async () => {
     try {
       setLoading(true);
-      const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery");
+      const response = await fetch("http://localhost:8080/api/gallery");
 
       if (response.ok) {
         const data = await response.json();
@@ -153,11 +153,11 @@ const GalleryPage = () => {
 
       const galleryData = {
         image_url: imageUrl,
-        alt_text: formData.alt_text || "Gambar gallery",
+        caption: formData.alt_text || "Gambar gallery",
         description: formData.description || "",
       };
 
-      const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery", {
+      const response = await fetch("http://localhost:8080/api/gallery", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +202,7 @@ const GalleryPage = () => {
       async () => {
         try {
           const response = await fetch(
-            `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`,
+            `http://localhost:8080/api/gallery/${id}`,
             {
               method: "DELETE",
             }
@@ -225,7 +225,9 @@ const GalleryPage = () => {
   // Toggle active status - FIXED URL
   const handleToggleActive = async (id, currentActive) => {
     try {
-      const response = await fetch(`https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`, {
+      // console.log(!currentActive);
+
+      const response = await fetch(`http://localhost:8080/api/gallery/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
