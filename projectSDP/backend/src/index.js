@@ -53,12 +53,12 @@ app.use("/api/reviews", reviewsRouter);
 // Endpoints: GET /, POST /, PUT /:id, DELETE /:id
 app.use("/api/gallery", galleryRouter);
 
-app.use(express.static(path.join(__dirname, "dist")));
+// app.use(express.static(path.join(__dirname, "dist")));
 
-// Catch-all React Router
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
+// // Catch-all React Router
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "dist", "index.html"));
+// });
 // Port dari environment variable atau default 8080
 const PORT = process.env.PORT || 8080;
 

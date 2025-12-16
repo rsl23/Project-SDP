@@ -40,19 +40,20 @@ router.get("/", async (req, res) => {
 // Fungsi: Menambahkan item baru ke galeri
 router.post("/", async (req, res) => {
   try {
-    const { imageUrl, caption, description } = req.body;
+    const { image_url, caption, description } = req.body;
 
-    // Validasi imageUrl wajib diisi
-    if (!imageUrl || imageUrl.trim() === "") {
+    // Validasi image_url wajib diisi
+    if (!image_url || image_url.trim() === "") {
       return res.status(400).json({ error: "Image URL wajib diisi" });
     }
 
     // Simpan item galeri baru
     const docRef = await db.collection("gallery").add({
-      imageUrl: imageUrl.trim(),
-      caption: caption || "",
+      image_url: image_url.trim(),
+      alt_text: caption || "",
       description: description || "",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      active: true,
     });
 
     res.status(201).json({
@@ -66,10 +67,10 @@ router.post("/", async (req, res) => {
 });
 
 // Endpoint: PUT /api/gallery/:id
-// Fungsi: Update item galeri (caption, description, imageUrl)
+// Fungsi: Update item galeri (caption, description, image_url)
 router.put("/:id", async (req, res) => {
   try {
-    const { imageUrl, caption, description } = req.body;
+    const { image_url, caption, description, active } = req.body;
     const galleryId = req.params.id;
 
     // Validasi item exists
@@ -83,9 +84,10 @@ router.put("/:id", async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (image_url !== undefined) updateData.image_url = image_url;
     if (caption !== undefined) updateData.caption = caption;
     if (description !== undefined) updateData.description = description;
+    if (active !== undefined) updateData.active = active;
 
     // Update galeri
     await db.collection("gallery").doc(galleryId).update(updateData);
