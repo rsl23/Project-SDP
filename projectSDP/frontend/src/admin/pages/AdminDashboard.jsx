@@ -24,15 +24,31 @@ const AdminDashboard = () => {
         const usersSnapshot = await getDocs(collection(db, "users"));
         const totalUsers = usersSnapshot.size;
 
-        // Fetch orders count (jika ada)
-        // const ordersSnapshot = await getDocs(collection(db, "orders"));
-        // const totalOrders = ordersSnapshot.size;
+        // Fetch orders count dan revenue
+        const ordersSnapshot = await getDocs(collection(db, "orders"));
+        const totalOrders = ordersSnapshot.size;
+
+        // Hitung revenue dari orders yang accepted
+        let revenue = 0;
+        ordersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.status === "accepted") {
+            revenue += data.total || 0;
+          }
+        });
+
+        console.log("📊 Dashboard Stats:", {
+          totalProducts,
+          totalUsers,
+          totalOrders,
+          revenue
+        });
 
         setStats({
           totalProducts,
           totalUsers,
-          totalOrders: 0, // Placeholder
-          revenue: 0, // Placeholder
+          totalOrders,
+          revenue,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
